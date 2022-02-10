@@ -1,0 +1,45 @@
+﻿body {
+}
+#Find_Friends_search {
+    width: 50%;
+    border-radius: 17px;
+    height: 35px;
+    margin-top: 25px;
+    border: 0;
+    margin-left: 28px;
+    padding-left: 17px;
+    padding-right: 37px;
+    outline:none;
+}
+.butofFindFriends {
+    position: relative;
+    left: -40px;
+    height: 28px;
+    top: -1px;
+}
+.SearchSomeOne {
+    padding-left: 20px;
+    padding-right: 20px;
+    border-right: 2px solid #ffffff
+}
+    .SearchSomeOne:hover {
+        background-color: #295c8945;
+    }
+.SearchGroups {
+    padding-left: 20px;
+    padding-right: 20px;
+}
+    .SearchGroups:hover {
+        background-color: #295c8945;
+    }
+
+.butofFindFriends:hover {
+    background-color: #295c8945;
+    border-radius:18px;
+}
+.HeadPortrait_Search {
+    width: 68px;
+    border-radius: 42px;
+    margin: 10px;
+    float:left
+}

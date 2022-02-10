@@ -1,0 +1,198 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>登陆</title>
+    <script src="{% static "js/jquery-3.6.0.min.js" %}"></script>
+    <style>
+
+        body {
+            background-color: #e7ebf1;
+        }
+
+        .Login_panel {
+            position: absolute;
+            width: 300px;
+            height: 400px;
+            border-radius: 20px;
+            left: 50%;
+            top: 20%;
+            margin-left: -150px;
+            background: #e7ebf1;
+            box-shadow: 10px 7px 7px #bebebe, -8px -7px 7px #ffffff;
+            display: inline-block;
+        }
+
+        .front, .back {
+            position: absolute;
+            font-size: 50px;
+            left: 50%;
+            margin-left: -50px;
+        }
+
+        .front {
+            backface-visibility: hidden;
+            color: #05d8a7;
+            text-shadow: #c323f1 1px 1px 1px;
+        }
+
+        .back {
+            color: #05d8a7;
+            text-shadow: #c323f1 1px 1px 1px;
+            backface-visibility: hidden;
+            transform: rotateX(-180deg);
+        }
+
+        .Login_form {
+            position: absolute;
+            left: 50%;
+            margin-left: -125px;
+            top: 150px;
+        }
+
+        .username, .password, .post {
+            box-sizing: border-box;
+            width: 250px;
+            height: 35px;
+            border-radius: 26px;
+            background: #e7ebf1;
+            border: 0;
+            padding: 1px 17px;
+            box-shadow: inset 8px 7px 5px #bebebe, inset -3px -3px 4px #ffffff;
+            outline: none;
+            color: #7b7a7a;
+            font-size: 20px;
+        }
+
+        .password {
+            margin-top: 20px;
+        }
+
+        .tip {
+            height: 30px;
+            text-align: center;
+        }
+
+        .post {
+            padding: 0;
+            box-shadow: none;
+            color: white;
+            background-color: #05d8a7;
+        }
+
+            .post:hover {
+                background-color: #2a9f7b;
+            }
+
+        .switch {
+            margin-top: 30px;
+            color: #7b7a7a;
+            font-size: 1px;
+            text-align: center;
+        }
+
+    </style>
+<script>
+    $(document).ready(function () {
+        $(".post").click(function () {
+            Login();
+        })
+
+        $(document).keyup(function (e) {
+            if (e.which ==13) {
+                Login();
+            }
+        })
+        window.onload = function () {
+            var url = window.location.href;
+            if (url.search("=")!=-1) {
+                var a = url.substring(url.lastIndexOf("=") + 1, url.length);
+                var isnum = /^\d+$/.test(a);
+                if (isnum) {
+                    $("#LoginID").val(a)
+                }
+            }
+            //var a = url.substring(url.lastIndexOf("=") + 1, url.length);
+            //if (a != "") {
+            //    $("#LoginID").val(a)
+            //}
+        }
+    })
+
+    function Login() {
+        var unval = document.getElementById("LoginID").value;
+        var pwval = document.getElementById("PassWord").value;
+        var data = { 'LoginID': unval, 'PassWord': pwval }
+        if ($(".post").val() == "Login") {
+            $(".tip").text("")
+            $.ajax({
+                url: "/Login",
+                type: 'post',
+                dataType: "json",
+                data: data,
+                success: function (data) {
+                    if(data.status==0){
+                        $(".tip").text(data.result);
+                    }
+                    else if(data.status==1){
+                        window.location.href = data.url;
+                    }
+                    console.log('请求成功');
+                },
+                error: function () {
+                    console.log('发送请求失败'); // 请求失败时的回调函数
+                }
+            });
+		}
+    } 
+	function Register() {
+            $.ajax({
+                url: "Register",
+                type: 'get',
+                success: function (data) {
+                    console.log('请求成功');
+                },
+                error: function () {
+                    console.log('发送请求失败'); // 请求失败时的回调函数
+                }
+            });
+        }
+</script>
+</head>
+<body>
+    <div class="Login_panel">
+        <h1 class="front">登录</h1>
+        <form class="Login_form">
+            <table>
+                <tr>
+                    <td>
+                        <input class="username" id="LoginID" name="LoginID" placeholder="账号" type="text"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <input class="password" id="PassWord" name="PassWord" placeholder="密码" type="password"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="tip"></div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <input class="post" type="button" value="Login"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="center">
+                        <a class="switch" onclick="window.location.href ='Register'">还没有账号？快跟我来</a>
+                    </td>
+                </tr>
+            </table>
+        </form>
+    </div>
+</body>
+</html>

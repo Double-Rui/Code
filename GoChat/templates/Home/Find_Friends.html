@@ -1,0 +1,191 @@
+﻿{% extends 'Shared/Base.html' %}
+{% block content%}
+{% load static %}
+<link type="text/css" rel="styleSheet" href="{% static "css/Find_Friends.css" %}" />
+<script src="{% static "js/JavaScript.js" %}"></script>
+<div style="padding-left:60px;height:100%;border-radius: 9px;">
+    <div style="height: 25%;background-color:#60c4e7;">
+        <div style="text-align: center;padding-top: 40px;">
+            <table style="margin:0 auto;border-collapse: collapse;" cellpadding="0" ;cellspacing="0">
+                <tr>
+                    <td class="SearchSomeOne"><span style="border-bottom:4px solid #64ff00">找人</span></td>
+                    <td class="SearchGroups"><span style="border-bottom:4px solid #ffffff">找群</span></td>
+                </tr>
+            </table>
+        </div>
+        <div style="text-align:center">
+            <input id="Find_Friends_search" placeholder="请输入要搜索的关键词" type="search" />
+            <img class="butofFindFriends" src="{% static "icon/search.svg" %}" style="" value=1 />
+        </div>
+    </div>
+    <div class="result" style="text-align:center;height:75%;overflow-y:auto;">
+        <div class="tip" style="width:200px;height:200px;background-color: white;position:absolute;display:none">
+            <div style="width:100%;height:88px">
+                <img class="HeadPortrait_Search" />
+                <div style="float:left;text-align:center;position: relative;width: 56%;padding-top: 20px;">
+                    <span class="name" style="font-size:20px;display:block"></span>
+                </div>
+            </div>
+            <div style="text-align:left">
+                <span style="color:#8f8f8f">账号 </span><span class="id"></span><br />
+                <span class="sex"></span>&nbsp;<span class="age"></span>&nbsp;<span class="Birthday"></span>&nbsp;<span class="Constellation"></span>&nbsp;<span class="ShengXiao"></span>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+        var mouse_x, mouse_y;
+        $(".result").mousemove(function (e) {
+            mouse_x = e.pageX - $(".result").offset().left;//得出鼠标在容器内的坐标X，以容器的左上角为坐标原点
+            //mouse_x = e.pageX;//得出鼠标在容器内的坐标X，以容器的左上角为坐标原点
+            mouse_y = e.pageY - $(".result").offset().top;//得出鼠标在容器内的坐标Y，以容器的左上角为坐标原点
+            //mouse_y = e.pageY;//得出鼠标在容器内的坐标Y，以容器的左上角为坐标原点
+            //$("h1").text("x:" + mouse_x + "y:" + mouse_y)
+
+            $(function () {
+                $(".result_a").click(function () {
+                    $(".tip").css({ "display": "block", "margin-top": mouse_y, "margin-left": mouse_x })
+                    return false;
+                })
+
+                $(document).click(function () {
+                    $(".tip").css("display", "none")
+                })
+
+                $(".addfriend").click(function () {
+                    $(".tip").css("display", "none")
+                    return false;
+                })
+
+                $(".tip").click(function () {
+                    return false;
+                })
+            })
+        });
+
+        $(".SearchSomeOne").click(function () {
+            $(".SearchGroups span").css("border-bottom", "4px solid #ffffff")
+            $(".SearchSomeOne span").css("border-bottom", "4px solid #64ff00")
+            $(".butofFindFriends").attr("value", 1)
+        })
+        $(".SearchGroups").click(function () {
+            $(".SearchGroups span").css("border-bottom", "4px solid #64ff00")
+            $(".SearchSomeOne span").css("border-bottom", "4px solid #ffffff")
+            $(".butofFindFriends").attr("value", 2)
+        })
+
+        $(".butofFindFriends").click(function () {
+            find();
+        })
+
+        $("#Find_Friends_search").keyup(function (e) {
+            if (e.which == 13) {
+                find();
+            }
+        })
+
+    })
+
+    function find() {
+        $(".result_a").remove();
+        $(".result_b").remove();
+        $.ajax({
+            url: "/Home/FindFriend",
+            dataType: "json",
+            type: "post",
+            data: { option: $(".butofFindFriends").attr("value"), str: $("#Find_Friends_search").val() },
+            success: function (data) {
+                if (data.state = 1) {
+                    try {
+                        for (i = 0; i < data.result.length; i++) {
+                            $(".result").append('<div class="result_a" style="width:190px;height:100px;float:left" id="' + data.result[i].U_LoginID + '" onclick="Getfriend_shortinfo($(this).attr(\'id\'))">\
+                                                    <img class= "HeadPortrait_Search" src = "/HeadPortrait/'+ data.result[i].U_HeadPortrait + '" />\
+                                                    <div style="float:left;margin-top: 23px;">\
+                                                        <span style="display: block;font-size: 14px;">'+ data.result[i].U_NickName + '</span>\
+                                                        <input class="addfriend" type="button" style="padding:0;background-color: #60c4e7;border: 0;color: white;width: 57px;text-align: left;margin-top: 17px;" value="＋好友" onclick="SendAddRequest($(this).parent().parent().attr(\'id\'))"/>\
+                                                    </div>\
+                                                </div >')
+                        }
+                    } catch {
+                        //alert("异常")
+                        $(".result").append("<span class='result_b'>" + data.mag + "</span>")
+                    }
+                } else if (data.state = 0) {
+                    $(".result").append("<span class='result_b'>" + data.mag + "</span>")
+                }
+            },
+            error: function () {
+
+            }
+        })
+    }
+
+    function Getfriend_shortinfo(ID) {
+        $.ajax({
+            url: '/Home/Getfriend_shortinfo',
+            type: 'post',
+            dataType: "json",
+            data: { ID: ID },
+            success: function (data) {
+                $(".tip .HeadPortrait_Search").attr("src", "/HeadPortrait/" + data.U_HeadPortrait)
+                $(".tip .name").text(data.U_NickName)
+                $(".tip .id").text(data.U_LoginID)
+                $(".tip .sex").text(data.U_Sex)
+                $(".tip .age").text(data.U_Age + "岁")
+                $(".tip .Birthday").text(data.U_Birthday)
+                $(".tip .Constellation").text(data.U_Constellation)
+                $(".tip .ShengXiao").text(data.U_ShengXiao)
+            },
+            error: function () {
+                console.log('发送请求失败'); // 请求失败时的回调函数
+            }
+        })
+    }
+
+    function SendAddRequest(ToID) {
+        $.ajax({
+            url: '/Find_Friends/friendis_exist',
+            type: 'post',
+            dataType: "json",
+            data: { FriendID: ToID},
+            success: function (data) {
+                if (data) {
+                    alert("好友已存在")
+                }else{
+                    var Remarks = prompt("发送好友请求信息");
+                    $.ajax({
+                        url: '/Find_Friends/Addfriend',
+                        type: 'post',
+                        dataType: "json",
+                        data: { ToID: ToID, Remarks: Remarks },
+                        success: function (data) {
+                            alert(data)
+                        },
+                        error: function () {
+                            console.log('发送请求失败'); // 请求失败时的回调函数
+                        }
+                    })
+                }
+            },
+            error: function () {
+                console.log('发送请求失败'); // 请求失败时的回调函数
+            }
+        })
+        
+    }
+
+    /*function gerenxinxi() {
+        id = $(this).attr("id");
+        $(".result").mousemove(function (e) {
+            mouse_x = e.pageX - $(".result").offset().left;//得出鼠标在容器内的坐标X，以容器的左上角为坐标原点
+            //mouse_x = e.pageX;//得出鼠标在容器内的坐标X，以容器的左上角为坐标原点
+            mouse_y = e.pageY - $(".result").offset().top;//得出鼠标在容器内的坐标Y，以容器的左上角为坐标原点
+            //mouse_y = e.pageY;//得出鼠标在容器内的坐标Y，以容器的左上角为坐标原点
+            //$("h1").text("x:" + mouse_x + "y:" + mouse_y)
+        });
+        $(".ceshi").text(mouse_x);
+        $(".tip").css({ "top": mouse_y, "left": mouse_x })
+    }*/
+</script>
+{% endblock %}

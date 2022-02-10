@@ -1,0 +1,147 @@
+body {
+    background-color: #e5e5e5;
+}
+#menu {
+    width: 100px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    visibility: hidden;
+    position: absolute;
+}
+.Main_panel {
+    position: relative;
+    height: 590px;
+	width: 800px;
+	left: 50%;
+    min-width: 420px;
+    border-top-width: 0px;
+    margin: 7%  0 0 -400px;
+    border-radius: 8px;
+    background: #e0e0e0;
+    box-shadow: 8px 9px 6px 1px #a8a8a8, -7px -7px 2px 0px #ffffff;
+}
+#left_sidebar {
+    position: absolute;
+    float: left;
+    background-color: #303030;
+    height: 590px;
+    padding: 0;
+    list-style: none;
+    margin: 0;
+    width: 60px;
+    display: inline-block;
+    border-bottom-left-radius: 8px;
+    border-top-left-radius: 8px;
+    z-index: 1;
+}
+    #left_sidebar > .Head_portrait {
+        height:70px;
+    }
+    #left_sidebar > .Recent_chat, .Friends_list,.Group_list, .Logout, .ceshi {
+        color: white;
+        padding: 10px 10px;
+/*        border: 1px #00fd7c solid;*/
+    }
+    .main {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        /*background-color:white;*/
+    }
+
+.personal_information {
+    width: 300px;
+    height: 100%;
+    position: absolute;
+    /* padding: 20px; */
+    left: 60px;
+    display: none;
+    background-color: white;
+    box-shadow: 0px 1px 8px 0px #b1b1b1;
+    z-index: 1;
+}
+.personal_information>input{
+    outline:none;
+    border:1px;
+}
+
+    .personal_information > input:focus {
+        border-bottom:1px solid red;
+    }
+
+    .personal_information > select {
+        border: 2px;
+    }
+.attrname {
+        color: #757575;
+        font-size: 12px;
+    }
+#HeadPortrait{
+    width:100%;
+    height:100px;
+}
+#HeadPortrait>.HeadPortrait {
+    position: absolute;
+    width: 100px;
+    left: 50%;
+    margin-left: -50px;
+    border-radius: 50%;
+}
+.Head_portrait>.HeadPortrait {
+    width: 50px;
+    margin: 9px 4px;
+}
+.NickName {
+    width: 110px;
+    height: 15px;
+    padding: 0;
+    border: 1px;
+    font-size: 13px;
+}
+.Sex {
+    width: 80px;
+    height: 15px;
+    padding: 0;
+    border: 1px;
+    font-size: 13px;
+}
+.Birthday {
+    font-size:13px;
+    width:78px;
+    border:0;
+}
+.Age{
+    width:38px;
+    border:0; 
+}
+.Intro {
+    width: 210px;
+    height: 96px;
+}
+.BloodType{
+    border:0;
+}
+.ShengXiao {
+    border: 0;
+}
+.Constellation{
+    border:0;
+}
+input[type=date]::-webkit-color-datetime-edit-fields-wrapper {
+    background-color: #fff;
+}
+input[type=date]::-webkit-inner-spin-button {
+    visibility: hidden;
+}
+::-webkit-inner-spin-button {
+    visibility: hidden;
+}
+.uploadHeadPortrait {
+    position: absolute;
+    height: 100px;
+    width: 100px;
+    left: 50%;
+    margin-left: -50px;
+    opacity: 0;
+    z-index: 1;
+}

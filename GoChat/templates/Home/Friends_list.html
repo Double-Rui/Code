@@ -1,0 +1,250 @@
+﻿{% extends 'Shared/Base.html' %}
+{% block content%}
+{% load static %}
+<script src="{% static "js/JavaScript.js" %}"></script>
+<link type="text/css" rel="styleSheet" href="{% static "css/Recent_chat.css" %}" />
+<link type="text/css" rel="styleSheet" href="{% static "css/Friends_list.css" %}"/>
+<body>
+    <div class="Chat_panel">
+        <div class="message_list">
+            <div class="search">
+                <input class="searchinput" type="search" placeholder="搜索" /><input class="searchbutton" type="button" value="搜索" style="float: right; position: relative; margin-top: 18px; border: 0;" onclick="$('.SearchResult').css('display','');$('.SearchResultlist').empty();$('.SearchResult').animate({ 'height': '518px' }, 500, function () {findfriend($('.searchinput').val()) })">
+                <div class="SearchResult">
+                    <div class="SearchResultlist" style="height: 100%; width: 100%; overflow-y: auto;">
+
+                    </div>
+                </div>
+            </div>
+            <div class="friend_list" style="height: 88%; width: 100%; overflow-y: auto; ">
+                <div class="newfriend" onclick='$(".SpreadNewFriend_panel").css("display", "block");$(".SpreadChat_panel").css("display", "none");'>
+                    <div id="FriendHeadPortrait" style=""><img class="FriendHeadPortrait" style="width:40px;height:40px;border-radius: 5px;" src="" /></div>
+                    <div style="float:left">
+                        <p class="friends_form" id="">新的好友</p>
+                    </div>
+                </div>
+<!--                @foreach (var item in Model.frinds_Lists)-->
+<!--                {-->
+                    <div class="friend" onclick='$(".SpreadChat_panel").css("display", "block");$(".SpreadNewFriend_panel").css("display", "none"); var name = $(this).find("p").first().text(); var ID = $(this).find("p").first().attr("id"); $(".Friendname").text(name); $(".Friendname").attr("id", ID); getfriendinfo(ID);'>
+                        <div id="FriendHeadPortrait" style=""><img class="FriendHeadPortrait" style="width:40px;height:40px;border-radius: 5px;" src="/HeadPortrait/@Html.DisplayFor(modelItem => item.F_HeadPortrait)" /></div>
+                        <div style="float:left">
+<!--                            <p class="friends_form" id="@Html.DisplayFor(modelItem => item.F_FirendID)">@Html.DisplayFor(modelItem => item.F_NickName)</p>-->
+                            <p class="friends_form" id="@Html.DisplayFor(modelItem => item.F_FirendID)"></p>
+                        </div>
+                    </div>
+<!--                }-->
+            </div>
+        </div>
+        <div class="SpreadChat_panel">
+            <div class="friendsinfo">
+                <div class="friendsinfo_top">
+                    <div style="width:80%;float:left">
+                        <h3 class="Friendname" style="text-align:left"></h3>
+                        <span class="FriendSignaTure" style="color: #a3a3a3"></span>
+                    </div>
+                    <div style="float:left"><img class="FriendHeadPor" /></div>
+                </div>
+                <div class="friendsinfo_mid">
+                    <table>
+                        <tr>
+                            <td><span style="color:#a3a3a3">账&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp号</span></td>
+                            <td><span class="FriendID"></span></td>
+                        </tr>
+                        <tr>
+                            <td><span style="color:#a3a3a3">联系电话</span></td>
+                            <td><span class="FriendTel"></span></td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="friendsinfo_bottom">
+                    <input class="faxiaoxi" type="button" value="发消息" onclick='var ID = $(".FriendID").text(); Newsession(ID);setTimeout("DWXX("+ID+")",300)' />
+                    <input class="del_friend" type="button" value="删除好友" onclick='var ID = $(".FriendID").text();DelFriends(ID)' />
+                </div>
+            </div>
+        </div>
+        <div class="SpreadNewFriend_panel">
+                <div class="Chat_p_top">
+                    <h5 class="" style="padding-top: 18px;padding-left: 30px;">新的好友</h5>
+                </div>
+            <div class="RequestList" style="width: 80%; height: 100%; background-color: white; margin-left: 10%;">
+                @*<div class="addRequest">
+                    <img src="~/HeadPortrait/4.jpg"/>
+                    <div style="float:left;margin: 16px 0;width:65%;">
+                        <span style="display:block">昵称</span>
+                        <span>请求内容</span>
+                    </div>
+                    <div style="padding-top: 28px; margin-top: 0px;">
+                        <span title="同意" style="cursor:pointer">✔</span>
+                        <span title="拒绝" style="cursor:pointer">❌</span>
+                        <span title="忽略" style="cursor:pointer">🚫</span>
+                    </div>
+                </div>*@
+            </div>
+        </div>
+    </div>
+</body>
+<script>
+    $(document).ready(function () {
+        $(".searchinput").keydown(function (e) {
+            if (e.which == 13) {
+                $('.SearchResult').css('display', ''); $('.SearchResultlist').empty(); $('.SearchResult').animate({ 'height': '518px' }, 500, function () { findfriend($('.searchinput').val()) })
+            }
+        })
+
+        getFriend_request()
+    })
+    function getfriendinfo(ID) {
+        $.ajax({
+            url: '/Home/getfriendinfo',
+            type: 'post',
+            dataType: "json",
+            data: { ID: ID },
+            success: function (data) {
+                $(".FriendSignaTure").text(data.U_SignaTure)
+                $(".FriendID").text(data.U_LoginID)
+                $(".FriendHeadPor").attr("src", "/HeadPortrait/" + data.U_HeadPortrait)
+                $(".FriendTel").text(data.U_Telephone)
+            },
+            error: function () {
+
+            }
+        })
+    }
+
+    function Newsession(ID) {
+        $.ajax({
+            url: '/Chat/Newsession',
+            type: 'post',
+            dataType: "json",
+            data: { Sendto: ID },
+            success: function (data) {
+                alert(data);
+            },
+            error: function () {
+            }
+        })
+    }
+
+    function DelFriends(ID) {
+        if (confirm("确定删除好友吗？")) {
+            $.ajax({
+                url: '/Home/DelFriend',
+                type: 'post',
+                dataType: "json",
+                data: { ID: ID },
+                success: function (data) {
+                    alert(data);
+                },
+                error: function () {
+                }
+            })
+        }
+    }
+
+    function findfriend(str) {
+        $(".searchinput").attr("placeholder", "搜索")
+        if (str == "") {
+            $(".searchinput").attr("placeholder", "请输入内容")
+        } else {
+            $.ajax({
+                url: '/Chat/FindFriend',
+                type: 'post',
+                dataType: "json",
+                data: { str: str },
+                success: function (data) {
+                    if (data.length == 0) {
+                        $(".SearchResultlist").append('<div><p style = "text-align:center;font-size: 12px;color: #939393;">没有该联系人</p ></div >')
+                    } else {
+                        for (i = 0; i < data.length; i++) {
+                            $(".SearchResultlist").append('<div class="SearchResult_friend" onclick=\'$(".SpreadChat_panel").css("display", "block"); var name = $(this).find("p").first().text(); var ID = $(this).find("p").first().attr("id"); $(".Friendname").text(name); $(".Friendname").attr("id", ID); getfriendinfo(ID); \'>\
+                    <div id = "FriendHeadPortrait" style = "" > <img class="FriendHeadPortrait" style="width:40px;height:40px;border-radius: 5px;" src="/HeadPortrait/'+ data[i].U_HeadPortrait + '" /></div >\
+                        <div style="float:left;margin-top: 5px;margin-left: 15px;">\
+                            <p class="messages_form" id="'+ data[i].F_FriendID + '">' + data[i].U_NickName + '</p>\
+                            <p class="context">账号:' + data[i].F_FriendID + '</p>\
+                        </div>\
+                    </div >')
+                        }
+                    }
+                },
+                error: function () {
+                }
+            })
+        }
+    }
+
+    function getFriend_request() {
+        $(".RequestList").empty()
+        $.ajax({
+            url: '/Home/getFriend_request',
+            type: 'get',
+            dataType: "json",
+            data: {},
+            success: function (data) {
+                for (i = 0; i < data.length; i++) {
+                    var str=""
+                    if (data[i].Rep_results == 0) {
+                        str = ' <span class="Friend_request_action" title="同意" style="cursor:pointer" value=1 onclick="Friend_request_action($(this).attr(\'value\'),$(this).parent().parent().attr(\'id\'));setTimeout(\'getFriend_request()\',100);setTimeout(\'getFriends_list()\',100)">✔</span>\
+                                <span class="Friend_request_action" title="拒绝" style="cursor:pointer" value=2 onclick="Friend_request_action($(this).attr(\'value\'),$(this).parent().parent().attr(\'id\'));setTimeout(\'getFriend_request()\',100);setTimeout(\'getFriends_list()\',100)">❌</span>\
+                                <span class="Friend_request_action" title="忽略" style="cursor:pointer" value=3 onclick="Friend_request_action($(this).attr(\'value\'),$(this).parent().parent().attr(\'id\'));setTimeout(\'getFriend_request()\',100);setTimeout(\'getFriends_list()\',100)">🚫</span>'
+                    } else if (data[i].Rep_results == 1) {
+                        str ='已同意'
+                    } else if (data[i].Rep_results == 2) {
+                        str = '拒绝'
+                    } else if (data[i].Rep_results == 3) {
+                        str = '忽略'
+                    }
+                    $(".RequestList").append('<div class= "addRequest" id="' + data[i].UserID+'">\
+                    <img src = "/HeadPortrait/'+ data[i].HeadPortrait+'" />\
+                    <div style="float:left;margin: 16px 0;width:65%;">\
+                        <span style="display:block">'+ data[i].NickName+'</span>\
+                        <span>'+ data[i].Remarks +'</span>\
+                    </div>\
+                    <div style="padding-top: 28px;">\
+                        '+str+'\
+                    </div>\
+                </div >')
+                }
+            },
+            error: function () {
+            }
+        })
+    }
+
+    function Friend_request_action(action, UserID) {
+        $.ajax({
+            url: '/Find_Friends/Friend_request_action',
+            type: 'post',
+            dataType: "json",
+            data: { action: action, UserID: UserID },
+            success: function (data) {
+                alert(data);
+            },
+            error: function () {
+            }
+        })
+    }
+
+    function getFriends_list() {
+        $(".friend_list friend").remove()
+        $.ajax({
+            url: "/Home/getFriends_list",
+            type: "get",
+            dataType: "json",
+            success: function (data) {
+                if (data.State = 1) {
+                    for (i = 0; i < data.frinds_Lists.length; i++) {
+                        $(".friend_list").append('<div class="friend" onclick=\'$(".SpreadChat_panel").css("display", "block");$(".SpreadNewFriend_panel").css("display", "none"); var name = $(this).find("p").first().text(); var ID = $(this).find("p").first().attr("id"); $(".Friendname").text(name); $(".Friendname").attr("id", ID); getfriendinfo(ID);\'>\
+                        <div id="FriendHeadPortrait" style=""><img class="FriendHeadPortrait" style="width:40px;height:40px;border-radius: 5px;" src="/HeadPortrait/'+ data.frinds_Lists[i].F_HeadPortrait+'" /></div>\
+                        <div style="float:left">\
+                            <p class="friends_form" id="'+ data.frinds_Lists[i].F_FirendID + '">' + data.frinds_Lists[i].F_NickName+'</p>\
+                        </div>\
+                    </div>')
+                    }
+                }
+            },
+            error: function () {
+
+            }
+        })
+    }
+</script>
+{% endblock %}

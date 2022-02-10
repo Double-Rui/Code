@@ -1,0 +1,271 @@
+body {
+}
+
+.Chat_panel {
+    /*position:absolute;*/
+    float: left;
+    width: 100%;
+    height: 100%;
+    border-radius: 8px;
+    /*background-color: white;*/
+    display: inline-block;
+}
+
+.search {
+    position: relative;
+    width: 100%;
+    height: 12%;
+    background-color: whitesmoke;
+/*    border: 1px #cac5c5 solid;*/
+}
+
+.searchinput {
+    position: relative;
+    left: 50%;
+    margin-left: -110px;
+    margin-top: 20px;
+    border: 1px #e0e0e0 inset;
+    outline: none;
+    background: #e0e0e0;
+}
+
+    .searchinput:focus {
+        background: whitesmoke;
+    }
+
+.message_list {
+    float: left;
+    height: 100%;
+    width: 300px;
+    padding-left: 60px;
+}
+.message_list1 {
+    height: 88%;
+    width: 100%;
+    overflow-y: auto;
+}
+
+    .message_list1::-webkit-scrollbar { /*滚动条样式*/
+        width: 9px;
+        height: 1px;
+    }
+
+    .message_list1::-webkit-scrollbar-thumb { /*滚动条里面小方块*/
+        border-radius: 4px;
+        -webkit-box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
+        background: #c1c1c1;
+    }
+
+    .message_list1::-webkit-scrollbar-track { /*滚动条里面轨道*/
+        -webkit-box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
+        border-radius: 0px;
+        background: #EDEDED;
+    }
+
+.messages {
+    width: 100%;
+    height: 70px;
+    /*background-color: #d8aeff;*/
+    /*border: 0.1px #fff solid;*/
+}
+    .messages:hover {
+        background-color:white;
+    }
+
+.messages_context {
+    /*position: absolute;*/
+    float:left;
+    clear:right;
+    width:70%;
+    padding-top: 12px;
+/*    margin-left: 50px;*/
+}
+
+.messages_form {
+    display:inline;
+    margin-bottom: 0px;
+    margin-left: 10px;
+    user-select:none;
+}
+.messages_context > p,span {
+    user-select: none;
+}
+    .friends_form {
+        margin-bottom: 0px;
+        margin-left: 10px;
+        padding-top: 22px;
+    }
+
+.context {
+    color: #666666;
+    margin-top: 0px;
+    margin-left: 10px;
+    font-size:13px;
+}
+
+.SpreadChat_panel {
+    height: 100%;
+    overflow: hidden;
+    background-color: white;
+    border-bottom-right-radius: 8px;
+    border-top-right-radius: 8px;
+    display: none;
+    /*border: 1px #cac5c5 solid;*/
+}
+
+.Chat_p_top {
+    height: 12%;
+    width: 100%;
+    background-color: whitesmoke;
+    border: 1px #ffffff solid;
+}
+
+.Chat_p_context {
+    width: 100%;
+    background-color: #f3f2f2;
+    height: 55%;
+    box-shadow: inset 1px 1px 12px 2px #c1c1c1;
+    overflow-y: auto;
+}
+
+.Chat_p_input {
+    width: 100%;
+    background-color: whitesmoke;
+    height: 33%;
+    /*border: 1px #cac5c5 solid;*/
+}
+
+.Friendname {
+    text-align: center;
+}
+
+
+.meg_friend {
+    position: relative;
+    float: left;
+    width: 100%;
+    height: auto
+}
+
+    .meg_friend span {
+        background-color: white;
+        padding: 5px 8px;
+        display: inline-block;
+        border-radius: 4px;
+        margin: 10px 0 10px 10px;
+        position: relative;
+        float: left;
+        margin-left: 40px;
+        margin-right: 200px;
+        margin-top: 10px;
+        word-wrap: break-word;
+        word-break: break-all;
+    }
+
+        .meg_friend span::after {
+            content: '';
+            border: 8px solid #ffffff00;
+            border-right: 8px solid white;
+            position: absolute;
+            top: 6px;
+            left: -16px;
+        }
+
+.meg_me {
+    position: relative;
+    float:left;
+    width: 100%;
+    height: auto
+}
+
+    .meg_me span {
+        background-color: #98E165;
+        padding: 5px 8px;
+        display: inline-block;
+        border-radius: 4px;
+        margin: 10px 10px 10px 0px;
+        position: relative;
+        float: right;
+        margin-left: 200px;
+        margin-right: 40px;
+        margin-top: 10px;
+        word-wrap: break-word;
+        word-break: break-all;
+    }
+
+    .meg_me span::after {
+        content: '';
+        border: 8px solid #ffffff00;
+        border-left: 8px solid #98E165;
+        position: absolute;
+        top: 6px;
+        right: -16px;
+    }
+
+#FriendHeadPortrait {
+    float: left;
+    clear: right;
+    width:20%;
+    height: 40px;
+    margin-top: 15px;
+    margin-left: 12px;
+}
+
+.Chat_p_context_HeadPortrait {
+    display: inline-block;
+    position: absolute;
+    margin-left: 20px;
+    margin-top: 20px;
+}
+#Send {
+    margin-right: 10%;
+    position: relative;
+    float: right;
+    background-color: #e7e7e7;
+    border: 0;
+}
+.messages_context .time {
+    font-size: 12px;
+    float: right;
+}
+.active {
+    background-color: #a1a1a1;
+    border-radius: 0px;
+    background: #e0e0e0;
+    box-shadow: inset 0px 6px 3px #898989, inset 0px -6px 3px 0px #ffffff;
+}
+#messagesContext {
+    width: 90%;
+    height: 63%;
+    margin-left:5%;
+    outline: none;
+    border: none;
+    resize: none;
+    background-color: whitesmoke;
+}
+
+.Emoji_panel::-webkit-scrollbar { /*滚动条样式*/
+    width: 8px;
+    height: 1px;
+}
+
+.Emoji_panel::-webkit-scrollbar-thumb { /*滚动条里面小方块*/
+    border-radius: 5px;
+    -webkit-box-shadow: inset 0 0 5px rgb(0 0 0 / 20%);
+    background: #bbbbbb;
+}
+
+.Emoji_panel::-webkit-scrollbar-track { /*滚动条里面轨道*/
+    -webkit-box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
+    border-radius: 0px;
+    background: #EDEDED;
+}
+
+.del {
+    color: red;
+    position: relative;
+    float: right;
+    visibility: hidden;
+    cursor:pointer;
+    right:10px;
+}

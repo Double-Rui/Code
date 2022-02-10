@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>注册</title>
+    <script src="/static/js/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            background-color: #e7ebf1;
+        }
+
+        .Login_panel {
+            position: absolute;
+            width: 300px;
+            height: 400px;
+            border-radius: 20px;
+            left: 50%;
+            top: 20%;
+            margin-left: -150px;
+            background: #e7ebf1;
+            box-shadow: 10px 7px 7px #bebebe, -8px -7px 7px #ffffff;
+            display: inline-block;
+        }
+
+        .front {
+            position: absolute;
+            font-size: 50px;
+            left: 50%;
+            margin-left: -50px;
+            backface-visibility: hidden;
+            color: #05d8a7;
+            text-shadow: #c323f1 1px 1px 1px;
+        }
+
+        .Login_form {
+            position: absolute;
+            left: 50%;
+            margin-left: -125px;
+            top: 150px;
+        }
+
+        .nickname, .password, .telephone, .post {
+            box-sizing: border-box;
+            width: 250px;
+            height: 35px;
+            border-radius: 26px;
+            background: #e7ebf1;
+            border: 0;
+            padding: 1px 17px;
+            box-shadow: inset 8px 7px 5px #bebebe, inset -3px -3px 4px #ffffff;
+            outline: none;
+            color: #7b7a7a;
+            font-size: 20px;
+        }
+
+        .password, .telephone {
+            margin-top: 5px;
+        }
+
+        .tip {
+            height: 30px;
+            text-align: center;
+        }
+
+        .post {
+            padding: 0;
+            box-shadow: none;
+            color: white;
+            background-color: #05d8a7;
+        }
+
+            .post:hover {
+                background-color: #2a9f7b;
+            }
+
+        p {
+            margin-top: 30px;
+            color: #7b7a7a;
+            font-size: 1px;
+            text-align: center;
+        }
+        #Spring_frame{
+			width:300px;
+			height:150px;
+			position:absolute;
+			left:50%;
+			margin-left:-150px;
+			top:280px;
+			background-color:white;
+			text-align:center
+        }
+    </style>
+    <script>
+        $(document).ready(function () {
+            $("p").click(function () {
+            })
+
+            $(".post").click(function () {
+                Register();
+            })
+
+            $(document).keyup(function (e) {
+                if (e.which == 13) {
+                    Register();
+                }
+            })
+        })
+
+        function Register() {
+            var a = document.getElementById("NickName").value;
+            var b = document.getElementById("PassWord").value;
+            var c = document.getElementById("Telephone").value;
+            $(".tip").text(null)
+            $.ajax({
+                url: "Register",
+                type: 'post',
+                dataType: "json",
+                data: { 'NickName': a, 'PassWord': b, 'Telephone': c },
+                success: function (data) {
+                    if (data.status == 0) {
+                        $(".tip").text(data.result);
+                    }else if (data.status == 1) {
+                        $("#Registerid").text(data.ID)
+                        $("#Spring_frame").animate({ "margin-left": "150px" }, 2000);
+                    }
+                    console.log('请求成功');
+                },
+                error: function () {
+                    console.log('发送请求失败'); // 请求失败时的回调函数
+                }
+            });
+        }
+    </script>
+</head>
+<body>
+    <div id="Spring_frame" style="" >
+        <h1 id="Registerid" style="color:goldenrod;font-size:50px;margin-bottom:0" ></h1>
+        <h2 style="color:goldenrod;margin-top:0">请记住你的账号</h2>
+    </div>
+    <div class="Login_panel">
+        <h1 class="front">注册</h1>
+        <form class="Login_form">
+            <input class="nickname" id="NickName" name="NickName" placeholder="昵称" type="text" /><br />
+            <input class="password" id="PassWord" name="PassWord" placeholder="密码" type="password" /><br />
+            <input class="telephone" id="Telephone" name="Telephone" placeholder="手机号" type="tel"/><br />
+            <div class="tip"></div>
+            <input class="post" type="button" value="REGISTER" />
+            <p class="switch" onclick="window.location.href='/Account/LoginView'">去登陆</p>
+        </form>
+    </div>
+</body>
+</html>

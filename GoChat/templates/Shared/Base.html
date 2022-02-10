@@ -1,0 +1,178 @@
+﻿{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GoChat</title>
+    <link rel="stylesheet" href="{% static "css/site.css" %}"/>
+    <link rel="stylesheet" href="{% static "css/Shared.css" %}"/>
+    <link href="{% static "css/Recent_chat.css" %}"/>
+    <script src="{% static "js/jquery-3.6.0.min.js" %}"></script>
+    <script src="{% static "js/JavaScript.js" %}"></script>
+    <script>
+        $(document).ready(function () {
+            $(function getHeadPortrait() {
+                $.ajax({
+                    url: "/Home/getHeadPortrait",
+                    type: 'post',
+                    dataType: "json",
+                    //data: ,
+                    success: function (data) {
+                        $(".HeadPortrait").attr("src", "/HeadPortrait/" + data.U_HeadPortrait)
+                        console.log('请求成功');
+                    },
+                    error: function () {
+                        console.log('发送请求失败'); // 请求失败时的回调函数
+                    }
+                });
+            });
+            $(function () {
+                $(".Head_portrait").click(function () {
+                    $(".personal_information").css("display", "block");
+                    //$(".personal_information").toggle();
+                    return false;
+                })
+                $(".personal_information").click(function () {
+                    return false;
+                })
+                $(document).click(function () {
+                    $(".personal_information").css("display", "none")
+                });
+            })
+
+            getFriendRequestNum()
+        })
+        function upload() {
+
+        }
+
+        function ceshi() {
+            $("p[name=123456]").parent().parent().trigger("click")
+        }
+
+        function getFriendRequestNum() {
+            $.ajax({
+                url: '/home/getFriendRequestNum',
+                type: 'get',
+                success: function (data) {
+                    if (data != 0) {
+                        $(".FriendRequestNum").css("display","unset")
+                        $(".FriendRequestNum").text(data)
+                    }
+                }, error: function () {
+
+                }
+            })
+        }
+    </script>
+</head>
+<body>
+    <div class="Main_panel">
+        <ul id="left_sidebar">
+            <li class="Head_portrait">
+                <img class="HeadPortrait" width="30">
+            </li>
+            <li class="Recent_chat" onclick="location.href='/Home/Recent_chat'">消息</li>
+            <li class="Friends_list" onclick="location.href='/Home/Friends_list'">好友<a class="FriendRequestNum" style="background: red; position: absolute; width: 18px; font-size: 1px; height: 18px; border-radius: 13px; text-align: center; margin-top: -2px;display:none"></a></li>
+            <li class="Group_list" onclick="location.href='/Home/Group_list'">群聊</li>
+            <li class="Friends_list" onclick="location.href='/Home/Find_Friends'">寻找好友</li>
+            <li class="Logout" onclick="location.href='/Logout'">注销</li>
+<!--            <li class="ceshi" onclick='getNewMessages()'>测试</li>-->
+<!--            <li class="ceshi" onclick='ceshi()'>测试</li>-->
+        </ul>
+        <div class="personal_information">
+            <div id="HeadPortrait">
+                <input class="uploadHeadPortrait" accept="image/*" value="更换头像" type="file" onchange="upload()" />
+                <img class="HeadPortrait" width="70">
+            </div>
+            <span class="attrname">账号</span><span class="LoginID"></span><br />
+            <div>
+                <span class="attrname">昵称</span><input class="NickName" value="" />
+                <span class="attrname">性别</span>
+                <select class="Sex">
+                    <option> </option>
+                    <option value="男">男</option>
+                    <option value="女">女</option>
+                </select><br />
+            </div>
+            <div>
+                <span class="attrname">出生年月</span><input class="Birthday" value="" />
+                <span class="attrname">血型</span>
+                <select class="BloodType">
+                    <option> </option>
+                    <option>A型</option>
+                    <option>B型</option>
+                    <option>AB型</option>
+                    <option>O型</option>
+                    <option>其他血型</option>
+                </select><br />
+            </div>
+            <div>
+                <span class="attrname">生肖</span>
+                <select class="ShengXiao">
+                    <option> </option>
+                    <option>鼠</option>
+                    <option>牛</option>
+                    <option>虎</option>
+                    <option>兔</option>
+                    <option>龙</option>
+                    <option>蛇</option>
+                    <option>马</option>
+                    <option>羊</option>
+                    <option>猴</option>
+                    <option>鸡</option>
+                    <option>狗</option>
+                    <option>猪</option>
+                </select>
+                <span class="attrname">年龄</span><input class="Age" value="">
+                <span class="attrname">星座</span>
+                <select class="Constellation">
+                    <option> </option>
+                    <option>水瓶座</option>
+                    <option>双鱼座</option>
+                    <option>白羊座</option>
+                    <option>金牛座</option>
+                    <option>双子座</option>
+                    <option>巨蟹座</option>
+                    <option>狮子座</option>
+                    <option>处女座</option>
+                    <option>天秤座</option>
+                    <option>天蝎座</option>
+                    <option>射手座</option>
+                    <option>摩羯座</option>
+                </select>
+            </div>
+            <span class="attrname">个性签名</span><input class="SignaTure" value="" /><br />
+            <span class="attrname">手机号码</span><input class="Telephone" value="" /><br />
+            <span class="attrname">邮箱</span><input class="Email" value="" /><br />
+            <span class="attrname">毕业学校</span><input class="SchoolTag" value="" /><br />
+            <span class="attrname">职业</span>
+            <select class="Vocation">
+                <option> </option>
+                <option>计算机/互联网/通信</option>
+                <option>生产工艺制造</option>
+                <option>金融银行投资保险</option>
+                <option>商业服务业个体经营</option>
+                <option>文化广告传媒</option>
+                <option>娱乐艺术表演</option>
+                <option>律师法务</option>
+                <option>教育培训</option>
+                <option>公务员行政事业单位</option>
+                <option>模特</option>
+                <option>空姐</option>
+                <option>学生</option>
+                <option>其他</option>
+            </select><br />
+            <div class="Out_Intro"><span class="attrname">个人说明</span><textarea class="Intro"></textarea></div>
+            <span class="tip" style="color:red"></span><br />
+            <input class="Revise" type="button" value="修改" />
+        </div>
+        <div role="main" class="main">
+            {% block content%}
+
+            {% endblock %}
+        </div>
+    </div>
+</body>
+</html>

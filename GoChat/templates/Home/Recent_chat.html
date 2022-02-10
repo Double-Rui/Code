@@ -1,0 +1,236 @@
+﻿{% extends 'Shared/Base.html' %}
+{% block content%}
+{% load static %}
+<link type="text/css" rel="styleSheet" href="{% static "css/Recent_chat.css" %}" />
+<body>
+    <div class="Chat_panel">
+        <div class="message_list">
+            <div class="search">
+                <input class="searchinput" type="search" placeholder="搜索" />
+<!--                <input type="button" value="搜索" style="float: right; position: relative; margin-top: 18px; border: 0;">-->
+                <div class="SearchResult" style="position:relative;width:100%;background-color:white;top:24px;"></div>
+            </div>
+            <div class="message_list1">
+                        <div>
+                            <p style="text-align:center;font-size: 12px;color: #939393;">暂无消息</p>
+                        </div>
+                            <div class="messages" onclick='$(".SpreadChat_panel").css("display", "block"); $(".messages").removeClass("active"); $(this).addClass("active"); var name = $(this).find("p").first().text(); var ID = $(this).find("p").first().attr("name"); $(".Friendname").text(name); $(".Friendname").attr("id", ID); getChatrecord(ID); setTimeout("scrolltodown()",50) ' ondblclick='var ID = $(this).find("p").first().attr("name");del_Recent_chat(ID);'>
+<!--                                <span class="del" onclick="var ID = $(this).next().next().find('p').first().attr('name');var Friendid=$('.Friendname').attr('id'); del_Recent_chat(ID);">×</span>-->
+                                <div id="FriendHeadPortrait" style=""><img class="FriendHeadPortrait" style="width:40px;height:40px" src="/HeadPortrait/@item.U_HeadPortrait" /></div>
+                                <div class="messages_context">
+                                    <p class="messages_form" name="@item.Another_ID">名字</p><span class="time">时间</span>
+                                    <p class="context" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;width:150px;"></p>
+                                </div>
+                            </div>
+            </div>
+        </div>
+        <div class="SpreadChat_panel">
+            <div class="Chat_p_top">
+                <h1 class="Friendname"></h1>
+            </div>
+            <div class="Chat_p_context">
+            </div>
+            <div class="Chat_p_input">
+                <div class="tool">
+                    <div class="Emoji_panel" style="position: absolute; width: 350px; height: 250px; margin-top: -251px; margin-left: -159px; background: white;display:none;overflow-y: auto;padding-left:15px"></div>
+                    <img class="Emoji" src="{% static "Emoji/2.png" %}" style="width: 30px; margin-left: 5%; margin-top: 5px;" onclick='' />
+                </div>
+                <textarea id="messagesContext"></textarea>
+                <input id="Send" value="发送(S)" type="button" />
+            </div>
+        </div>
+    </div>
+</body>
+<script>
+    $(document).ready(function () {
+        window.onload = function () {
+            var url = window.location.href;
+            var index = url.indexOf("id");
+            var a = url.substring(url.lastIndexOf("=") + 1, url.length);
+            var str = "p[name='" + a + "']"
+            if (str != "") {
+                $(str).parent().parent().trigger("click")
+                $('.message_list1').scrollTop(($(str).parent().parent().offset().top)-130);
+                $(".ceshi").text($(str).parent().parent().offset().top)
+            }
+        }
+        getNewMessages();
+        loadEmoji();
+        $(function () {
+            $(".Emoji").click(function () {
+                $(".Emoji_panel").show();
+                return false;//关键是这里，阻止冒泡
+            });
+            $(".Emoji_panel").click(function () {
+                return false;
+            });
+            $(document).click(function () {
+                $(".Emoji_panel").hide();
+            });
+        })
+        //$(document).click(function () {
+        //    $(".Emoji_panel").css("display", "none");
+        // });
+        del_button()
+        $("#messagesContext").focus(function () {
+            $(document).keyup(function (e) {
+                if (e.which == 13) {
+                    Send()
+                }
+            })
+        })
+
+        
+    });
+
+    function getNewMessages() {
+        $(".context").each(function () {
+            var p = $(this);
+            $.ajax({
+                url: '/Chat/getNewMessages',
+                data: { ID: $(this).siblings().first().attr("name") },
+                type: 'post',
+                dataType: "json",
+                success: function (data) {
+                    if (data[0] == undefined) {
+                        p.text("");
+                    } else {
+                        p.text(data[0].M_PostMessages);
+                    }
+                }, error: function (e) {
+
+                }
+            })
+        });
+    }
+
+    function getRecent_chat(ID) {
+        $(".message_list1").empty()
+        $.ajax({
+            url: '/Home/getRecent_chat',
+            data: {},
+            type: 'post',
+            dataType: "json",
+            success: function (data) {
+                if (data == null) {
+                    $(".message_list1").append('<div><p style = "text-align:center;font-size: 12px;color: #939393;">暂无消息</p ></div >')
+                } else {
+                    for (i = 0; i < data.length; i++) {
+                        $(".message_list1").append('<div class="messages" onclick=\'$(".SpreadChat_panel").css("display", "block");$(".messages").removeClass("active");$(this).addClass("active");var name = $(this).find("p").first().text();var ID = $(this).find("p").first().attr("name");$(".Friendname").text(name); $(".Friendname").attr("id",ID);getChatrecord(ID);setTimeout("scrolltodown()",50)\' ondblclick=\'var ID = $(this).find("p").first().attr("name"); del_Recent_chat(ID);\'>\
+                    <div id = "FriendHeadPortrait"><img class="FriendHeadPortrait" style="width:40px;height:40px" src="/HeadPortrait/'+ data[i].U_HeadPortrait + '" /></div >\
+                    <div class="messages_context">\
+                    <p class="messages_form" name="' + data[i].Another_ID + '">' + data[i].NickName + '</p><span class="time">' + data[i].CreateTime + '</span>\
+                    <p class="context" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;width:150px;"></p>\
+                    </div>\
+                    </div>')
+                    }
+                }
+                getNewMessages()
+
+                var str = "p[name='" + ID + "']"
+                $(str).parent().parent().trigger("click")
+            }, error: function (e) {
+
+            }
+        })
+    }
+
+    function loadEmoji() {//生成表情
+        $(".Emoji_panel").html('');
+        var html = '';
+        for (var i = 1; i <= 105; i++) {
+            //html += '<img class="emoji-img" src="Emoji/' + i + '.png" οnclick="choiceEmoji(' + i + ')" />';
+            html += '<img class="emoji-img" src="~/static/Emoji/' + i + '.png" 'style="width:30px;margin:3px" onclick="choiceEmoji(' + i + ')"/>';
+            if ((i % 5) == 0) { }
+        }
+        $(".Emoji_panel").html(html);
+    }
+
+    function choiceEmoji(index) {//选择表情
+        var msg = $("#messagesContext").val();
+        var emoji = '[em_' + index + ']';
+        msg = msg + emoji;
+        //$(".Emoji_panel").hide();//隐藏表情选择
+        $("#messagesContext").val(msg);//赋值
+        $("#messagesContext").focus();//输入框获取焦点
+        moveEnd($("#messagesContext").get(0)); //移动光标至末尾，且切换selection的位置
+    }
+    //光标移至文本后面
+    function moveEnd(obj) {
+        obj.focus();
+        var len = obj.value.length;
+        if (document.selection) {
+            var sel = obj.createTextRange();
+            sel.moveStart('character', len); //设置开头的位置
+            sel.collapse();
+            sel.select();
+        } else if (typeof obj.selectionStart == 'number' && typeof obj.selectionEnd == 'number') {
+            obj.selectionStart = obj.selectionEnd = len;
+        }
+    }
+    //字符替换为表情
+    function replace_em(str) {
+        str = str.replace(/\</g, '<');
+        str = str.replace(/\>/g, '>');
+        str = str.replace(/\n/g, '<br/>');
+        str = str.replace(/\[em_([0-9]*)\]/g, '<img class="emoji-size" src="/Emoji/$1.png" border="0" style="width:20px"/>');
+        return str;
+    }
+
+    function del_Recent_chat(ID) {
+        $.ajax({
+            url: '/Chat/Delsession',
+            data: { ID: ID },
+            type: 'post',
+            dataType: "json",
+            success: function (data) {
+                if (data == "1") {
+                    setTimeout("getRecent_chat($('.Friendname').attr('id'));", 300);
+                    setTimeout("del_button()", 100)
+                } else {
+                    alert("数据库异常")
+                }
+            }, error: function (e) {
+
+            }
+        })
+    }
+
+    function del_button() {
+        $(".messages").mouseenter(function () {
+            $(this).find(".del").css("visibility", "unset");
+        })
+        $(".messages").mouseleave(function () {
+            $(this).find(".del").css("visibility", "hidden");
+        })
+    }
+
+    function Send() {//发送信息
+        $.ajax({
+            url: "/Chat/Send",
+            type: 'post',
+            dataType: "json",
+            data: {
+                context: $("#messagesContext").val(),
+                Sendto: $(".Friendname").attr("id")
+            },
+            success: function (mags) {
+                if (mags.Status) {
+                    $("#messagesContext").val(null)
+                    getChatrecord($(".Friendname").attr("id"))
+                    scrolltodown()
+                    getRecent_chat($(".Friendname").attr("id"))
+                    getNewMessages()
+                    del_button();
+                } else {
+                    alert(mags.Mag);
+                }
+                console.log('发送成功');
+            },
+            error: function () {
+                console.log('发送失败'); // 请求失败时的回调函数
+            }
+        })
+    }
+</script>
+{% endblock %}
