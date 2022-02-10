@@ -113,7 +113,7 @@
             var c = document.getElementById("Telephone").value;
             $(".tip").text(null)
             $.ajax({
-                url: "Register",
+                url: "/Register/",
                 type: 'post',
                 dataType: "json",
                 data: { 'NickName': a, 'PassWord': b, 'Telephone': c },

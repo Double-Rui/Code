@@ -1,4 +1,4 @@
-﻿{% load static %}
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -15,11 +15,10 @@
             $(function getHeadPortrait() {
                 $.ajax({
                     url: "/Home/getHeadPortrait",
-                    type: 'post',
+                    type: 'Get',
                     dataType: "json",
-                    //data: ,
                     success: function (data) {
-                        $(".HeadPortrait").attr("src", "/HeadPortrait/" + data.U_HeadPortrait)
+                        $(".HeadPortrait").attr("src", data.headportrait)
                         console.log('请求成功');
                     },
                     error: function () {
@@ -71,7 +70,7 @@
     <div class="Main_panel">
         <ul id="left_sidebar">
             <li class="Head_portrait">
-                <img class="HeadPortrait" width="30">
+                <img class="HeadPortrait"  width="30">
             </li>
             <li class="Recent_chat" onclick="location.href='/Home/Recent_chat'">消息</li>
             <li class="Friends_list" onclick="location.href='/Home/Friends_list'">好友<a class="FriendRequestNum" style="background: red; position: absolute; width: 18px; font-size: 1px; height: 18px; border-radius: 13px; text-align: center; margin-top: -2px;display:none"></a></li>

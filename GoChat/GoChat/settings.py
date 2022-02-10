@@ -69,7 +69,7 @@ TEMPLATES = [
         },
     },
 ]
-
+ASGI_APPLICATION = 'GoChat.routing.application'
 WSGI_APPLICATION = 'GoChat.wsgi.application'
 
 

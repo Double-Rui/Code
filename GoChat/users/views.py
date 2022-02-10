@@ -88,7 +88,7 @@ def Logout(request):
     return response
 
 def Verify_Phone(phonenumber):  # 验证手机号唯一性
-    if (models.User.objects.get(phonenumber=phonenumber) != None):
+    if (models.User.objects.filter(phonenumber=phonenumber)):
         return True
     else:
         return False
