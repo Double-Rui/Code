@@ -10,15 +10,12 @@ body {
 }
 .Main_panel {
     position: relative;
-    height: 590px;
-	width: 800px;
-	left: 50%;
-    min-width: 420px;
+    min-width: 1400px;
     border-top-width: 0px;
-    margin: 7%  0 0 -400px;
+	margin: 0 15% 0 15%;
     border-radius: 8px;
-    background: #e0e0e0;
-    box-shadow: 8px 9px 6px 1px #a8a8a8, -7px -7px 2px 0px #ffffff;
+    background: #4494d5;
+    /* box-shadow: 8px 9px 6px 1px #a8a8a8, -7px -7px 2px 0px #ffffff; */
 }
 #left_sidebar {
     position: absolute;
