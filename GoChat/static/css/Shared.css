@@ -1,6 +1,12 @@
-body {
-    background-color: #e5e5e5;
-}
+*{
+	margin: 0;
+	padding: 0;
+	}
+html,body{
+	height: 100%;
+	width: 100%;
+	/* background-color: #e5e5e5; */
+	}
 #menu {
     width: 100px;
     padding: 10px;
@@ -14,7 +20,7 @@ body {
     border-top-width: 0px;
 	margin: 0 15% 0 15%;
     border-radius: 8px;
-    background: #4494d5;
+    /* background: #4494d5; */
     /* box-shadow: 8px 9px 6px 1px #a8a8a8, -7px -7px 2px 0px #ffffff; */
 }
 #left_sidebar {

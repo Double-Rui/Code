@@ -1,237 +1,440 @@
-﻿{% extends 'Shared/Base.html' %}
-{% block content%}
 {% load static %}
-<link type="text/css" rel="styleSheet" href="{% static "css/Recent_chat.css" %}" />
-<body>
-    <div class="Chat_panel">
-        <div class="message_list">
-            <div class="search">
-                <input class="searchinput" type="search" placeholder="搜索" />
-<!--                <input type="button" value="搜索" style="float: right; position: relative; margin-top: 18px; border: 0;">-->
-                <div class="SearchResult" style="position:relative;width:100%;background-color:white;top:24px;"></div>
-            </div>
-            <div class="message_list1">
-                        <div>
+<!DOCTYPE html>
+<html lang="en">
+	
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GoChat</title>
+    <link rel="stylesheet" href="{% static "css/site.css" %}"/>
+    <link rel="stylesheet" href="{% static "css/Shared.css" %}"/>
+	<link rel="stylesheet" type="text/css" href="{% static "css/easyui/easyui.css" %}"/>
+	<link rel="stylesheet" type="text/css" href="{% static "css/easyui/icon.css" %}"/>
+    <script src="{% static "js/jquery-3.6.0.min.js" %}"></script>
+	<script src="{% static "js/jquery.easyui.min.js" %}"></script>
+    <script src="{% static "js/JavaScript.js" %}"></script>
+	<link type="text/css" rel="styleSheet" href="{% static "css/Recent_chat.css" %}" />
+    <script>
+        $(document).ready(function () {
+            $(function () {
+                $(".Head_portrait").click(function () {
+                    $(".personal_information").css("display", "block");
+                    //$(".personal_information").toggle();
+                    return false;
+                })
+                $(".personal_information").click(function () {
+                    return false;
+                })
+                $(document).click(function () {
+                    $(".personal_information").css("display", "none")
+                });
+            })
 
-                            <p style="text-align:center;font-size: 12px;color: #939393;">暂无消息</p>
-                        </div>
-                            <div class="messages" onclick='$(".SpreadChat_panel").css("display", "block"); $(".messages").removeClass("active"); $(this).addClass("active"); var name = $(this).find("p").first().text(); var ID = $(this).find("p").first().attr("name"); $(".Friendname").text(name); $(".Friendname").attr("id", ID); getChatrecord(ID); setTimeout("scrolltodown()",50) ' ondblclick='var ID = $(this).find("p").first().attr("name");del_Recent_chat(ID);'>
-<!--                                <span class="del" onclick="var ID = $(this).next().next().find('p').first().attr('name');var Friendid=$('.Friendname').attr('id'); del_Recent_chat(ID);">×</span>-->
-                                <div id="FriendHeadPortrait" style=""><img class="FriendHeadPortrait" style="width:40px;height:40px" src="/HeadPortrait/@item.U_HeadPortrait" /></div>
-                                <div class="messages_context">
-                                    <p class="messages_form" name="@item.Another_ID">名字</p><span class="time">时间</span>
-                                    <p class="context" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;width:150px;"></p>
-                                </div>
-                            </div>
+            getFriendRequestNum()
+			window.onload = function () {
+			    var url = window.location.href;
+			    var index = url.indexOf("id");
+			    var a = url.substring(url.lastIndexOf("=") + 1, url.length);
+			    var str = "p[name='" + a + "']"
+			    if (str != "") {
+			        $(str).parent().parent().trigger("click")
+			        $('.message_list1').scrollTop(($(str).parent().parent().offset().top)-130);
+			        $(".ceshi").text($(str).parent().parent().offset().top)
+			    }
+			}
+			getNewMessages();
+			loadEmoji();
+			$(function () {
+			    $(".Emoji").click(function () {
+			        $(".Emoji_panel").show();
+			        return false;//关键是这里，阻止冒泡
+			    });
+			    $(".Emoji_panel").click(function () {
+			        return false;
+			    });
+			    $(document).click(function () {
+			        $(".Emoji_panel").hide();
+			    });
+			})
+			//$(document).click(function () {
+			//    $(".Emoji_panel").css("display", "none");
+			// });
+			del_button()
+			$("#messagesContext").focus(function () {
+			    $(document).keyup(function (e) {
+			        if (e.which == 13) {
+			            Send()
+			        }
+			    })
+			})
+			
+        })
+        function upload() {
+
+        }
+		
+		function addTab(title, url){
+		    if ($('#tt').tabs('exists', title)){
+		        $('#tt').tabs('select', title);
+		    } else {
+		        var content = '<iframe scrolling="auto" frameborder="0"  src="'+url+'" style="width:100%;height:100%;"></iframe>';
+		        $('#tt').tabs('add',{
+		            title:title,
+		            content:content,
+		            closable:true
+		        });
+		    }
+		}
+
+        // function getFriendRequestNum() {
+        //     $.ajax({
+        //         url: '/home/getFriendRequestNum',
+        //         type: 'get',
+        //         success: function (data) {
+        //             if (data != 0) {
+        //                 $(".FriendRequestNum").css("display","unset")
+        //                 $(".FriendRequestNum").text(data)
+        //             }
+        //         }, error: function () {
+
+        //         }
+        //     })
+        // }
+		
+		function getNewMessages() {
+		    $(".context").each(function () {
+		        var p = $(this);
+		        $.ajax({
+		            url: '/Chat/getNewMessages',
+		            data: { ID: $(this).siblings().first().attr("name") },
+		            type: 'post',
+		            dataType: "json",
+		            success: function (data) {
+		                if (data[0] == undefined) {
+		                    p.text("");
+		                } else {
+		                    p.text(data[0].M_PostMessages);
+		                }
+		            }, error: function (e) {
+		
+		            }
+		        })
+		    });
+		}
+		
+		function getRecent_chat(ID) {
+		    $(".message_list1").empty()
+		    $.ajax({
+		        url: '/Home/getRecent_chat',
+		        data: {},
+		        type: 'post',
+		        dataType: "json",
+		        success: function (data) {
+		            if (data == null) {
+		                $(".message_list1").append('<div><p style = "text-align:center;font-size: 12px;color: #939393;">暂无消息</p ></div >')
+		            } else {
+		                for (i = 0; i < data.length; i++) {
+		                    $(".message_list1").append('<div class="messages" onclick=\'$(".SpreadChat_panel").css("display", "block");$(".messages").removeClass("active");$(this).addClass("active");var name = $(this).find("p").first().text();var ID = $(this).find("p").first().attr("name");$(".Friendname").text(name); $(".Friendname").attr("id",ID);getChatrecord(ID);setTimeout("scrolltodown()",50)\' ondblclick=\'var ID = $(this).find("p").first().attr("name"); del_Recent_chat(ID);\'>\
+		                <div id = "FriendHeadPortrait"><img class="FriendHeadPortrait" style="width:40px;height:40px" src="/HeadPortrait/'+ data[i].U_HeadPortrait + '" /></div >\
+		                <div class="messages_context">\
+		                <p class="messages_form" name="' + data[i].Another_ID + '">' + data[i].NickName + '</p><span class="time">' + data[i].CreateTime + '</span>\
+		                <p class="context" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;width:150px;"></p>\
+		                </div>\
+		                </div>')
+		                }
+		            }
+		            getNewMessages()
+		
+		            var str = "p[name='" + ID + "']"
+		            $(str).parent().parent().trigger("click")
+		        }, error: function (e) {
+		
+		        }
+		    })
+		}
+		
+		// function loadEmoji() {//生成表情
+		//     $(".Emoji_panel").html('');
+		//     var html = '';
+		//     for (var i = 1; i <= 105; i++) {
+		//         //html += '<img class="emoji-img" src="Emoji/' + i + '.png" οnclick="choiceEmoji(' + i + ')" />';
+		//         html += '<img class="emoji-img" src="~/static/Emoji/' + i + '.png" 'style="width:30px;margin:3px" onclick="choiceEmoji(' + i + ')"/>';
+		//         if ((i % 5) == 0) { }
+		//     }
+		//     $(".Emoji_panel").html(html);
+		// }
+		
+		function choiceEmoji(index) {//选择表情
+		    var msg = $("#messagesContext").val();
+		    var emoji = '[em_' + index + ']';
+		    msg = msg + emoji;
+		    //$(".Emoji_panel").hide();//隐藏表情选择
+		    $("#messagesContext").val(msg);//赋值
+		    $("#messagesContext").focus();//输入框获取焦点
+		    moveEnd($("#messagesContext").get(0)); //移动光标至末尾，且切换selection的位置
+		}
+		//光标移至文本后面
+		function moveEnd(obj) {
+		    obj.focus();
+		    var len = obj.value.length;
+		    if (document.selection) {
+		        var sel = obj.createTextRange();
+		        sel.moveStart('character', len); //设置开头的位置
+		        sel.collapse();
+		        sel.select();
+		    } else if (typeof obj.selectionStart == 'number' && typeof obj.selectionEnd == 'number') {
+		        obj.selectionStart = obj.selectionEnd = len;
+		    }
+		}
+		//字符替换为表情
+		function replace_em(str) {
+		    str = str.replace(/\</g, '<');
+		    str = str.replace(/\>/g, '>');
+		    str = str.replace(/\n/g, '<br/>');
+		    str = str.replace(/\[em_([0-9]*)\]/g, '<img class="emoji-size" src="/Emoji/$1.png" border="0" style="width:20px"/>');
+		    return str;
+		}
+		
+		function del_Recent_chat(ID) {
+		    $.ajax({
+		        url: '/Chat/Delsession',
+		        data: { ID: ID },
+		        type: 'post',
+		        dataType: "json",
+		        success: function (data) {
+		            if (data == "1") {
+		                setTimeout("getRecent_chat($('.Friendname').attr('id'));", 300);
+		                setTimeout("del_button()", 100)
+		            } else {
+		                alert("数据库异常")
+		            }
+		        }, error: function (e) {
+		
+		        }
+		    })
+		}
+		
+		function del_button() {
+		    $(".messages").mouseenter(function () {
+		        $(this).find(".del").css("visibility", "unset");
+		    })
+		    $(".messages").mouseleave(function () {
+		        $(this).find(".del").css("visibility", "hidden");
+		    })
+		}
+		
+		function Send() {//发送信息
+		    $.ajax({
+		        url: "/Chat/Send",
+		        type: 'post',
+		        dataType: "json",
+		        data: {
+		            context: $("#messagesContext").val(),
+		            Sendto: $(".Friendname").attr("id")
+		        },
+		        success: function (mags) {
+		            if (mags.Status) {
+		                $("#messagesContext").val(null)
+		                getChatrecord($(".Friendname").attr("id"))
+		                scrolltodown()
+		                getRecent_chat($(".Friendname").attr("id"))
+		                getNewMessages()
+		                del_button();
+		            } else {
+		                alert(mags.Mag);
+		            }
+		            console.log('发送成功');
+		        },
+		        error: function () {
+		            console.log('发送失败'); // 请求失败时的回调函数
+		        }
+		    })
+		}
+    </script>
+</head>
+<body>
+	<div style="position: fixed; width: 75px;height: 300px;margin: 15% 0 0 5%;">
+		<ul style="list-style: none;">
+			<li><img src="{% static "icon/信息选中.png" %}" width="100%"></li>
+			<li><img src="{% static "icon/个人空间.png" %}" width="100%"></li>
+			<li><img src="{% static "icon/设置.png" %}" width="100%"></li>
+			<li><img src="{% static "icon/登出.png" %}" width="100%" onclick="location.href='/Logout'"></li>
+		</ul>
+	</div>
+    <div class="Main_panel">
+		<div style="width: 100%;height: 250px;min-width: 1400px;background: #4494d5;">
+			<div style="width: 250px;height: 100%;float: left;">
+				<div style="margin: 10%;position: relative;">
+					<img class="HeadPortrait" src="{% static "HeadPortrait/" %}{{ user.headportrait|safe}}" width="100%">
+				</div>
+			</div>
+			<div style="width: 500px;height: 100%;float: left;">
+				<div style="margin: 5% 0;">
+					<table>
+						<tr >
+							<td style="padding-top: 5%;"><span style="color: white;font-size: 40px;">{{user.username}}</span></td>
+						</tr>
+						<tr >
+							<td style="padding-bottom: 5%;"><span style="color: white;font-size: 25px;">ID {{user.id}}</span></td>
+						</tr>
+						<tr>
+							<td><input type="text" style="width: 500px;height: 30px;" value="{{user.sign}}" /></td>
+						</tr>
+					</table>
+				</div>
+			</div>
+		</div>
+<!--       <div class="personal_information">
+            <div id="HeadPortrait">
+                <input class="uploadHeadPortrait" accept="image/*" value="更换头像" type="file" onchange="upload()" />
+                <img class="HeadPortrait" width="70">
             </div>
-        </div>
-        <div class="SpreadChat_panel">
-            <div class="Chat_p_top">
-                <h1 class="Friendname"></h1>
+            <span class="attrname">账号</span><span class="LoginID"></span><br />
+            <div>
+                <span class="attrname">昵称</span><input class="NickName" value="" />
+                <span class="attrname">性别</span>
+                <select class="Sex">
+                    <option> </option>
+                    <option value="男">男</option>
+                    <option value="女">女</option>
+                </select><br />
             </div>
-            <div class="Chat_p_context">
+            <div>
+                <span class="attrname">出生年月</span><input class="Birthday" value="" />
+                <span class="attrname">血型</span>
+                <select class="BloodType">
+                    <option> </option>
+                    <option>A型</option>
+                    <option>B型</option>
+                    <option>AB型</option>
+                    <option>O型</option>
+                    <option>其他血型</option>
+                </select><br />
             </div>
-            <div class="Chat_p_input">
-                <div class="tool">
-                    <div class="Emoji_panel" style="position: absolute; width: 350px; height: 250px; margin-top: -251px; margin-left: -159px; background: white;display:none;overflow-y: auto;padding-left:15px"></div>
-                    <img class="Emoji" src="{% static "Emoji/2.png" %}" style="width: 30px; margin-left: 5%; margin-top: 5px;" onclick='' />
-                </div>
-                <textarea id="messagesContext"></textarea>
-                <input id="Send" value="发送(S)" type="button" />
+            <div>
+                <span class="attrname">生肖</span>
+                <select class="ShengXiao">
+                    <option> </option>
+                    <option>鼠</option>
+                    <option>牛</option>
+                    <option>虎</option>
+                    <option>兔</option>
+                    <option>龙</option>
+                    <option>蛇</option>
+                    <option>马</option>
+                    <option>羊</option>
+                    <option>猴</option>
+                    <option>鸡</option>
+                    <option>狗</option>
+                    <option>猪</option>
+                </select>
+                <span class="attrname">年龄</span><input class="Age" value="">
+                <span class="attrname">星座</span>
+                <select class="Constellation">
+                    <option> </option>
+                    <option>水瓶座</option>
+                    <option>双鱼座</option>
+                    <option>白羊座</option>
+                    <option>金牛座</option>
+                    <option>双子座</option>
+                    <option>巨蟹座</option>
+                    <option>狮子座</option>
+                    <option>处女座</option>
+                    <option>天秤座</option>
+                    <option>天蝎座</option>
+                    <option>射手座</option>
+                    <option>摩羯座</option>
+                </select>
             </div>
-        </div>
+            <span class="attrname">个性签名</span><input class="SignaTure" value="" /><br />
+            <span class="attrname">手机号码</span><input class="Telephone" value="" /><br />
+            <span class="attrname">邮箱</span><input class="Email" value="" /><br />
+            <span class="attrname">毕业学校</span><input class="SchoolTag" value="" /><br />
+            <span class="attrname">职业</span>
+            <select class="Vocation">
+                <option> </option>
+                <option>计算机/互联网/通信</option>
+                <option>生产工艺制造</option>
+                <option>金融银行投资保险</option>
+                <option>商业服务业个体经营</option>
+                <option>文化广告传媒</option>
+                <option>娱乐艺术表演</option>
+                <option>律师法务</option>
+                <option>教育培训</option>
+                <option>公务员行政事业单位</option>
+                <option>模特</option>
+                <option>空姐</option>
+                <option>学生</option>
+                <option>其他</option>
+            </select><br />
+            <div class="Out_Intro"><span class="attrname">个人说明</span><textarea class="Intro"></textarea></div>
+            <span class="tip" style="color:red"></span><br />
+            <input class="Revise" type="button" value="修改" />
+        </div> -->
+        <div role="main" class="main" style="width: 100%;height: 650px;display: inline-block;margin-top: 10px;">
+			<div class="Chat_panel" style="width: 20%;float: left;background: #bdbfbe;">
+			        <div class="message_list">
+			            <div class="search">
+			                <input class="searchinput" type="search" placeholder="搜索" />
+			                <div class="SearchResult" style="position:relative;width:100%;background-color:white;top:24px;"></div>
+			            </div>
+						<div>
+							<ul style="width: 100%;height: 5%;list-style: none;text-align: center;">
+								<li style="float: left;width: 50%;">消息</li>
+								<li style="float: left;width: 50%;">联系人</li>
+							</ul>
+						</div>
+			            <div class="message_list1">
+			                <div>
+			                    <!-- <p style="text-align:center;font-size: 12px;color: #939393;">暂无消息</p> -->
+			                </div>
+							 <a href="#" class="easyui-linkbutton" onclick="addTab('测试','/Home/Chat_panel')">google</a>
+			                <div class="messages" onclick='$(".SpreadChat_panel").css("display", "block"); $(".messages").removeClass("active"); $(this).addClass("active"); var name = $(this).find("p").first().text(); var ID = $(this).find("p").first().attr("name"); $(".Friendname").text(name); $(".Friendname").attr("id", ID); getChatrecord(ID); setTimeout("scrolltodown()",50) ' ondblclick='var ID = $(this).find("p").first().attr("name");del_Recent_chat(ID);'>
+			<!--                    <span class="del" onclick="var ID = $(this).next().next().find('p').first().attr('name');var Friendid=$('.Friendname').attr('id'); del_Recent_chat(ID);">×</span>-->
+			                    <div id="FriendHeadPortrait" style=""><img class="FriendHeadPortrait" style="width:40px;height:40px" src="/HeadPortrait/@item.U_HeadPortrait" /></div>
+			                    <div class="messages_context">
+			                        <p class="messages_form" name="@item.Another_ID">名字</p><span class="time">时间</span>
+			                        <p class="context" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;width:150px;"></p>
+			                    </div>
+			                </div>
+							<div class="newfriend" onclick='$(".SpreadNewFriend_panel").css("display", "block");$(".SpreadChat_panel").css("display", "none");'>
+							    <div id="FriendHeadPortrait" style=""><img class="FriendHeadPortrait" style="width:40px;height:40px;border-radius: 5px;" src="" /></div>
+							        <div style="float:left">
+							            <p class="friends_form" id="">新的好友</p>
+							        </div>
+							    </div>
+							    <div class="friend" onclick='$(".SpreadChat_panel").css("display", "block");$(".SpreadNewFriend_panel").css("display", "none"); var name = $(this).find("p").first().text(); var ID = $(this).find("p").first().attr("id"); $(".Friendname").text(name); $(".Friendname").attr("id", ID); getfriendinfo(ID);'>
+							        <div id="FriendHeadPortrait" style=""><img class="FriendHeadPortrait" style="width:40px;height:40px;border-radius: 5px;" src="/HeadPortrait/@Html.DisplayFor(modelItem => item.F_HeadPortrait)" /></div>
+							        <div style="float:left">
+							<!--        <p class="friends_form" id="@Html.DisplayFor(modelItem => item.F_FirendID)">@Html.DisplayFor(modelItem => item.F_NickName)</p>-->
+							            <p class="friends_form" id="@Html.DisplayFor(modelItem => item.F_FirendID)"></p>
+							        </div>
+							    </div>
+			            </div>
+			        </div>
+			</div>
+			<div style="width: 80%;float: left;height: 100%;">
+					<div id="tt" class="easyui-tabs" style="width:100%;height:100%;">
+						<div title="首页" style="padding:20px;display:none;">
+<!--								<div class="SpreadChat_panel">//聊天面板-->
+<!--									<div class="Chat_p_top">-->
+<!--										<h1 class="Friendname"></h1>-->
+<!--									</div>-->
+<!--									<div class="Chat_p_context">-->
+<!--									</div>-->
+<!--									<div class="Chat_p_input">-->
+<!--										<div class="tool">-->
+<!--											<div class="Emoji_panel" style="position: absolute; width: 350px; height: 250px; margin-top: -251px; margin-left: -159px; background: white;display:none;overflow-y: auto;padding-left:15px"></div>-->
+<!--											<img class="Emoji" src="{% static "Emoji/2.png" %}" style="width: 30px; margin-left: 5%; margin-top: 5px;" onclick='' />-->
+<!--										</div>-->
+<!--										<textarea id="messagesContext"></textarea>-->
+<!--										<input id="Send" value="发送(S)" type="button" />-->
+<!--									</div>-->
+<!--								</div>-->
+						</div>
+				</div>
+			</div>
+		</div>
     </div>
 </body>
-<script>
-    $(document).ready(function () {
-        window.onload = function () {
-            var url = window.location.href;
-            var index = url.indexOf("id");
-            var a = url.substring(url.lastIndexOf("=") + 1, url.length);
-            var str = "p[name='" + a + "']"
-            if (str != "") {
-                $(str).parent().parent().trigger("click")
-                $('.message_list1').scrollTop(($(str).parent().parent().offset().top)-130);
-                $(".ceshi").text($(str).parent().parent().offset().top)
-            }
-        }
-        getNewMessages();
-        loadEmoji();
-        $(function () {
-            $(".Emoji").click(function () {
-                $(".Emoji_panel").show();
-                return false;//关键是这里，阻止冒泡
-            });
-            $(".Emoji_panel").click(function () {
-                return false;
-            });
-            $(document).click(function () {
-                $(".Emoji_panel").hide();
-            });
-        })
-        //$(document).click(function () {
-        //    $(".Emoji_panel").css("display", "none");
-        // });
-        del_button()
-        $("#messagesContext").focus(function () {
-            $(document).keyup(function (e) {
-                if (e.which == 13) {
-                    Send()
-                }
-            })
-        })
-
-        
-    });
-
-    function getNewMessages() {
-        $(".context").each(function () {
-            var p = $(this);
-            $.ajax({
-                url: '/Chat/getNewMessages',
-                data: { ID: $(this).siblings().first().attr("name") },
-                type: 'post',
-                dataType: "json",
-                success: function (data) {
-                    if (data[0] == undefined) {
-                        p.text("");
-                    } else {
-                        p.text(data[0].M_PostMessages);
-                    }
-                }, error: function (e) {
-
-                }
-            })
-        });
-    }
-
-    function getRecent_chat(ID) {
-        $(".message_list1").empty()
-        $.ajax({
-            url: '/Home/getRecent_chat',
-            data: {},
-            type: 'post',
-            dataType: "json",
-            success: function (data) {
-                if (data == null) {
-                    $(".message_list1").append('<div><p style = "text-align:center;font-size: 12px;color: #939393;">暂无消息</p ></div >')
-                } else {
-                    for (i = 0; i < data.length; i++) {
-                        $(".message_list1").append('<div class="messages" onclick=\'$(".SpreadChat_panel").css("display", "block");$(".messages").removeClass("active");$(this).addClass("active");var name = $(this).find("p").first().text();var ID = $(this).find("p").first().attr("name");$(".Friendname").text(name); $(".Friendname").attr("id",ID);getChatrecord(ID);setTimeout("scrolltodown()",50)\' ondblclick=\'var ID = $(this).find("p").first().attr("name"); del_Recent_chat(ID);\'>\
-                    <div id = "FriendHeadPortrait"><img class="FriendHeadPortrait" style="width:40px;height:40px" src="/HeadPortrait/'+ data[i].U_HeadPortrait + '" /></div >\
-                    <div class="messages_context">\
-                    <p class="messages_form" name="' + data[i].Another_ID + '">' + data[i].NickName + '</p><span class="time">' + data[i].CreateTime + '</span>\
-                    <p class="context" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;width:150px;"></p>\
-                    </div>\
-                    </div>')
-                    }
-                }
-                getNewMessages()
-
-                var str = "p[name='" + ID + "']"
-                $(str).parent().parent().trigger("click")
-            }, error: function (e) {
-
-            }
-        })
-    }
-
-    function loadEmoji() {//生成表情
-        $(".Emoji_panel").html('');
-        var html = '';
-        for (var i = 1; i <= 105; i++) {
-            //html += '<img class="emoji-img" src="Emoji/' + i + '.png" οnclick="choiceEmoji(' + i + ')" />';
-            html += '<img class="emoji-img" src="~/static/Emoji/' + i + '.png" 'style="width:30px;margin:3px" onclick="choiceEmoji(' + i + ')"/>';
-            if ((i % 5) == 0) { }
-        }
-        $(".Emoji_panel").html(html);
-    }
-
-    function choiceEmoji(index) {//选择表情
-        var msg = $("#messagesContext").val();
-        var emoji = '[em_' + index + ']';
-        msg = msg + emoji;
-        //$(".Emoji_panel").hide();//隐藏表情选择
-        $("#messagesContext").val(msg);//赋值
-        $("#messagesContext").focus();//输入框获取焦点
-        moveEnd($("#messagesContext").get(0)); //移动光标至末尾，且切换selection的位置
-    }
-    //光标移至文本后面
-    function moveEnd(obj) {
-        obj.focus();
-        var len = obj.value.length;
-        if (document.selection) {
-            var sel = obj.createTextRange();
-            sel.moveStart('character', len); //设置开头的位置
-            sel.collapse();
-            sel.select();
-        } else if (typeof obj.selectionStart == 'number' && typeof obj.selectionEnd == 'number') {
-            obj.selectionStart = obj.selectionEnd = len;
-        }
-    }
-    //字符替换为表情
-    function replace_em(str) {
-        str = str.replace(/\</g, '<');
-        str = str.replace(/\>/g, '>');
-        str = str.replace(/\n/g, '<br/>');
-        str = str.replace(/\[em_([0-9]*)\]/g, '<img class="emoji-size" src="/Emoji/$1.png" border="0" style="width:20px"/>');
-        return str;
-    }
-
-    function del_Recent_chat(ID) {
-        $.ajax({
-            url: '/Chat/Delsession',
-            data: { ID: ID },
-            type: 'post',
-            dataType: "json",
-            success: function (data) {
-                if (data == "1") {
-                    setTimeout("getRecent_chat($('.Friendname').attr('id'));", 300);
-                    setTimeout("del_button()", 100)
-                } else {
-                    alert("数据库异常")
-                }
-            }, error: function (e) {
-
-            }
-        })
-    }
-
-    function del_button() {
-        $(".messages").mouseenter(function () {
-            $(this).find(".del").css("visibility", "unset");
-        })
-        $(".messages").mouseleave(function () {
-            $(this).find(".del").css("visibility", "hidden");
-        })
-    }
-
-    function Send() {//发送信息
-        $.ajax({
-            url: "/Chat/Send",
-            type: 'post',
-            dataType: "json",
-            data: {
-                context: $("#messagesContext").val(),
-                Sendto: $(".Friendname").attr("id")
-            },
-            success: function (mags) {
-                if (mags.Status) {
-                    $("#messagesContext").val(null)
-                    getChatrecord($(".Friendname").attr("id"))
-                    scrolltodown()
-                    getRecent_chat($(".Friendname").attr("id"))
-                    getNewMessages()
-                    del_button();
-                } else {
-                    alert(mags.Mag);
-                }
-                console.log('发送成功');
-            },
-            error: function () {
-                console.log('发送失败'); // 请求失败时的回调函数
-            }
-        })
-    }
-</script>
-{% endblock %}
+</html>

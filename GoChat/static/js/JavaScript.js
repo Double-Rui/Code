@@ -1,4 +1,4 @@
-﻿$(document).ready(function () {
+$(document).ready(function () {
     var mouse_x, mouse_y
     //鼠标位置
     $(document).mousemove(function (e) {
@@ -197,14 +197,3 @@ function scrolltodown() {
         })
     });
 }*/
-
-
-
-function DWXX(ID) {
-    window.location.href = "Recent_chat?id="+ID
-}
-
-function ZCKJDL(ID) {//注册后快捷登录
-    window.location.href = "/account/login?id=" + ID
-}
-

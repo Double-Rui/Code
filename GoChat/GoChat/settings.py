@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'channels',
     'users',
     'Home'
 ]
@@ -69,8 +70,9 @@ TEMPLATES = [
         },
     },
 ]
-ASGI_APPLICATION = 'GoChat.routing.application'
+
 WSGI_APPLICATION = 'GoChat.wsgi.application'
+ASGI_APPLICATION = 'GoChat.routing.application'
 
 
 # Database
@@ -132,3 +134,5 @@ STATICFILES_DIRS = (
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+X_FRAME_OPTIONS = 'SAMEORIGIN'

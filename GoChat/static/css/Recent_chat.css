@@ -14,16 +14,15 @@ body {
 .search {
     position: relative;
     width: 100%;
-    height: 12%;
+    height: 5%;
     background-color: whitesmoke;
 /*    border: 1px #cac5c5 solid;*/
 }
 
 .searchinput {
     position: relative;
-    left: 50%;
-    margin-left: -110px;
-    margin-top: 20px;
+	width: 100%;
+	height: 100%;
     border: 1px #e0e0e0 inset;
     outline: none;
     background: #e0e0e0;
@@ -36,8 +35,8 @@ body {
 .message_list {
     float: left;
     height: 100%;
-    width: 300px;
-    padding-left: 60px;
+    width: 100%;
+/*    padding-left: 60px; */
 }
 .message_list1 {
     height: 88%;

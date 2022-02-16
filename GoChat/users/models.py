@@ -32,3 +32,23 @@ class User(models.Model):
 
     def __int__(self):
         return self.loginid
+
+class UserInfo():
+    id =""
+    username = ""
+    sex = ""
+    age = ""
+    headportrait = ""
+    phonenumber = ""
+    address = ""
+    bloodtype = ""
+    datebirth = ""
+    constellation = ""
+    shengxiao = ""
+    sign = ""
+    profession = ""
+    region = ""
+    mail = ""
+
+    def __int__(self):
+        return self.id
