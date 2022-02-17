@@ -54,20 +54,16 @@ def Login(request):
         status = 0
         LoginID = request.POST.get("LoginID")
         PassWord = request.POST.get("PassWord")
-        if (LoginID == ""):
-            tip = "账号不能为空！"
-        elif (PassWord == ""):
-            tip = "密码不能为空！"
-        elif (LoginID.isdigit() == False):
-            tip = "账号只能为数字！"
+        if (LoginID.isdigit() == False):
+            tip = "账号只能为数字"
         elif (Verify_LoginID(LoginID)):
-            tip = "账号不存在！"
+            tip = "账号不存在"
         else:
             user = models.User.objects.filter(loginid=LoginID, password=PassWord)
             if user:
                 status = 1
             else:
-                tip = "密码不正确！"
+                tip = "密码不正确"
         if (status == 1):
             Response = HttpResponse(json.dumps({
                 "status": status,

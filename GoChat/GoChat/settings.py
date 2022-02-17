@@ -74,7 +74,6 @@ TEMPLATES = [
 WSGI_APPLICATION = 'GoChat.wsgi.application'
 ASGI_APPLICATION = 'GoChat.routing.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 

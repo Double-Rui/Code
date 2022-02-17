@@ -1,47 +1,41 @@
-﻿body {
+body {
     background-color: #e7ebf1;
 }
-
 .Login_panel {
     position: absolute;
     width: 300px;
     height: 400px;
     border-radius: 20px;
     left: 50%;
-    top: 150px;
+    top: 20%;
     margin-left: -150px;
     background: #e7ebf1;
     box-shadow: 10px 7px 7px #bebebe, -8px -7px 7px #ffffff;
     display: inline-block;
 }
-
 .front, .back {
     position: absolute;
     font-size: 50px;
     left: 50%;
     margin-left: -50px;
 }
-
 .front {
     backface-visibility: hidden;
     color: #05d8a7;
     text-shadow: #c323f1 1px 1px 1px;
 }
-
 .back {
     color: #05d8a7;
     text-shadow: #c323f1 1px 1px 1px;
     backface-visibility: hidden;
     transform: rotateX(-180deg);
 }
-
 .Login_form {
     position: absolute;
     left: 50%;
     margin-left: -125px;
     top: 150px;
 }
-
 .username, .password, .post {
     box-sizing: border-box;
     width: 250px;
@@ -55,28 +49,23 @@
     color: #7b7a7a;
     font-size: 20px;
 }
-
 .password {
     margin-top: 20px;
 }
-
 .tip {
     height: 30px;
     text-align: center;
 }
-
 .post {
     padding: 0;
     box-shadow: none;
     color: white;
     background-color: #05d8a7;
 }
-
     .post:hover {
         background-color: #2a9f7b;
     }
-
-p {
+.switch {
     margin-top: 30px;
     color: #7b7a7a;
     font-size: 1px;
