@@ -1,0 +1,26 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<link type="text/css" rel="styleSheet" href="{% static "css/Recent_chat.css" %}" />
+	</head>
+	<body style="width: 100%;height: 100%;">
+		<div class="SpreadChat_panel">
+			<div class="Chat_p_top">
+				<h1 class="Friendname"></h1>
+			</div>
+			<div class="Chat_p_context">
+			</div>
+			<div class="Chat_p_input">
+				<div class="tool">
+					<div class="Emoji_panel" style="position: absolute; width: 350px; height: 250px; margin-top: -251px; margin-left: -159px; background: white;display:none;overflow-y: auto;padding-left:15px"></div>
+					<img class="Emoji" src="{% static "Emoji/2.png" %}" style="width: 30px; margin-left: 5%; margin-top: 5px;" onclick='' />
+				</div>
+				<textarea id="messagesContext"></textarea>
+				<input id="Send" value="发送(S)" type="button" />
+			</div>
+		</div>
+	</body>
+</html>
