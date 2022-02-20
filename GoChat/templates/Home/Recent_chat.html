@@ -8,12 +8,14 @@
     <title>GoChat</title>
     <link rel="stylesheet" href="{% static "css/site.css" %}"/>
     <link rel="stylesheet" href="{% static "css/Shared.css" %}"/>
-	<link rel="stylesheet" type="text/css" href="{% static "css/easyui/easyui.css" %}"/>
-	<link rel="stylesheet" type="text/css" href="{% static "css/easyui/icon.css" %}"/>
-    <script src="{% static "js/jquery-3.6.0.min.js" %}"></script>
-	<script src="{% static "js/jquery.easyui.min.js" %}"></script>
-    <script src="{% static "js/JavaScript.js" %}"></script>
 	<link type="text/css" rel="styleSheet" href="{% static "css/Recent_chat.css" %}" />
+	<link rel="stylesheet" href="{% static "css/element-ui/index.css" %}">
+	<script src="{% static "js/vue-router.js" %}"></script>
+	<script src="{% static "js/vue.js" %}"></script>
+	<script src="{% static "css/element-ui/index.js" %}"></script>
+	<script src="{% static "js/jquery-3.6.0.min.js" %}"></script>
+	<script src="{% static "js/axios-0.26.0/axios.js" %}"></script>
+	<!-- <script src="{% static "js/JavaScript.js" %}"></script> -->
     <script>
         $(document).ready(function () {
             $(function () {
@@ -30,20 +32,20 @@
                 });
             })
 
-            getFriendRequestNum()
-			window.onload = function () {
-			    var url = window.location.href;
-			    var index = url.indexOf("id");
-			    var a = url.substring(url.lastIndexOf("=") + 1, url.length);
-			    var str = "p[name='" + a + "']"
-			    if (str != "") {
-			        $(str).parent().parent().trigger("click")
-			        $('.message_list1').scrollTop(($(str).parent().parent().offset().top)-130);
-			        $(".ceshi").text($(str).parent().parent().offset().top)
-			    }
-			}
-			getNewMessages();
-			loadEmoji();
+            // getFriendRequestNum()
+			// window.onload = function () {
+			//     var url = window.location.href;
+			//     var index = url.indexOf("id");
+			//     var a = url.substring(url.lastIndexOf("=") + 1, url.length);
+			//     var str = "p[name='" + a + "']"
+			//     if (str != "") {
+			//         $(str).parent().parent().trigger("click")
+			//         $('.message_list1').scrollTop(($(str).parent().parent().offset().top)-130);
+			//         $(".ceshi").text($(str).parent().parent().offset().top)
+			//     }
+			// }
+			// getNewMessages();
+			// loadEmoji();
 			$(function () {
 			    $(".Emoji").click(function () {
 			        $(".Emoji_panel").show();
@@ -253,14 +255,6 @@
     </script>
 </head>
 <body>
-	<div style="position: fixed; width: 75px;height: 300px;margin: 15% 0 0 5%;">
-		<ul style="list-style: none;">
-			<li><img src="{% static "icon/信息选中.png" %}" width="100%"></li>
-			<li><img src="{% static "icon/个人空间.png" %}" width="100%"></li>
-			<li><img src="{% static "icon/设置.png" %}" width="100%"></li>
-			<li><img src="{% static "icon/登出.png" %}" width="100%" onclick="location.href='/Logout'"></li>
-		</ul>
-	</div>
     <div class="Main_panel">
 		<div style="width: 100%;height: 250px;min-width: 1400px;background: #4494d5;">
 			<div style="width: 250px;height: 100%;float: left;">
@@ -278,7 +272,7 @@
 							<td style="padding-bottom: 5%;"><span style="color: white;font-size: 25px;">ID {{user.id}}</span></td>
 						</tr>
 						<tr>
-							<td><input type="text" style="width: 500px;height: 30px;" value="{{user.sign}}" /></td>
+							<td><el-input type="text" placeholder="请输入内容" v-model="SignText" @change="EditSign" maxlength="20" style="width: 500px;" clearable show-word-limit></el-input></td>
 						</tr>
 					</table>
 				</div>
@@ -371,70 +365,112 @@
             <span class="tip" style="color:red"></span><br />
             <input class="Revise" type="button" value="修改" />
         </div> -->
-        <div role="main" class="main" style="width: 100%;height: 650px;display: inline-block;margin-top: 10px;">
-			<div class="Chat_panel" style="width: 20%;float: left;background: #bdbfbe;">
-			        <div class="message_list">
-			            <div class="search">
-			                <input class="searchinput" type="search" placeholder="搜索" />
-			                <div class="SearchResult" style="position:relative;width:100%;background-color:white;top:24px;"></div>
-			            </div>
-						<div>
-							<ul style="width: 100%;height: 5%;list-style: none;text-align: center;">
-								<li style="float: left;width: 50%;">消息</li>
-								<li style="float: left;width: 50%;">联系人</li>
-							</ul>
-						</div>
-			            <div class="message_list1">
-			                <div>
-			                    <!-- <p style="text-align:center;font-size: 12px;color: #939393;">暂无消息</p> -->
-			                </div>
-							 <a href="#" class="easyui-linkbutton" onclick="addTab('测试','/Home/Chat_panel')">google</a>
-			                <div class="messages" onclick='$(".SpreadChat_panel").css("display", "block"); $(".messages").removeClass("active"); $(this).addClass("active"); var name = $(this).find("p").first().text(); var ID = $(this).find("p").first().attr("name"); $(".Friendname").text(name); $(".Friendname").attr("id", ID); getChatrecord(ID); setTimeout("scrolltodown()",50) ' ondblclick='var ID = $(this).find("p").first().attr("name");del_Recent_chat(ID);'>
-			<!--                    <span class="del" onclick="var ID = $(this).next().next().find('p').first().attr('name');var Friendid=$('.Friendname').attr('id'); del_Recent_chat(ID);">×</span>-->
-			                    <div id="FriendHeadPortrait" style=""><img class="FriendHeadPortrait" style="width:40px;height:40px" src="/HeadPortrait/@item.U_HeadPortrait" /></div>
-			                    <div class="messages_context">
-			                        <p class="messages_form" name="@item.Another_ID">名字</p><span class="time">时间</span>
-			                        <p class="context" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;width:150px;"></p>
-			                    </div>
-			                </div>
-							<div class="newfriend" onclick='$(".SpreadNewFriend_panel").css("display", "block");$(".SpreadChat_panel").css("display", "none");'>
-							    <div id="FriendHeadPortrait" style=""><img class="FriendHeadPortrait" style="width:40px;height:40px;border-radius: 5px;" src="" /></div>
-							        <div style="float:left">
-							            <p class="friends_form" id="">新的好友</p>
-							        </div>
-							    </div>
-							    <div class="friend" onclick='$(".SpreadChat_panel").css("display", "block");$(".SpreadNewFriend_panel").css("display", "none"); var name = $(this).find("p").first().text(); var ID = $(this).find("p").first().attr("id"); $(".Friendname").text(name); $(".Friendname").attr("id", ID); getfriendinfo(ID);'>
-							        <div id="FriendHeadPortrait" style=""><img class="FriendHeadPortrait" style="width:40px;height:40px;border-radius: 5px;" src="/HeadPortrait/@Html.DisplayFor(modelItem => item.F_HeadPortrait)" /></div>
-							        <div style="float:left">
-							<!--        <p class="friends_form" id="@Html.DisplayFor(modelItem => item.F_FirendID)">@Html.DisplayFor(modelItem => item.F_NickName)</p>-->
-							            <p class="friends_form" id="@Html.DisplayFor(modelItem => item.F_FirendID)"></p>
-							        </div>
-							    </div>
-			            </div>
-			        </div>
-			</div>
-			<div style="width: 80%;float: left;height: 100%;">
-					<div id="tt" class="easyui-tabs" style="width:100%;height:100%;">
-						<div title="首页" style="padding:20px;display:none;">
-<!--								<div class="SpreadChat_panel">//聊天面板-->
-<!--									<div class="Chat_p_top">-->
-<!--										<h1 class="Friendname"></h1>-->
-<!--									</div>-->
-<!--									<div class="Chat_p_context">-->
-<!--									</div>-->
-<!--									<div class="Chat_p_input">-->
-<!--										<div class="tool">-->
-<!--											<div class="Emoji_panel" style="position: absolute; width: 350px; height: 250px; margin-top: -251px; margin-left: -159px; background: white;display:none;overflow-y: auto;padding-left:15px"></div>-->
-<!--											<img class="Emoji" src="{% static "Emoji/2.png" %}" style="width: 30px; margin-left: 5%; margin-top: 5px;" onclick='' />-->
-<!--										</div>-->
-<!--										<textarea id="messagesContext"></textarea>-->
-<!--										<input id="Send" value="发送(S)" type="button" />-->
-<!--									</div>-->
-<!--								</div>-->
-						</div>
-				</div>
-			</div>
+        <div role="main" class="main" style="width: 100%;height: 650px;display: inline-block;margin-top: 10px;background: white; box-shadow: 0 2px 4px rgba(0, 0, 0, .12), 0 0 6px rgba(0, 0, 0, .04);">
+			<el-row style="width: 100%;height: 100%;">
+			  <el-col :span="1" style="height: 100%;border-right: 1px solid #ebebeb;">
+				  <div class="grid-content bg-purple" style="width: 100%;height: 100%; ">
+					  <ul style="list-style: none;">
+						<li>
+							<a href="#"><el-tooltip class="item" effect="dark" content="消息" placement="left">
+								<img class="fun_icon" src="{% static "icon/信息选中.png" %}" width="40px"/></el-tooltip>
+							</a></li>
+						<li>
+							<a href="#"><el-tooltip class="item" effect="dark" content="空间" placement="left">
+								<img class="fun_icon" src="{% static "icon/个人空间.png" %}" width="40px"/></el-tooltip>
+							</a></li>
+						<li>
+							<a href="#"><el-tooltip class="item" effect="dark" content="设置" placement="left">
+								<img class="fun_icon" src="{% static "icon/设置.png" %}" width="40px"/></el-tooltip>
+							</a></li>
+						<li>
+							<a href="/Logout"><el-tooltip class="item" effect="dark" content="登出" placement="left">
+								<img class="fun_icon" src="{% static "icon/登出.png" %}" width="40px"/></el-tooltip>
+							</a></li>
+					  </ul>
+				  </div>
+				</el-col>
+			  <el-col :span="23" style="height: 100%;">
+					  <el-row style="height: 100%;">
+					    <el-col :span="5" style="height: 100%;">
+								<div class="Chat_panel" style="width: 100%;height: 100%; float: left;">
+								        <div class="message_list">
+								            <div class="search">
+												<el-input v-model="search" placeholder="请输入搜索内容"></el-input>
+								                <!-- <input class="searchinput" type="search" placeholder="搜索" /> -->
+								                <div class="SearchResult" style="position:relative;width:100%;background-color:white;top:24px;"></div>
+								            </div>
+											<template>
+											  <el-tabs v-model="activeName" stretch="stretch"  @tab-click="handleClick">
+											    <el-tab-pane label="消息" name="first">
+													<div class="message_list1">
+													        <div>
+													            <!-- <p style="text-align:center;font-size: 12px;color: #939393;">暂无消息</p> -->
+													        </div>
+													        <div class="messages" onclick='$(".SpreadChat_panel").css("display", "block"); $(".messages").removeClass("active"); $(this).addClass("active"); var name = $(this).find("p").first().text(); var ID = $(this).find("p").first().attr("name"); $(".Friendname").text(name); $(".Friendname").attr("id", ID); getChatrecord(ID); setTimeout("scrolltodown()",50) ' ondblclick='var ID = $(this).find("p").first().attr("name");del_Recent_chat(ID);'>
+													<!--            <span class="del" onclick="var ID = $(this).next().next().find('p').first().attr('name');var Friendid=$('.Friendname').attr('id'); del_Recent_chat(ID);">×</span>-->
+													            <div id="FriendHeadPortrait" style=""><img class="FriendHeadPortrait" style="width:40px;height:40px" src="/HeadPortrait/@item.U_HeadPortrait" /></div>
+													            <div class="messages_context">
+													                <p class="messages_form" name="@item.Another_ID">名字</p><span class="time">时间</span>
+													                <p class="context" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;width:150px;"></p>
+													            </div>
+													        </div>
+													    </div>
+												</el-tab-pane>
+											    <el-tab-pane label="联系人" name="second">
+													<div class="message_list1">
+															<!-- <div class="newfriend" onclick='$(".SpreadNewFriend_panel").css("display", "block");$(".SpreadChat_panel").css("display", "none");'>
+															    <div id="FriendHeadPortrait" style=""><img class="FriendHeadPortrait" style="width:40px;height:40px;border-radius: 5px;" src="" /></div>
+															        <div style="float:left">
+															            <p class="friends_form" id="">新的好友</p>
+															        </div>
+															    </div>
+															</div> -->
+															<div class="friend" onclick='$(".SpreadChat_panel").css("display", "block");$(".SpreadNewFriend_panel").css("display", "none"); var name = $(this).find("p").first().text(); var ID = $(this).find("p").first().attr("id"); $(".Friendname").text(name); $(".Friendname").attr("id", ID); getfriendinfo(ID);'>
+															        <div id="FriendHeadPortrait" style=""><img class="FriendHeadPortrait" style="width:40px;height:40px;border-radius: 5px;" src="/HeadPortrait/@Html.DisplayFor(modelItem => item.F_HeadPortrait)" /></div>
+															        <div style="float:left">
+															<!--        <p class="friends_form" id="@Html.DisplayFor(modelItem => item.F_FirendID)">@Html.DisplayFor(modelItem => item.F_NickName)</p>-->
+															            <p class="friends_form" id="@Html.DisplayFor(modelItem => item.F_FirendID)"></p>
+															        </div>
+															    </div>
+																{{friends.0}}
+												</el-tab-pane>
+											  </el-tabs>
+											</template>
+								        </div>
+								</div>
+						</el-col>
+					    <el-col :span="19">
+							<el-empty class="empty" description="{{OneWord}}" :image-size="300" style="display: flex;justify-content: center;align-items: center;flex-direction: column;text-align: center;box-sizing: border-box;padding: 40px 0;"></el-empty>
+						</el-col>
+					  </el-row>
+				  </div>
+			  </el-col>
+			</el-row>
 		</div>
     </div>
+	<script>
+	new Vue({
+		el:'.Main_panel',
+		data: {
+	      SignText: '{{user.sign}}',
+		  activeName: 'first',
+		  tabPosition: 'left',
+		  search:'',
+		},
+	    methods: {
+	      handleClick(tab, event) {
+	        // console.log(tab, event);
+	      },
+		  EditSign(){
+			  axios.post('/EditSign','NewSign='+this.SignText)
+			  .then(function(response){
+				  console.log(response)
+			  },function(err){
+				  console.log(err)
+			  })
+		  },
+	    },
+	})
+	</script>
 </body>
 </html>

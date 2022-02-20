@@ -1,6 +1,6 @@
 from django.urls import path
 # from .views import
-from .views import Recent_chat,Friends_list,Find_Friends,Chat_panel
+from .views import *
 
 urlpatterns = [
     # 参数1：路由
@@ -10,4 +10,5 @@ urlpatterns = [
     path('Home/Friends_list/', Friends_list),
     path('Home/Find_Friends/', Find_Friends),
     path('Home/Chat_panel', Chat_panel),
+    path('EditSign', EditSign),
 ]

@@ -59,3 +59,10 @@ class MessagesType(models.Model):
     # id = models.IntegerField(db_column='ID', primary_key=True) #主键ID 主键
     typename = models.CharField(db_column='TypeName',max_length=50) #消息类型
 
+class FriendsGroup(models.Model):
+    # id = models.IntegerField(db_column='ID', primary_key=True) #主键ID
+    groupid = models.AutoField(db_column='GroupId', primary_key=True) #分组id 主键
+    userid = models.IntegerField(db_column='UserID') #用户id
+    groupname = models.CharField(db_column='GroupName',max_length=50, blank=True, null=True) #分组名
+    serialnumber=models.IntegerField(db_column='SerialNumber') #分组序号
+    createtime = models.CharField(db_column='CreateTime', max_length=50, blank=True, null=True)  # 创建时间

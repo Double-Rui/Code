@@ -6,8 +6,12 @@ from . import HomeController
 
 
 def Recent_chat(request):
-    user=User.objects.get(loginid=request.COOKIES.get('LoginID'))
-    return render(request, "Home/Recent_chat.html",{"user":HomeController.get_myInfo(user)})
+    ID=request.COOKIES.get('LoginID')
+    user=User.objects.get(loginid=ID)
+
+    return render(request, "Home/Recent_chat.html",{"user":HomeController.get_myInfo(user),
+                                                    "friends":HomeController.getFriends(ID),
+                                                    "OneWord":HomeController.getOneWord()})
 
 def Friends_list(request):
     return render(request, "Home/Friends_list.html")
@@ -17,3 +21,10 @@ def Find_Friends(request):
 
 def Chat_panel(request):
     return render(request, "Home/Chat_panel.html")
+
+def EditSign(request):
+    status=0
+    if(HomeController.EditSign(request)):
+        status=1
+    return HttpResponse(json.dumps({
+        "status": status}))
