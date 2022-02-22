@@ -8,56 +8,56 @@ $(document).ready(function () {
         mouse_y = e.pageY;//得出鼠标在容器内的坐标Y，以容器的左上角为坐标原点
         //$("h1").text("x:" + mouse_x + "y:" + mouse_y)
     });
-    GetPersonal_info();
+    // GetPersonal_info();
 
-    $(".Revise").click(function () {//修改个人信息
-        var data = {
-            "NickName": $(".NickName").val(),
-            "SignaTure": $(".SignaTure").val(),
-            "Sex": $(".Sex option:selected").text(),
-            "Birthday": $(".Birthday").val(),
-            "Telephone": $(".Telephone").val(),
-            "Email": $(".Email").val(),
-            "ShengXiao": $(".ShengXiao option:selected").text(),
-            "Age": $(".Age").val(),
-            "BloodType": $(".BloodType option:selected").text(),
-            "SchoolTag": $(".SchoolTag").val(),
-            "Vocation": $(".Vocation option:selected").text(),
-            "Intro": $(".Intro").val(),
-            "Constellation": $(".Constellation option:selected").text()
-        }
-        $.ajax({
-            url: "/Account/EditPersonalInfo",
-            type: 'post',
-            dataType: "json",
-            data: data,
-            success: function (data) {
-                $(".tip").text(data.mags)
-                GetPersonal_info();
-                $(".tip").animate({ opacity: "1" }, 2000, function () {
-                    $(".tip").animate({ opacity: "0" }, 2000);});
-                console.log('请求成功');
-            },
-            error: function () {
-                console.log('发送请求失败'); // 请求失败时的回调函数
-            }
-        });
-    })
+    // $(".Revise").click(function () {//修改个人信息
+    //     var data = {
+    //         "NickName": $(".NickName").val(),
+    //         "SignaTure": $(".SignaTure").val(),
+    //         "Sex": $(".Sex option:selected").text(),
+    //         "Birthday": $(".Birthday").val(),
+    //         "Telephone": $(".Telephone").val(),
+    //         "Email": $(".Email").val(),
+    //         "ShengXiao": $(".ShengXiao option:selected").text(),
+    //         "Age": $(".Age").val(),
+    //         "BloodType": $(".BloodType option:selected").text(),
+    //         "SchoolTag": $(".SchoolTag").val(),
+    //         "Vocation": $(".Vocation option:selected").text(),
+    //         "Intro": $(".Intro").val(),
+    //         "Constellation": $(".Constellation option:selected").text()
+    //     }
+    //     $.ajax({
+    //         url: "/Account/EditPersonalInfo",
+    //         type: 'post',
+    //         dataType: "json",
+    //         data: data,
+    //         success: function (data) {
+    //             $(".tip").text(data.mags)
+    //             GetPersonal_info();
+    //             $(".tip").animate({ opacity: "1" }, 2000, function () {
+    //                 $(".tip").animate({ opacity: "0" }, 2000);});
+    //             console.log('请求成功');
+    //         },
+    //         error: function () {
+    //             console.log('发送请求失败'); // 请求失败时的回调函数
+    //         }
+    //     });
+    // })
 
-    $(".Logout").click(function () {//登出
-        $.ajax({
-            url: "/Account/Logout",
-            type: 'post',
-            dataType: "json",
-            success: function (data) {
-                window.location.href = data.url;
-                console.log('请求成功');
-            },
-            error: function () {
-                console.log('发送请求失败'); // 请求失败时的回调函数
-            }
-        });
-    })
+    // $(".Logout").click(function () {//登出
+    //     $.ajax({
+    //         url: "/Account/Logout",
+    //         type: 'post',
+    //         dataType: "json",
+    //         success: function (data) {
+    //             window.location.href = data.url;
+    //             console.log('请求成功');
+    //         },
+    //         error: function () {
+    //             console.log('发送请求失败'); // 请求失败时的回调函数
+    //         }
+    //     });
+    // })
 
     $("#Send").click(function () {
         Send()
@@ -99,50 +99,50 @@ $(document).ready(function () {
         });
     })*/
 })
-function GetPersonal_info() {//获取个人信息
-    $.ajax({
-        url: "/Home/GetPersonal_info",
-        type: 'get',
-        dataType: "json",
-        data: {},
-        success: function (data) {
-            $(".LoginID").text(data.U_LoginID)
-            $(".NickName").val(data.U_NickName)
-            $(".SignaTure").val(data.U_SignaTure)
-            $(".Birthday").val(data.U_Birthday)
-            $(".Vocation option:selected").text(data.U_Vocation)
-            $(".Sex option:selected").text(data.U_Sex)
-            $(".Telephone").val(data.U_Telephone)
-            $(".Email").val(data.U_Email)
-            $(".Intro").text(data.U_Intro)
-            $(".ShengXiao option:selected").text(data.U_ShengXiao)
-            $(".Age").val(data.U_Age)
-            $(".Constellation option:selected").text(data.U_Constellation)
-            $(".BloodType option:selected").text(data.U_BloodType)
-            $(".SchoolTag").text(data.U_SchoolTag)
-            console.log('请求成功');
-        },
-        error: function () {
-            console.log('发送请求失败'); // 请求失败时的回调函数
-        }
-    });
-}
+// function GetPersonal_info() {//获取个人信息
+//     $.ajax({
+//         url: "/Home/GetPersonal_info",
+//         type: 'get',
+//         dataType: "json",
+//         data: {},
+//         success: function (data) {
+//             $(".LoginID").text(data.U_LoginID)
+//             $(".NickName").val(data.U_NickName)
+//             $(".SignaTure").val(data.U_SignaTure)
+//             $(".Birthday").val(data.U_Birthday)
+//             $(".Vocation option:selected").text(data.U_Vocation)
+//             $(".Sex option:selected").text(data.U_Sex)
+//             $(".Telephone").val(data.U_Telephone)
+//             $(".Email").val(data.U_Email)
+//             $(".Intro").text(data.U_Intro)
+//             $(".ShengXiao option:selected").text(data.U_ShengXiao)
+//             $(".Age").val(data.U_Age)
+//             $(".Constellation option:selected").text(data.U_Constellation)
+//             $(".BloodType option:selected").text(data.U_BloodType)
+//             $(".SchoolTag").text(data.U_SchoolTag)
+//             console.log('请求成功');
+//         },
+//         error: function () {
+//             console.log('发送请求失败'); // 请求失败时的回调函数
+//         }
+//     });
+// }
 
-function getFriendHeadPortrait() {//获取好友头像
-    $.ajax({
-        url: "/Home/getFriendHeadPortrait",
-        type: 'post',
-        dataType: "json",
-        data: { FirendID: $(".FriendHeadPortrait").attr("id") },
-        success: function (data) {
-            $(".FriendHeadPortrait").attr("src", "/icon/" + data)
-            console.log('请求成功');
-        },
-        error: function () {
-            console.log('发送请求失败'); // 请求失败时的回调函数
-        }
-    });
-}
+// function getFriendHeadPortrait() {//获取好友头像
+//     $.ajax({
+//         url: "/Home/getFriendHeadPortrait",
+//         type: 'post',
+//         dataType: "json",
+//         data: { FirendID: $(".FriendHeadPortrait").attr("id") },
+//         success: function (data) {
+//             $(".FriendHeadPortrait").attr("src", "/icon/" + data)
+//             console.log('请求成功');
+//         },
+//         error: function () {
+//             console.log('发送请求失败'); // 请求失败时的回调函数
+//         }
+//     });
+// }
 
 function getChatrecord(ID) {//获取消息记录
     $.ajax({

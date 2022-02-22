@@ -31,6 +31,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'simpleui',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -111,9 +112,10 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/4.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
-
-TIME_ZONE = 'UTC'
+# LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'zh-hans'
+SIMPLEUI_LOGO ='/static/Logo/logo.png'
+TIME_ZONE = 'Asia/Shanghai'
 
 USE_I18N = True
 
@@ -135,3 +137,63 @@ STATICFILES_DIRS = (
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 X_FRAME_OPTIONS = 'SAMEORIGIN'
+
+##管理页面设置
+# 隐藏右侧SimpleUI广告链接和使用分析
+SIMPLEUI_HOME_INFO = False
+SIMPLEUI_ANALYSIS = False
+
+SIMPLEUI_DEFAULT_THEME = 'element.css'
+
+SIMPLEUI_CONFIG = {
+    # 是否使用系统默认菜单。
+    'system_keep': False,
+
+    # 用于菜单排序和过滤, 不填此字段为默认排序和全部显示。 空列表[] 为全部不显示.
+    'menu_display': ['注册用户管理', '管理员设置'],
+
+    # 设置是否开启动态菜单, 默认为False. 如果开启, 则会在每次用户登陆时刷新展示菜单内容。
+    # 一般建议关闭。
+    'dynamic': False,
+    'menus': [
+        {
+            'app': 'auth',
+            'name': '管理员设置',
+            'icon': 'fas fa-user-shield',
+            'models': [
+                {
+                    'name': '管理员列表',
+                    'icon': 'fa fa-user',
+                    'url': 'auth/user/'
+                },
+                {
+                    'name': '用户组',
+                    'icon': 'fa fa-th-list',
+                    'url': 'auth/group/'
+                }
+            ]
+        },
+
+        {
+            'name': '注册用户管理',
+            'icon': 'fa fa-th-list',
+            'models': [
+                {
+                    'name': '用户列表',
+                    # 注意url按'/admin/应用名小写/模型名小写/'命名。
+                    'url': '/admin/users/user/',
+                    'icon': 'fa fa-user'
+                },
+            ]
+        },
+    ]
+}
+
+# 隐藏首页的快捷操作和最近动作
+SIMPLEUI_HOME_QUICK = False
+SIMPLEUI_HOME_ACTION = False
+
+# 修改首页设置, 指向新创建的控制面板
+SIMPLEUI_HOME_PAGE = '/users/dashboard/'
+SIMPLEUI_HOME_TITLE = '控制面板'
+SIMPLEUI_HOME_ICON = 'fa fa-eye'

@@ -1,11 +1,15 @@
 import json
 import random
+
+from django.contrib.auth import logout
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect, resolve_url
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 import datetime
 from . import models
+from django.shortcuts import render
+from .models import User
 
 @csrf_exempt
 def Register(request):
@@ -54,6 +58,7 @@ def Login(request):
         status = 0
         LoginID = request.POST.get("LoginID")
         PassWord = request.POST.get("PassWord")
+        next_url = request.GET.get("next")
         if (LoginID.isdigit() == False):
             tip = "账号只能为数字"
         elif (Verify_LoginID(LoginID)):
@@ -67,8 +72,12 @@ def Login(request):
         if (status == 1):
             Response = HttpResponse(json.dumps({
                 "status": status,
-                "url":"Home/Recent_chat/"}))
-            Response.set_cookie('LoginID', LoginID, 3600)
+                "url": "Home/Recent_chat/"}))
+            if next_url:
+                Response = HttpResponse(json.dumps({
+                    "status": status,
+                    "url": next_url}))
+            Response.set_cookie('LoginID', LoginID)
             return Response
         else:
             return HttpResponse(json.dumps({
@@ -80,6 +89,7 @@ def Login(request):
 def Logout(request):
     response = HttpResponseRedirect('/Login')
     #清理cookie里保存username
+    logout(request)
     response.delete_cookie('LoginID')
     return response
 
@@ -101,3 +111,10 @@ def Verify_LoginID(LoginID):  # 验证账号是否存在
     else:
         return True
 
+
+
+def dashboard(request):
+    user_count = User.objects.count()
+
+    context = { 'user_count': user_count}
+    return render(request, 'admin/dashboard.html',context)

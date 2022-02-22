@@ -29,6 +29,8 @@ class User(models.Model):
     class Meta:
         managed = False
         db_table = 'user'
+        verbose_name = "用户"
+        verbose_name_plural = "用户"
 
     def __int__(self):
         return self.loginid

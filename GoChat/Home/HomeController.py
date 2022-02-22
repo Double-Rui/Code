@@ -1,6 +1,7 @@
+import json
 import requests
 from users.models import User,UserInfo
-from Home.models import Friends
+from Home.models import Friends,FriendsGroup
 from django.forms.models import model_to_dict
 
 
@@ -13,6 +14,26 @@ def EditSign(request):
             return True
         else:
             return False
+
+def getFriendGroup(ID):
+
+    friendsgroup = FriendsGroup.objects.filter(userid=ID)
+    result=[]
+    for i in friendsgroup:
+        friends = Friends.objects.filter(userid=ID,friendgroupsid=i.groupid)
+        children=[]
+        for j in friends:
+            children.append({
+                "username":User.objects.get(loginid=j.friendid).username,
+                "headportrait":User.objects.get(loginid=j.friendid).headportrait,
+                "sign":str(User.objects.get(loginid=j.friendid).sign)
+            })
+        result.append({
+            "groupname": i.groupname,
+            "serialnumber": i.serialnumber,
+            "children": children
+        })
+    return result
 
 def getFriends(ID):
     friends = Friends.objects.filter(userid=ID)

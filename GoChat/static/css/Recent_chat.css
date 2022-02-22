@@ -32,7 +32,7 @@ body {
         background: whitesmoke;
     }
 
-.message_list {
+.Chat_panel {
     float: left;
     height: 100%;
     width: 100%;
@@ -93,8 +93,15 @@ body {
     .friends_form {
         margin-bottom: 0px;
         margin-left: 10px;
-        padding-top: 22px;
+        padding-top: 10px;
     }
+	.friends_sign{
+		margin-bottom: 0px;
+		margin-left: 10px;
+		font-size: 12px;
+		padding-top: 7px;
+		color: #484848;
+	}
 
 .context {
     color: #666666;
@@ -206,8 +213,8 @@ body {
     float: left;
     clear: right;
     width:20%;
-    height: 40px;
-    margin-top: 15px;
+    height: 50px;
+    margin-top: 10px;
     margin-left: 12px;
 }
 
@@ -228,12 +235,12 @@ body {
     font-size: 12px;
     float: right;
 }
-.active {
+/* .active {
     background-color: #a1a1a1;
     border-radius: 0px;
     background: #e0e0e0;
     box-shadow: inset 0px 6px 3px #898989, inset 0px -6px 3px 0px #ffffff;
-}
+} */
 #messagesContext {
     width: 90%;
     height: 63%;
@@ -271,4 +278,24 @@ body {
 }
 .fun_icon{
 	padding: 5px 10px;
+}
+.el-empty{
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex-direction: column;
+	text-align: center;
+	box-sizing: border-box;
+	padding: 22% 0;
+	color: #b3afaf;
+	user-select: none;
+}
+.group{
+	padding: 7px 0 7px 10px;
+}
+	.frindgroup_ul :hover{
+		background-color: #cdcdcd;
+	}
+.active{
+    background-color:#cdcdcd;
 }

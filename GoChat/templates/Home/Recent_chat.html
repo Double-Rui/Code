@@ -6,6 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>GoChat</title>
+	<link rel="shortcut icon" href="{%static 'Logo/favicon.ico' %}"/>
     <link rel="stylesheet" href="{% static "css/site.css" %}"/>
     <link rel="stylesheet" href="{% static "css/Shared.css" %}"/>
 	<link type="text/css" rel="styleSheet" href="{% static "css/Recent_chat.css" %}" />
@@ -18,20 +19,10 @@
 	<!-- <script src="{% static "js/JavaScript.js" %}"></script> -->
     <script>
         $(document).ready(function () {
-            $(function () {
-                $(".Head_portrait").click(function () {
-                    $(".personal_information").css("display", "block");
-                    //$(".personal_information").toggle();
-                    return false;
-                })
-                $(".personal_information").click(function () {
-                    return false;
-                })
-                $(document).click(function () {
-                    $(".personal_information").css("display", "none")
-                });
-            })
-
+			$("li").click(function(){
+			    $("li").removeClass("active");
+			    $(this).addClass("active");
+			})
             // getFriendRequestNum()
 			// window.onload = function () {
 			//     var url = window.location.href;
@@ -392,8 +383,8 @@
 			  <el-col :span="23" style="height: 100%;">
 					  <el-row style="height: 100%;">
 					    <el-col :span="5" style="height: 100%;">
-								<div class="Chat_panel" style="width: 100%;height: 100%; float: left;">
-								        <div class="message_list">
+								<div class="Chat_panel" style="width: 100%;height: 100%; float: left;user-select: none;">
+								        <div class="Chat_list">
 								            <div class="search">
 												<el-input v-model="search" placeholder="请输入搜索内容"></el-input>
 								                <!-- <input class="searchinput" type="search" placeholder="搜索" /> -->
@@ -401,47 +392,51 @@
 								            </div>
 											<template>
 											  <el-tabs v-model="activeName" stretch="stretch"  @tab-click="handleClick">
-											    <el-tab-pane label="消息" name="first">
-													<div class="message_list1">
-													        <div>
-													            <!-- <p style="text-align:center;font-size: 12px;color: #939393;">暂无消息</p> -->
-													        </div>
+											    <el-tab-pane  label="消息" name="first">
+													<div class="message_list">
 													        <div class="messages" onclick='$(".SpreadChat_panel").css("display", "block"); $(".messages").removeClass("active"); $(this).addClass("active"); var name = $(this).find("p").first().text(); var ID = $(this).find("p").first().attr("name"); $(".Friendname").text(name); $(".Friendname").attr("id", ID); getChatrecord(ID); setTimeout("scrolltodown()",50) ' ondblclick='var ID = $(this).find("p").first().attr("name");del_Recent_chat(ID);'>
 													<!--            <span class="del" onclick="var ID = $(this).next().next().find('p').first().attr('name');var Friendid=$('.Friendname').attr('id'); del_Recent_chat(ID);">×</span>-->
-													            <div id="FriendHeadPortrait" style=""><img class="FriendHeadPortrait" style="width:40px;height:40px" src="/HeadPortrait/@item.U_HeadPortrait" /></div>
+													            <div id="FriendHeadPortrait" style=""><img class="FriendHeadPortrait" style="width:40px;height:40px" src="" /></div>
 													            <div class="messages_context">
-													                <p class="messages_form" name="@item.Another_ID">名字</p><span class="time">时间</span>
+													                <p class="messages_form" name="">名字</p><span class="time">时间</span>
 													                <p class="context" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;width:150px;"></p>
 													            </div>
 													        </div>
 													    </div>
 												</el-tab-pane>
 											    <el-tab-pane label="联系人" name="second">
-													<div class="message_list1">
-															<!-- <div class="newfriend" onclick='$(".SpreadNewFriend_panel").css("display", "block");$(".SpreadChat_panel").css("display", "none");'>
-															    <div id="FriendHeadPortrait" style=""><img class="FriendHeadPortrait" style="width:40px;height:40px;border-radius: 5px;" src="" /></div>
-															        <div style="float:left">
-															            <p class="friends_form" id="">新的好友</p>
-															        </div>
-															    </div>
-															</div> -->
-															<div class="friend" onclick='$(".SpreadChat_panel").css("display", "block");$(".SpreadNewFriend_panel").css("display", "none"); var name = $(this).find("p").first().text(); var ID = $(this).find("p").first().attr("id"); $(".Friendname").text(name); $(".Friendname").attr("id", ID); getfriendinfo(ID);'>
-															        <div id="FriendHeadPortrait" style=""><img class="FriendHeadPortrait" style="width:40px;height:40px;border-radius: 5px;" src="/HeadPortrait/@Html.DisplayFor(modelItem => item.F_HeadPortrait)" /></div>
-															        <div style="float:left">
-															<!--        <p class="friends_form" id="@Html.DisplayFor(modelItem => item.F_FirendID)">@Html.DisplayFor(modelItem => item.F_NickName)</p>-->
-															            <p class="friends_form" id="@Html.DisplayFor(modelItem => item.F_FirendID)"></p>
-															        </div>
-															    </div>
-																{{friends.0}}
+													<div class="friend_list">
+														{% for item in friendGroup %}
+														    <ul class="frindgroup_ul">
+																<div class="group" onclick="$(this).siblings('li').toggle();var icon=$(this).children('i');if(icon.val()==0){icon.val(1);icon.attr('class','el-icon-arrow-down')}else{icon.val(0);icon.attr('class','el-icon-arrow-right')}" style="width: 100%;">
+																	<i value="0" class="el-icon-arrow-right"></i><span>{{item.groupname}}</span>
+																</div>
+																{% for item in item.children %}
+														    	<li style="height: 70px;display: none;">
+																	<div class="friend" onclick='$(".SpreadChat_panel").css("display", "block");$(".SpreadNewFriend_panel").css("display", "none"); var name = $(this).find("p").first().text(); var ID = $(this).find("p").first().attr("id"); $(".Friendname").text(name); $(".Friendname").attr("id", ID); getfriendinfo(ID);'>
+																	        <div id="FriendHeadPortrait" style="">
+																				<el-avatar :size="50" src="{% static "HeadPortrait/" %}{{item.headportrait}}"></el-avatar>
+																			</div>
+																	        <div style="float:left">
+																	            <p class="friends_form" id="">{{item.username}}</p>
+																				<p class="friends_sign" id="">{{item.sign}}</p>
+																	        </div>
+																	    </div>
+																</li>
+																{% endfor %}
+														    </ul>
+														{% endfor %}
 												</el-tab-pane>
 											  </el-tabs>
 											</template>
 								        </div>
 								</div>
 						</el-col>
+
 					    <el-col :span="19">
-							<el-empty class="empty" description="{{OneWord}}" :image-size="300" style="display: flex;justify-content: center;align-items: center;flex-direction: column;text-align: center;box-sizing: border-box;padding: 40px 0;"></el-empty>
+							<el-empty class="empty" description="{{OneWord}}" image="{% static "Logo/GoChat2.png" %}" style=""></el-empty>
 						</el-col>
+						
 					  </el-row>
 				  </div>
 			  </el-col>
