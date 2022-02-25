@@ -23,18 +23,6 @@
 			    $("li").removeClass("active");
 			    $(this).addClass("active");
 			})
-            // getFriendRequestNum()
-			// window.onload = function () {
-			//     var url = window.location.href;
-			//     var index = url.indexOf("id");
-			//     var a = url.substring(url.lastIndexOf("=") + 1, url.length);
-			//     var str = "p[name='" + a + "']"
-			//     if (str != "") {
-			//         $(str).parent().parent().trigger("click")
-			//         $('.message_list1').scrollTop(($(str).parent().parent().offset().top)-130);
-			//         $(".ceshi").text($(str).parent().parent().offset().top)
-			//     }
-			// }
 			// getNewMessages();
 			// loadEmoji();
 			$(function () {
@@ -78,21 +66,6 @@
 		        });
 		    }
 		}
-
-        // function getFriendRequestNum() {
-        //     $.ajax({
-        //         url: '/home/getFriendRequestNum',
-        //         type: 'get',
-        //         success: function (data) {
-        //             if (data != 0) {
-        //                 $(".FriendRequestNum").css("display","unset")
-        //                 $(".FriendRequestNum").text(data)
-        //             }
-        //         }, error: function () {
-
-        //         }
-        //     })
-        // }
 		
 		function getNewMessages() {
 		    $(".context").each(function () {
@@ -115,36 +88,6 @@
 		    });
 		}
 		
-		function getRecent_chat(ID) {
-		    $(".message_list1").empty()
-		    $.ajax({
-		        url: '/Home/getRecent_chat',
-		        data: {},
-		        type: 'post',
-		        dataType: "json",
-		        success: function (data) {
-		            if (data == null) {
-		                $(".message_list1").append('<div><p style = "text-align:center;font-size: 12px;color: #939393;">暂无消息</p ></div >')
-		            } else {
-		                for (i = 0; i < data.length; i++) {
-		                    $(".message_list1").append('<div class="messages" onclick=\'$(".SpreadChat_panel").css("display", "block");$(".messages").removeClass("active");$(this).addClass("active");var name = $(this).find("p").first().text();var ID = $(this).find("p").first().attr("name");$(".Friendname").text(name); $(".Friendname").attr("id",ID);getChatrecord(ID);setTimeout("scrolltodown()",50)\' ondblclick=\'var ID = $(this).find("p").first().attr("name"); del_Recent_chat(ID);\'>\
-		                <div id = "FriendHeadPortrait"><img class="FriendHeadPortrait" style="width:40px;height:40px" src="/HeadPortrait/'+ data[i].U_HeadPortrait + '" /></div >\
-		                <div class="messages_context">\
-		                <p class="messages_form" name="' + data[i].Another_ID + '">' + data[i].NickName + '</p><span class="time">' + data[i].CreateTime + '</span>\
-		                <p class="context" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;width:150px;"></p>\
-		                </div>\
-		                </div>')
-		                }
-		            }
-		            getNewMessages()
-		
-		            var str = "p[name='" + ID + "']"
-		            $(str).parent().parent().trigger("click")
-		        }, error: function (e) {
-		
-		        }
-		    })
-		}
 		
 		// function loadEmoji() {//生成表情
 		//     $(".Emoji_panel").html('');
@@ -257,7 +200,7 @@
 				<div style="margin: 5% 0;">
 					<table>
 						<tr >
-							<td style="padding-top: 5%;"><span style="color: white;font-size: 40px;">{{user.username}}</span></td>
+							<td style="padding-top: 5%;"><input class="UserNameinput" v-model="UserName" @change="EditUserName"></td>
 						</tr>
 						<tr >
 							<td style="padding-bottom: 5%;"><span style="color: white;font-size: 25px;">ID {{user.id}}</span></td>
@@ -361,17 +304,20 @@
 			  <el-col :span="1" style="height: 100%;border-right: 1px solid #ebebeb;">
 				  <div class="grid-content bg-purple" style="width: 100%;height: 100%; ">
 					  <ul style="list-style: none;">
-						<li>
+						<li @click="SwitchKey('message')">
 							<a href="#"><el-tooltip class="item" effect="dark" content="消息" placement="left">
-								<img class="fun_icon" src="{% static "icon/信息选中.png" %}" width="40px"/></el-tooltip>
+								<img v-show="module!='message'" class="fun_icon" src="{% static "icon/信息.png" %}" width="40px"/></el-tooltip>
+								<img v-show="module=='message'" class="fun_icon" src="{% static "icon/信息选中.png" %}" width="40px"/></el-tooltip>
 							</a></li>
-						<li>
+						<li @click="SwitchKey('Zone')">
 							<a href="#"><el-tooltip class="item" effect="dark" content="空间" placement="left">
-								<img class="fun_icon" src="{% static "icon/个人空间.png" %}" width="40px"/></el-tooltip>
+								<img v-show="module!='Zone'" class="fun_icon" src="{% static "icon/个人空间.png" %}" width="40px"/></el-tooltip>
+								<img v-show="module=='Zone'" class="fun_icon" src="{% static "icon/个人空间选中.png" %}" width="40px"/></el-tooltip>
 							</a></li>
-						<li>
+						<li @click="SwitchKey('seting')">
 							<a href="#"><el-tooltip class="item" effect="dark" content="设置" placement="left">
-								<img class="fun_icon" src="{% static "icon/设置.png" %}" width="40px"/></el-tooltip>
+								<img v-show="module!='seting'" class="fun_icon" src="{% static "icon/设置.png" %}" width="40px"/></el-tooltip>
+								<img v-show="module=='seting'" class="fun_icon" src="{% static "icon/设置选中.png" %}" width="40px"/></el-tooltip>
 							</a></li>
 						<li>
 							<a href="/Logout"><el-tooltip class="item" effect="dark" content="登出" placement="left">
@@ -381,63 +327,73 @@
 				  </div>
 				</el-col>
 			  <el-col :span="23" style="height: 100%;">
-					  <el-row style="height: 100%;">
-					    <el-col :span="5" style="height: 100%;">
-								<div class="Chat_panel" style="width: 100%;height: 100%; float: left;user-select: none;">
-								        <div class="Chat_list">
-								            <div class="search">
-												<el-input v-model="search" placeholder="请输入搜索内容"></el-input>
-								                <!-- <input class="searchinput" type="search" placeholder="搜索" /> -->
-								                <div class="SearchResult" style="position:relative;width:100%;background-color:white;top:24px;"></div>
-								            </div>
-											<template>
-											  <el-tabs v-model="activeName" stretch="stretch"  @tab-click="handleClick">
-											    <el-tab-pane  label="消息" name="first">
-													<div class="message_list">
-													        <div class="messages" onclick='$(".SpreadChat_panel").css("display", "block"); $(".messages").removeClass("active"); $(this).addClass("active"); var name = $(this).find("p").first().text(); var ID = $(this).find("p").first().attr("name"); $(".Friendname").text(name); $(".Friendname").attr("id", ID); getChatrecord(ID); setTimeout("scrolltodown()",50) ' ondblclick='var ID = $(this).find("p").first().attr("name");del_Recent_chat(ID);'>
-													<!--            <span class="del" onclick="var ID = $(this).next().next().find('p').first().attr('name');var Friendid=$('.Friendname').attr('id'); del_Recent_chat(ID);">×</span>-->
-													            <div id="FriendHeadPortrait" style=""><img class="FriendHeadPortrait" style="width:40px;height:40px" src="" /></div>
-													            <div class="messages_context">
-													                <p class="messages_form" name="">名字</p><span class="time">时间</span>
-													                <p class="context" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;width:150px;"></p>
-													            </div>
-													        </div>
-													    </div>
-												</el-tab-pane>
-											    <el-tab-pane label="联系人" name="second">
-													<div class="friend_list">
-														{% for item in friendGroup %}
-														    <ul class="frindgroup_ul">
-																<div class="group" onclick="$(this).siblings('li').toggle();var icon=$(this).children('i');if(icon.val()==0){icon.val(1);icon.attr('class','el-icon-arrow-down')}else{icon.val(0);icon.attr('class','el-icon-arrow-right')}" style="width: 100%;">
-																	<i value="0" class="el-icon-arrow-right"></i><span>{{item.groupname}}</span>
-																</div>
-																{% for item in item.children %}
-														    	<li style="height: 70px;display: none;">
-																	<div class="friend" onclick='$(".SpreadChat_panel").css("display", "block");$(".SpreadNewFriend_panel").css("display", "none"); var name = $(this).find("p").first().text(); var ID = $(this).find("p").first().attr("id"); $(".Friendname").text(name); $(".Friendname").attr("id", ID); getfriendinfo(ID);'>
-																	        <div id="FriendHeadPortrait" style="">
-																				<el-avatar :size="50" src="{% static "HeadPortrait/" %}{{item.headportrait}}"></el-avatar>
-																			</div>
-																	        <div style="float:left">
-																	            <p class="friends_form" id="">{{item.username}}</p>
-																				<p class="friends_sign" id="">{{item.sign}}</p>
-																	        </div>
-																	    </div>
-																</li>
-																{% endfor %}
-														    </ul>
+					<el-row v-show="module=='message'" style="height: 100%;">
+					  <el-col :span="5" style="height: 100%;">
+						<div class="Chat_panel" style="width: 100%;height: 100%; float: left;user-select: none;">
+						        <div class="Chat_list">
+						            <div class="search">
+										<el-input v-model="search" placeholder="请输入搜索内容"></el-input>
+						                <div class="SearchResult" style="position:relative;width:100%;background-color:white;top:24px;"></div>
+						            </div>
+									<template>
+									  <el-tabs v-model="activeName" stretch="stretch"  @tab-click="handleClick">
+									    <el-tab-pane  label="消息" name="first">
+											<div class="message_list">
+											        <div class="messages" onclick='$(".SpreadChat_panel").css("display", "block"); $(".messages").removeClass("active"); $(this).addClass("active"); var name = $(this).find("p").first().text(); var ID = $(this).find("p").first().attr("name"); $(".Friendname").text(name); $(".Friendname").attr("id", ID); getChatrecord(ID); setTimeout("scrolltodown()",50) ' ondblclick='var ID = $(this).find("p").first().attr("name");del_Recent_chat(ID);'>
+											<!--            <span class="del" onclick="var ID = $(this).next().next().find('p').first().attr('name');var Friendid=$('.Friendname').attr('id'); del_Recent_chat(ID);">×</span>-->
+											            <div id="FriendHeadPortrait" style=""><img class="FriendHeadPortrait" style="width:40px;height:40px" src="" /></div>
+											            <div class="messages_context">
+											                <p class="messages_form" name="">名字</p><span class="time">时间</span>
+											                <p class="context" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;width:150px;"></p>
+											            </div>
+											        </div>
+											    </div>
+										</el-tab-pane>
+									    <el-tab-pane label="联系人" name="second">
+											<div class="friend_list">
+												{% for item in friendGroup %}
+												    <ul class="frindgroup_ul">
+														<div class="group" onclick="$(this).siblings('li').toggle();var icon=$(this).children('i');if(icon.val()==0){icon.val(1);icon.attr('class','el-icon-arrow-down')}else{icon.val(0);icon.attr('class','el-icon-arrow-right')}" style="width: 100%;">
+															<i value="0" class="el-icon-arrow-right"></i><span>{{item.groupname}}</span>
+														</div>
+														{% for item in item.children %}
+												    	<li style="height: 70px;display: none;">
+															<div class="friend" onclick='$(".SpreadChat_panel").css("display", "block");$(".SpreadNewFriend_panel").css("display", "none"); var name = $(this).find("p").first().text(); var ID = $(this).find("p").first().attr("id"); $(".Friendname").text(name); $(".Friendname").attr("id", ID); getfriendinfo(ID);'>
+															        <div id="FriendHeadPortrait" style="">
+																		<el-avatar :size="50" src="{% static "HeadPortrait/" %}{{item.headportrait}}"></el-avatar>
+																	</div>
+															        <div style="float:left">
+															            <p class="friends_form" id="">{{item.username}}</p>
+																		<p class="friends_sign" id="">{{item.sign}}</p>
+															        </div>
+															    </div>
+														</li>
 														{% endfor %}
-												</el-tab-pane>
-											  </el-tabs>
-											</template>
-								        </div>
-								</div>
+												    </ul>
+												{% endfor %}
+										</el-tab-pane>
+									  </el-tabs>
+									</template>
+						        </div>
+						</div>
 						</el-col>
-
-					    <el-col :span="19">
+						<el-col :span="19">
 							<el-empty class="empty" description="{{OneWord}}" image="{% static "Logo/GoChat2.png" %}" style=""></el-empty>
 						</el-col>
-						
-					  </el-row>
+					</el-row>
+					
+					<el-row v-show="module=='Zone'" style="height: 100%;">
+						<el-col :span="24">
+							空间
+						</el-col>
+					</el-row>
+					
+					<el-row v-show="module=='seting'" style="height: 100%;">
+						<el-col :span="24">
+							设置
+						</el-col>
+					</el-row>
+					
 				  </div>
 			  </el-col>
 			</el-row>
@@ -445,25 +401,45 @@
     </div>
 	<script>
 	new Vue({
+		 delimiters:['{[', ']}'],
 		el:'.Main_panel',
 		data: {
-	      SignText: '{{user.sign}}',
-		  activeName: 'first',
-		  tabPosition: 'left',
-		  search:'',
+			UserName:'{{user.username}}',
+			module:'message',
+			SignText: '{{user.sign}}',
+			activeName: 'first',
+			tabPosition: 'left',
+			search:'',
 		},
 	    methods: {
-	      handleClick(tab, event) {
+			handleClick(tab, event) {
 	        // console.log(tab, event);
-	      },
-		  EditSign(){
-			  axios.post('/EditSign','NewSign='+this.SignText)
-			  .then(function(response){
-				  console.log(response)
-			  },function(err){
-				  console.log(err)
-			  })
-		  },
+			},
+			EditSign(){
+				axios.post('/EditSign','NewSign='+this.SignText)
+				.then(function(response){
+					console.log(response)
+				},function(err){
+					console.log(err)
+				})
+			},
+			SwitchKey(module){
+				this.module=module
+			},
+			EditUserName(){
+				var self=this
+				axios.post('/EditUserName','NewUserName='+self.UserName)
+				.then(function(response){
+					console.log(response)
+					if(response.data.status==1){
+						self.$message.success("修改成功")
+					}else{
+						self.$message.error("修改失败")
+					}
+				},function(err){
+					console.log(err)
+				})
+			}
 	    },
 	})
 	</script>

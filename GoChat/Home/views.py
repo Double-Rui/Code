@@ -28,8 +28,17 @@ def Chat_panel(request):
     return render(request, "Home/Chat_panel.html")
 
 def EditSign(request):
-    status=0
     if(HomeController.EditSign(request)):
-        status=1
+        status = 1
+    else:
+        status = 0
+    return HttpResponse(json.dumps({
+        "status": status}))
+
+def EditUserName(request):
+    if(HomeController.EditUserName(request)):
+        status = 1
+    else:
+        status = 0
     return HttpResponse(json.dumps({
         "status": status}))

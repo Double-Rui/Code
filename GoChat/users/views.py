@@ -1,6 +1,5 @@
 import json
 import random
-
 from django.contrib.auth import logout
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect, resolve_url

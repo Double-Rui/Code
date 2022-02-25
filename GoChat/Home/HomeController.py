@@ -10,7 +10,8 @@ def EditSign(request):
         NewSign=request.POST.get("NewSign")
         user = User.objects.get(loginid=request.COOKIES.get('LoginID'))
         user.sign=NewSign
-        if(user.save()):
+        user.save()
+        if(user != None):
             return True
         else:
             return False
@@ -72,3 +73,14 @@ def getOneWord():
         return hitokoto
     else:
         return "也无风雨也无晴"
+
+def EditUserName(request):
+    if request.method == "POST":
+        NewUserName=request.POST.get("NewUserName")
+        user = User.objects.get(loginid=request.COOKIES.get('LoginID'))
+        user.username=NewUserName
+        user.save()
+        if(user != None):
+            return True
+        else:
+            return False
