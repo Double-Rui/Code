@@ -12,4 +12,5 @@ urlpatterns = [
     path('Home/Chat_panel', Chat_panel),
     path('EditSign', EditSign),
     path('EditUserName', EditUserName),
+    path('getFriendInfo', getFriendInfo),
 ]

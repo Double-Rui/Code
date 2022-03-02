@@ -19,7 +19,7 @@
 	<!-- <script src="{% static "js/JavaScript.js" %}"></script> -->
     <script>
         $(document).ready(function () {
-			$("li").click(function(){
+			$(".Chat_panel li").click(function(){
 			    $("li").removeClass("active");
 			    $(this).addClass("active");
 			})
@@ -357,7 +357,7 @@
 															<i value="0" class="el-icon-arrow-right"></i><span>{{item.groupname}}</span>
 														</div>
 														{% for item in item.children %}
-												    	<li style="height: 70px;display: none;">
+												    	<li class="friend_li" id={{item.id}} @click="getFriendInfo($event)">
 															<div class="friend" onclick='$(".SpreadChat_panel").css("display", "block");$(".SpreadNewFriend_panel").css("display", "none"); var name = $(this).find("p").first().text(); var ID = $(this).find("p").first().attr("id"); $(".Friendname").text(name); $(".Friendname").attr("id", ID); getfriendinfo(ID);'>
 															        <div id="FriendHeadPortrait" style="">
 																		<el-avatar :size="50" src="{% static "HeadPortrait/" %}{{item.headportrait}}"></el-avatar>
@@ -377,8 +377,29 @@
 						        </div>
 						</div>
 						</el-col>
-						<el-col :span="19">
-							<el-empty class="empty" description="{{OneWord}}" image="{% static "Logo/GoChat2.png" %}" style=""></el-empty>
+						<el-col :span="19" style="height: 100%;">
+							<el-empty v-if="ChatModulePanel=='empty'" class="empty" description="{{OneWord}}" image="{% static "Logo/GoChat2.png" %}"></el-empty>
+							<el-row v-if="ChatModulePanel=='friendInfo'" style="height: 100%;padding: 20px 80px;overflow-y:scroll;">
+								<el-col :span="24" style="height: 100%;">
+									<div style="height: 100%;width: 100%;">
+										<div style="width: 100%;height: 30%;background-color: white;margin-bottom: 31px;border: 1px solid #dcdfe6;border-radius: 6px;">
+											<div style="text-align: center;padding-top: 10px;"><el-avatar :size="100" :src='"{% static "HeadPortrait/" %}"+FriendInfo.headportrait'  style=";"></el-avatar></div>
+											<div style="text-align: center;padding-top: 5px;"><p>{[FriendInfo.username]}</p></div>
+											<div style="text-align: center;padding-top: 5px;"><img src="{% static "icon/发信息.png" %}" width="38px" style="padding-right: 10px;"><img src="{% static "icon/空间.png" %}" width="38px"></div>
+										</div>
+										<div style="width: 100%;background-color: white;border: 1px solid #dcdfe6;border-radius: 6px;">
+											<ul style="width: 100%;list-style: none;">
+												<li v-for="item in FriendInfo.Info" style="height: 40px;padding: 10px;border-bottom: 1px solid #dcdfe6;">
+													<div>
+														<p style="font-size: 0.75rem;font-weight: 400;color: #adb5bd">{[item.labelname]}</p>
+														<p style="font-size: .875rem;color: #495057;">{[item.content]}</p>
+													</div>
+												</li>
+											</ul>
+										</div>
+									</div>
+								</el-col>
+							</el-row>
 						</el-col>
 					</el-row>
 					
@@ -410,6 +431,9 @@
 			activeName: 'first',
 			tabPosition: 'left',
 			search:'',
+			ChatModulePanel:'empty',
+			FriendID:"",
+			FriendInfo:"",
 		},
 	    methods: {
 			handleClick(tab, event) {
@@ -436,6 +460,17 @@
 					}else{
 						self.$message.error("修改失败")
 					}
+				},function(err){
+					console.log(err)
+				})
+			},
+			getFriendInfo(e){
+				var self=this
+				axios.post('/getFriendInfo','friendid='+e.currentTarget.id)
+				.then(function(response){
+					console.log(response)
+					self.FriendInfo=response.data
+					self.ChatModulePanel='friendInfo'
 				},function(err){
 					console.log(err)
 				})

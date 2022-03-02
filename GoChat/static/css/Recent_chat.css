@@ -310,3 +310,7 @@ body {
 		background-color: #3470a1;
 		/* box-shadow: 0px 0px 10px #3470a1 inset; */
 	}
+.friend_li{
+	height: 70px;
+	display: none;
+}

@@ -42,3 +42,6 @@ def EditUserName(request):
         status = 0
     return HttpResponse(json.dumps({
         "status": status}))
+
+def getFriendInfo(request):
+    return HttpResponse(HomeController.getFriendInfo(request))

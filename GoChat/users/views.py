@@ -1,9 +1,8 @@
 import json
 import random
 from django.contrib.auth import logout
+from django.contrib.auth.hashers import make_password, check_password
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render, redirect, resolve_url
-from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 import datetime
 from . import models
@@ -17,7 +16,7 @@ def Register(request):
         status = 0
         ID = None
         NickName = request.POST.get("NickName")
-        PassWord = request.POST.get("PassWord")
+        PassWord = make_password(request.POST.get("PassWord"))
         Telephone = request.POST.get("Telephone")
         if (NickName == ""):
             tip = "用户名不能为空！"
@@ -63,8 +62,10 @@ def Login(request):
         elif (Verify_LoginID(LoginID)):
             tip = "账号不存在"
         else:
-            user = models.User.objects.filter(loginid=LoginID, password=PassWord)
-            if user:
+            # user = models.User.objects.filter(loginid=LoginID, password=PassWord)
+            user = models.User.objects.get(loginid=LoginID)
+            result=check_password(PassWord,user.password)
+            if result:
                 status = 1
             else:
                 tip = "密码不正确"

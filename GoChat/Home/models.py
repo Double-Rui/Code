@@ -32,7 +32,7 @@ class Group(models.Model):
 
 class Messages(models.Model):
     # id = models.IntegerField(db_column='ID', primary_key=True) #主键ID 主键
-    PostMessages = models.IntegerField(db_column='PostMessages') #消息内容
+    PostMessages = models.CharField(db_column='PostMessages',max_length=250, blank=True, null=True) #消息内容
     status = models.IntegerField(db_column='status') #状态
     SendTime = models.CharField(db_column='SendTime', max_length=50, blank=True, null=True) #发送时间
     MessagesTypeID = models.IntegerField(db_column='MessagesTypeID') #消息类型id
