@@ -25,6 +25,7 @@ class User(models.Model):
     region = models.CharField(db_column='Region', max_length=50, blank=True, null=True)  # Field name made lowercase.
     mail = models.CharField(db_column='Mail', max_length=50, blank=True, null=True)  # Field name made lowercase.
     addtimeid = models.CharField(db_column='AddtimeID', max_length=50)  # Field name made lowercase.
+    loginstatus=models.IntegerField(db_column='LoginStatus',default=0) #在线状态
 
     class Meta:
         managed = False

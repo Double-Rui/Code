@@ -40,7 +40,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # 'channels',
     'users',
-    'Home'
+    'Home',
+    'chats',
+    'channels',
 ]
 
 MIDDLEWARE = [
@@ -74,6 +76,17 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'GoChat.wsgi.application'
 ASGI_APPLICATION = 'GoChat.routing.application'
+
+CHANNEL_LAYERS = {
+  "default": {
+    "BACKEND": "channels_redis.core.RedisChannelLayer",
+    "CONFIG": {
+      "hosts": [('127.0.0.1', 6379)],
+    },
+    # 配置路由的路径
+    # "ROUTING": "exmchannels.routing.channel_routing",
+  },
+}
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases

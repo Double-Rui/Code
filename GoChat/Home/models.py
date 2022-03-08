@@ -43,16 +43,17 @@ class Messageslist(models.Model):
     # id = models.IntegerField(db_column='ID', primary_key=True) #主键ID 主键
     userid = models.IntegerField(db_column='UserID') #用户id
     objectid = models.IntegerField(db_column='ObjectID') #对象id
-    isonline = models.IntegerField(db_column='IsOnline') #是否在线
-    unread = models.IntegerField(db_column='Unread') #已读未读
-    nickname = models.IntegerField(db_column='NickName') #发送者id
-    headportrait = models.CharField(db_column='HeadPortrait', max_length=50, blank=True, null=True)  # 头像
-    postmessages = models.CharField(db_column='PostMessages', max_length=500, blank=True, null=True)  # 信息内容
-    status = models.IntegerField(db_column='status')  # 状态
+    # isonline = models.IntegerField(db_column='IsOnline') #是否在线
+    # unread = models.IntegerField(db_column='Unread') #已读未读
+    unreadnum = models.IntegerField(db_column='UnreadNum',default=0) #未读消息数量
+    # nickname = models.IntegerField(db_column='NickName') #发送者id
+    # headportrait = models.CharField(db_column='HeadPortrait', max_length=50, blank=True, null=True)  # 头像
+    # postmessages = models.CharField(db_column='PostMessages', max_length=500, blank=True, null=True)  # 信息内容
+    # status = models.IntegerField(db_column='status')  # 状态
     time = models.CharField(db_column='Time', max_length=50, blank=True, null=True)  # 时间
     messagestypeid = models.IntegerField(db_column='MessagesTypeID')  # 消息类型id
-    fromuserid = models.IntegerField(db_column='FromUserID')  # 发送者id
-    touserid = models.IntegerField(db_column='ToUserID')  # 发送对象id
+    # fromuserid = models.IntegerField(db_column='FromUserID')  # 发送者id
+    # touserid = models.IntegerField(db_column='ToUserID')  # 发送对象id
     createtime = models.CharField(db_column='CreateTime', max_length=50, blank=True, null=True)  # 创建id
 
 class MessagesType(models.Model):

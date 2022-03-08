@@ -67,6 +67,8 @@ def Login(request):
             result=check_password(PassWord,user.password)
             if result:
                 status = 1
+                user.loginstatus=1
+                user.save()
             else:
                 tip = "密码不正确"
         if (status == 1):
@@ -90,6 +92,10 @@ def Logout(request):
     response = HttpResponseRedirect('/Login')
     #清理cookie里保存username
     logout(request)
+    LoginID = request.COOKIES.get('LoginID')
+    user = models.User.objects.get(loginid=LoginID)
+    user.loginstatus=0
+    user.save()
     response.delete_cookie('LoginID')
     return response
 

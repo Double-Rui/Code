@@ -13,4 +13,5 @@ urlpatterns = [
     path('EditSign', EditSign),
     path('EditUserName', EditUserName),
     path('getFriendInfo', getFriendInfo),
+    path('getChatInfo', getChatInfo),
 ]

@@ -63,21 +63,24 @@ body {
     }
 
 .messages {
-    width: 100%;
-    height: 70px;
+    width: 96%;
+    height: auto;
+	padding: 6px;
     /*background-color: #d8aeff;*/
     /*border: 0.1px #fff solid;*/
+	display:flex;
+	align-items: center;
 }
-    .messages:hover {
-        background-color:white;
+    .message_list :hover {
+        background-color: #cdcdcd;
     }
 
 .messages_context {
     /*position: absolute;*/
     float:left;
     clear:right;
-    width:70%;
-    padding-top: 12px;
+    width:80%;
+/*    padding-top: 12px; */
 /*    margin-left: 50px;*/
 }
 
@@ -93,7 +96,6 @@ body {
     .friends_form {
         margin-bottom: 0px;
         margin-left: 10px;
-        padding-top: 10px;
     }
 	.friends_sign{
 		margin-bottom: 0px;
@@ -213,9 +215,8 @@ body {
     float: left;
     clear: right;
     width:20%;
-    height: 50px;
-    margin-top: 10px;
-    margin-left: 12px;
+    height: 100%;
+/*    margin-left: 12px; */
 }
 
 .Chat_p_context_HeadPortrait {
@@ -311,6 +312,42 @@ body {
 		/* box-shadow: 0px 0px 10px #3470a1 inset; */
 	}
 .friend_li{
-	height: 70px;
 	display: none;
+}
+/* .el-tabs__content{
+		height: calc(100vh - 110px);
+		overflow-y: scroll;
+	} */
+.el-tabs--card {
+  height: calc(100vh - 366px);
+  /* overflow-y: auto; */
+}
+.el-tab-pane {
+  height: calc(100vh - 366px);
+  overflow-y: auto;
+}
+.el-tabs__header {
+    padding: 0;
+    position: relative;
+}
+::-webkit-scrollbar
+{
+    width:8px;
+    height:8px;
+    background-color: transparent;
+}
+::-webkit-scrollbar-track
+{
+    background-color: transparent;
+}
+::-webkit-scrollbar-thumb
+{
+    border-radius:5px;
+    -webkit-box-shadow:inset 0 0 6px rgba(0,0,0,.3);
+    background-color:#c3c2c2;
+}
+.friend{
+	padding: 5px 10px;
+	display:flex;
+	align-items: center;
 }

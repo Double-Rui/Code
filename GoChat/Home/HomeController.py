@@ -1,7 +1,7 @@
 import json
 import requests
 from users.models import User,UserInfo
-from Home.models import Friends,FriendsGroup
+from Home.models import Friends,FriendsGroup,Messageslist
 from django.forms.models import model_to_dict
 from Home import jiami
 import base64
@@ -34,7 +34,7 @@ def getFriendGroup(ID):
                 "id":friend.loginid,
                 "username":friend.username,
                 "headportrait":friend.headportrait,
-                "sign":str(friend.sign)
+                "sign":str(isNull(friend.sign))
             })
         result.append({
             "groupname": i.groupname,
@@ -73,13 +73,17 @@ def get_myInfo(user):
 
 def getOneWord():
     url = 'https://v1.hitokoto.cn/'
-    wb_data = requests.get(url)
-    data = wb_data.json()
-    if data != None:
-        hitokoto = data['hitokoto']+"——"+data['from']
-        return hitokoto
-    else:
+    try:
+        wb_data = requests.get(url)
+        data = wb_data.json()
+        if data != None:
+            hitokoto = data['hitokoto'] + "——" + data['from']
+            return hitokoto
+        else:
+            return "也无风雨也无晴"
+    except requests.exceptions.ConnectionError:
         return "也无风雨也无晴"
+
 
 def EditUserName(request):
     if request.method == "POST":
@@ -119,6 +123,46 @@ def getFriendInfo(request):
                     {"labelname": '个性签名', "content" : str(isNull(user.sign))},
                     {"labelname": '职业', "content" : str(isNull(user.profession))},
                     {"labelname": '所处地区', "content" : str(isNull(user.region))}]
+            })
+        else:
+            result=0
+        return result
+
+def getRecentmessage(ID):
+    messageslist = Messageslist.objects.filter(userid=ID)
+    result=[]
+    for i in messageslist:
+        user = User.objects.get(loginid=i.objectid)
+        result.append({
+            "id":user.loginid,
+            "username": user.username,
+            "headportrait": user.headportrait,
+            "time": i.time[11:16]
+        })
+    return result
+
+def getChatInfo(request):
+    if request.method == "POST":
+        friendid = request.POST.get("friendid")
+        user = User.objects.get(loginid=int(friendid))
+        if user:
+            result =json.dumps({
+            "username" : user.username,
+            "headportrait" : user.headportrait,
+            "id" : str(isNull(user.loginid)),
+            "status":user.loginstatus,
+            "Info" : [{"labelname": '性别', "content" : str(isNull(user.sex))},
+                      # {"labelname": '年龄', "content" : str(isNull(user.age))},
+                      {"labelname": '手机号', "content" : str(isNull(user.phonenumber))},
+                      {"labelname": '地址', "content" : str(isNull(user.address))},
+                      # {"labelname": '血型', "content" : str(isNull(user.bloodtype))},
+                      {"labelname": '生日', "content" : str(isNull(user.datebirth))},
+                      {"labelname": '星座', "content" : str(isNull(user.constellation))},
+                      {"labelname": '邮箱', "content" : str(isNull(user.mail))},
+                      # {"labelname": '生肖', "content" : str(isNull(user.shengxiao))},
+                      {"labelname": '个性签名', "content" : str(isNull(user.sign))},
+                      # {"labelname": '职业', "content" : str(isNull(user.profession))},
+                      {"labelname": '所处地区', "content" : str(isNull(user.region))}]
             })
         else:
             result=0

@@ -23,6 +23,10 @@
 			    $("li").removeClass("active");
 			    $(this).addClass("active");
 			})
+			$(".message_list .messages").click(function(){
+			    $(".messages").removeClass("active");
+			    $(this).addClass("active");
+			})
 			// getNewMessages();
 			// loadEmoji();
 			$(function () {
@@ -53,40 +57,6 @@
         function upload() {
 
         }
-		
-		function addTab(title, url){
-		    if ($('#tt').tabs('exists', title)){
-		        $('#tt').tabs('select', title);
-		    } else {
-		        var content = '<iframe scrolling="auto" frameborder="0"  src="'+url+'" style="width:100%;height:100%;"></iframe>';
-		        $('#tt').tabs('add',{
-		            title:title,
-		            content:content,
-		            closable:true
-		        });
-		    }
-		}
-		
-		function getNewMessages() {
-		    $(".context").each(function () {
-		        var p = $(this);
-		        $.ajax({
-		            url: '/Chat/getNewMessages',
-		            data: { ID: $(this).siblings().first().attr("name") },
-		            type: 'post',
-		            dataType: "json",
-		            success: function (data) {
-		                if (data[0] == undefined) {
-		                    p.text("");
-		                } else {
-		                    p.text(data[0].M_PostMessages);
-		                }
-		            }, error: function (e) {
-		
-		            }
-		        })
-		    });
-		}
 		
 		
 		// function loadEmoji() {//生成表情
@@ -328,37 +298,41 @@
 				</el-col>
 			  <el-col :span="23" style="height: 100%;">
 					<el-row v-show="module=='message'" style="height: 100%;">
-					  <el-col :span="5" style="height: 100%;">
+					  <el-col :span="5" style="height: 100%;border: 1px solid rgb(235, 235, 235);">
 						<div class="Chat_panel" style="width: 100%;height: 100%; float: left;user-select: none;">
-						        <div class="Chat_list">
+						        <div class="Chat_list" style="height: 100%;">
 						            <div class="search">
 										<el-input v-model="search" placeholder="请输入搜索内容"></el-input>
 						                <div class="SearchResult" style="position:relative;width:100%;background-color:white;top:24px;"></div>
 						            </div>
 									<template>
 									  <el-tabs v-model="activeName" stretch="stretch"  @tab-click="handleClick">
+										  <!-- 消息列表 -->
 									    <el-tab-pane  label="消息" name="first">
 											<div class="message_list">
-											        <div class="messages" onclick='$(".SpreadChat_panel").css("display", "block"); $(".messages").removeClass("active"); $(this).addClass("active"); var name = $(this).find("p").first().text(); var ID = $(this).find("p").first().attr("name"); $(".Friendname").text(name); $(".Friendname").attr("id", ID); getChatrecord(ID); setTimeout("scrolltodown()",50) ' ondblclick='var ID = $(this).find("p").first().attr("name");del_Recent_chat(ID);'>
+												{% for item in Recentmessage %}
+											        <div class="messages" id={{item.id}} @click="toChat($event)">
 											<!--            <span class="del" onclick="var ID = $(this).next().next().find('p').first().attr('name');var Friendid=$('.Friendname').attr('id'); del_Recent_chat(ID);">×</span>-->
-											            <div id="FriendHeadPortrait" style=""><img class="FriendHeadPortrait" style="width:40px;height:40px" src="" /></div>
+											            <div id="FriendHeadPortrait" style=""><el-avatar :size="50" src="{% static "HeadPortrait/" %}{{item.headportrait}}"></div>
 											            <div class="messages_context">
-											                <p class="messages_form" name="">名字</p><span class="time">时间</span>
-											                <p class="context" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;width:150px;"></p>
+											                <p class="messages_form" name="">{{item.username}}</p><span class="time">{{item.time}}</span>
+											                <p class="context" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;width:150px;">测试</p>
 											            </div>
 											        </div>
+												{% endfor %}
 											    </div>
 										</el-tab-pane>
+										<!-- 好友列表 -->
 									    <el-tab-pane label="联系人" name="second">
 											<div class="friend_list">
 												{% for item in friendGroup %}
 												    <ul class="frindgroup_ul">
-														<div class="group" onclick="$(this).siblings('li').toggle();var icon=$(this).children('i');if(icon.val()==0){icon.val(1);icon.attr('class','el-icon-arrow-down')}else{icon.val(0);icon.attr('class','el-icon-arrow-right')}" style="width: 100%;">
+														<div class="group" onclick="$(this).siblings('li').toggle();var icon=$(this).children('i');if(icon.val()==0){icon.val(1);icon.attr('class','el-icon-arrow-down')}else{icon.val(0);icon.attr('class','el-icon-arrow-right')}" style="width: 95%;">
 															<i value="0" class="el-icon-arrow-right"></i><span>{{item.groupname}}</span>
 														</div>
 														{% for item in item.children %}
 												    	<li class="friend_li" id={{item.id}} @click="getFriendInfo($event)">
-															<div class="friend" onclick='$(".SpreadChat_panel").css("display", "block");$(".SpreadNewFriend_panel").css("display", "none"); var name = $(this).find("p").first().text(); var ID = $(this).find("p").first().attr("id"); $(".Friendname").text(name); $(".Friendname").attr("id", ID); getfriendinfo(ID);'>
+															<div class="friend" >
 															        <div id="FriendHeadPortrait" style="">
 																		<el-avatar :size="50" src="{% static "HeadPortrait/" %}{{item.headportrait}}"></el-avatar>
 																	</div>
@@ -377,8 +351,10 @@
 						        </div>
 						</div>
 						</el-col>
-						<el-col :span="19" style="height: 100%;">
+						<el-col :span="19" style="height: 100%;border: 1px solid rgb(235, 235, 235);">
+							<!-- 空白界面 -->
 							<el-empty v-if="ChatModulePanel=='empty'" class="empty" description="{{OneWord}}" image="{% static "Logo/GoChat2.png" %}"></el-empty>
+							<!-- 好友信息界面 -->
 							<el-row v-if="ChatModulePanel=='friendInfo'" style="height: 100%;padding: 20px 80px;overflow-y:scroll;">
 								<el-col :span="24" style="height: 100%;">
 									<div style="height: 100%;width: 100%;">
@@ -396,6 +372,50 @@
 													</div>
 												</li>
 											</ul>
+										</div>
+									</div>
+								</el-col>
+							</el-row>
+							<!-- 聊天界面 -->
+							<el-row v-if="ChatModulePanel=='Chatpanel'" style="height: 100%;">
+								<el-col :span="16" style="height: 100%;">
+									<div style="height: 9%;border: 1px solid rgb(235, 235, 235);padding: 10px 30px;display:flex;align-items: center;">
+										<div style="float: left;">
+											<el-avatar :size="60" :src='"{% static "HeadPortrait/" %}"+ChatInfo.headportrait'></el-avatar>
+										</div>
+										<div style="width: 85%;float: left;padding-left: 30px;">
+											<p>{[ChatInfo.username]}</p>
+											<small style="color: #adb5bd!important;">{[ChatInfo.status]}</small>
+										</div>
+										<div style="float: right;"><i class="el-icon-close" @click="closeplane"></i></div>
+									</div>
+									<div style="width: 100%;height: 60%;border: 1px solid rgb(235, 235, 235);overflow-y:scroll;">
+										
+									</div>
+									<div style="width: 100%;height: 28%;border: 1px solid rgb(235, 235, 235);">
+										<div style="height: 30px;">
+											
+										</div>
+										<el-input
+										  type="textarea"
+										  placeholder=""
+										  v-model="message"
+										  maxlength="500"
+										  show-word-limit
+										  :rows="5"
+											style="border: 0px;"
+										>
+										</el-input>
+										<div style="height: auto;text-align: right;padding: 0 20px;">
+											<el-button size="mini" @click="closeplane(),close_socket()">关闭</el-button>
+											<el-button type="primary" size="mini" @click="send">发送</el-button>
+										</div>
+									</div>
+								</el-col>
+								<el-col :span="8" style="height: 100%;border: 1px solid rgb(235, 235, 235);">
+									<div style="height: 9%;border-bottom: 1px solid rgb(235, 235, 235);padding: 10px 30px;display:flex;align-items: center;">
+										<div >
+											<h5 style="font-size: 1.09375rem;color: #7B7A7A;">个人信息</h5>
 										</div>
 									</div>
 								</el-col>
@@ -422,7 +442,7 @@
     </div>
 	<script>
 	new Vue({
-		 delimiters:['{[', ']}'],
+		delimiters:['{[', ']}'],
 		el:'.Main_panel',
 		data: {
 			UserName:'{{user.username}}',
@@ -434,6 +454,10 @@
 			ChatModulePanel:'empty',
 			FriendID:"",
 			FriendInfo:"",
+			ChatInfo:"",
+			message:"",
+			circleUrl:"",
+			testsocket:'',
 		},
 	    methods: {
 			handleClick(tab, event) {
@@ -474,8 +498,71 @@
 				},function(err){
 					console.log(err)
 				})
-			}
+			},
+			toChat(e){
+				var self=this
+				axios.post('/getChatInfo','friendid='+e.currentTarget.id)
+				.then(function(response){
+					console.log(response)
+					self.ChatInfo=response.data
+					self.ChatModulePanel='Chatpanel'
+				},function(err){
+					console.log(err)
+				})
+			},
+			closeplane(){
+				this.ChatModulePanel='empty'
+			},
+			send(){
+			    //    send  发送信息
+			    //    close 关闭连接
+			        var data1 = {"message":this.message,"to_user":this.ChatInfo.id}
+			       
+			        this.testsocket.send(JSON.stringify(data1))
+			        this.testsocket.onmessage = (res) => {
+			            console.log("WS的返回结果",res.data);         
+			        }
+	
+			    },
+			close_socket(){
+			    this.testsocket.close()
+			},
+			generate_uuid: function() {
+			    var d = new Date().getTime();
+			    if (window.performance && typeof window.performance.now === "function") {
+			        d += performance.now(); //use high-precision timer if available
+			    }
+			    var uuid = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
+			        /[xy]/g,
+			        function(c) {
+			        var r = (d + Math.random() * 16) % 16 | 0;
+			        d = Math.floor(d / 16);
+			        return (c == "x" ? r : (r & 0x3) | 0x8).toString(16);
+			        }
+			    );
+			    return uuid;
+			},
 	    },
+		mounted(){
+		    var username = this.generate_uuid();
+		    console.log(username)
+		    this.testsocket = new WebSocket("ws://127.0.0.1:8000/ws/"+ username +"/") 
+		    console.log(this.testsocket)
+	
+		  	this.testsocket.onmessage = (res) => {
+		        console.log("WS的返回结果",res.data);         
+		    }
+		  	
+		    // onopen     定义打开时的函数
+		    // onclose    定义关闭时的函数
+		    // onmessage  定义接收数据时候的函数
+		    this.testsocket.onopen = function(){
+		        console.log("开始连接socket")
+		    }
+		    // this.testsocket.onclose = function(){
+		    //     console.log("socket连接已经关闭")
+		    // }
+		}
 	})
 	</script>
 </body>

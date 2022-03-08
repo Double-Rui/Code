@@ -16,7 +16,8 @@ def Recent_chat(request):
     return render(request, "Home/Recent_chat.html",{"user":HomeController.get_myInfo(user),
                                                     "friends":HomeController.getFriends(ID),
                                                     "friendGroup": HomeController.getFriendGroup(ID),
-                                                    "OneWord":HomeController.getOneWord()})
+                                                    "OneWord":HomeController.getOneWord(),
+                                                    "Recentmessage":HomeController.getRecentmessage(ID)})
 
 def Friends_list(request):
     return render(request, "Home/Friends_list.html")
@@ -45,3 +46,6 @@ def EditUserName(request):
 
 def getFriendInfo(request):
     return HttpResponse(HomeController.getFriendInfo(request))
+
+def getChatInfo(request):
+    return HttpResponse(HomeController.getChatInfo(request))
