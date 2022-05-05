@@ -15,8 +15,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.contrib.staticfiles.views import serve
-from django.urls import path, include
+from django.urls import path, include, re_path
 from . import views
+
+def return_static(request, path, insecure=True, **kwargs):
+  return serve(request, path, insecure, **kwargs)
 
 urlpatterns = [
     path('',views.Home,name='home'),
@@ -24,4 +27,5 @@ urlpatterns = [
     path('', include(('users.urls', 'users'), namespace='users')),
     path('', include(('Home.urls', 'Home'), namespace='Home')),
     path('favicon.ico', serve, {'path': 'Logo/favicon.ico'}),
+    re_path(r'^static/(?P<path>.*)$', return_static, name='static'),
 ]

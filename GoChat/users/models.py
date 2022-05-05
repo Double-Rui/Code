@@ -17,15 +17,19 @@ class User(models.Model):
     phonenumber = models.CharField(db_column='PhoneNumber', blank=True, null=True, max_length=11)  # Field name made lowercase.
     address = models.CharField(db_column='Address', max_length=50, blank=True, null=True)  # Field name made lowercase.
     bloodtype = models.CharField(db_column='BloodType', max_length=4, blank=True, null=True)  # Field name made lowercase.
-    datebirth = models.DateField(db_column='DateBirth', blank=True, null=True)  # Field name made lowercase.
-    constellation = models.CharField(db_column='Constellation', max_length=5, blank=True, null=True)  # Field name made lowercase.
-    shengxiao = models.CharField(db_column='ShengXiao', max_length=2, blank=True, null=True)  # Field name made lowercase.
+    datebirth = models.CharField(db_column='DateBirth', max_length=50,blank=True, null=True)  # Field name made lowercase.
+    constellation = models.CharField(db_column='Constellation', max_length=50, blank=True, null=True)  # Field name made lowercase.
+    shengxiao = models.CharField(db_column='ShengXiao', max_length=50, blank=True, null=True)  # Field name made lowercase.
     sign = models.CharField(db_column='Sign', max_length=100, blank=True, null=True,default='')  # Field name made lowercase.
     profession = models.CharField(db_column='Profession', max_length=50, blank=True, null=True)  # Field name made lowercase.
     region = models.CharField(db_column='Region', max_length=50, blank=True, null=True)  # Field name made lowercase.
     mail = models.CharField(db_column='Mail', max_length=50, blank=True, null=True)  # Field name made lowercase.
     addtimeid = models.CharField(db_column='AddtimeID', max_length=50)  # Field name made lowercase.
     loginstatus=models.IntegerField(db_column='LoginStatus',default=0) #在线状态
+    question1 = models.CharField(db_column='question1', max_length=50, blank=True, null=True)
+    question2 = models.CharField(db_column='question2', max_length=50, blank=True, null=True)
+    answer1 = models.CharField(db_column='answer1', max_length=50, blank=True, null=True)
+    answer2 = models.CharField(db_column='answer2', max_length=50, blank=True, null=True)
 
     class Meta:
         managed = False

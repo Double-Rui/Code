@@ -63,7 +63,7 @@ body {
     }
 
 .messages {
-    width: 96%;
+    width: 95%;
     height: auto;
 	padding: 6px;
     /*background-color: #d8aeff;*/
@@ -101,7 +101,7 @@ body {
 		margin-bottom: 0px;
 		margin-left: 10px;
 		font-size: 12px;
-		padding-top: 7px;
+		/* padding-top: 7px; */
 		color: #484848;
 	}
 
@@ -110,6 +110,7 @@ body {
     margin-top: 0px;
     margin-left: 10px;
     font-size:13px;
+	height: 17px;
 }
 
 .SpreadChat_panel {
@@ -297,8 +298,13 @@ body {
 	.frindgroup_ul :hover{
 		background-color: #cdcdcd;
 	}
+/* 点击后效果 */
 .active{
     background-color:#cdcdcd;
+}
+/* 显示效果 */
+.display{
+	z-index: 1;
 }
 .UserNameinput{
 	color: white;
@@ -311,9 +317,9 @@ body {
 		background-color: #3470a1;
 		/* box-shadow: 0px 0px 10px #3470a1 inset; */
 	}
-.friend_li{
+/* .friend_li{
 	display: none;
-}
+} */
 /* .el-tabs__content{
 		height: calc(100vh - 110px);
 		overflow-y: scroll;
@@ -322,8 +328,12 @@ body {
   height: calc(100vh - 366px);
   /* overflow-y: auto; */
 }
+#message_right .el-tabs--card {
+  height: calc(100vh - 287px);
+  /* overflow-y: auto; */
+}
 .el-tab-pane {
-  height: calc(100vh - 366px);
+  height: calc(100vh - 367px);
   overflow-y: auto;
 }
 .el-tabs__header {
@@ -350,4 +360,186 @@ body {
 	padding: 5px 10px;
 	display:flex;
 	align-items: center;
+}
+.message_other{
+	width: 100%;
+	margin: 10px 0;
+}
+	.message_other .message_content{
+		max-width: 300px;
+		padding: 10px 15px;
+		background-color: #f5f6fa;
+		border-radius: 10px;
+		text-align: left;
+		display: inline-block;
+	}
+.message_self{
+	width: 100%;
+	margin: 10px 0;
+	text-align: right;
+}
+	.message_self .message_content{
+		max-width: 380px;
+		padding: 10px 15px;
+		background-color: #665dfe;
+		border-radius: 10px;
+		text-align: left;
+		display: inline-block;
+		color: white;
+	}
+.sendtime{
+	width: 65px;
+	height: 20px;
+	background-color: white;
+	display: inline-block;
+	text-align: center;
+	color: #adb5bd;
+	font-size: .75rem;
+}
+.sendtime_right{
+	margin-right: 45px;
+	width: 65px;
+	height: 20px;
+	background-color: white;
+	display: inline-block;
+	text-align: center;
+	color: #adb5bd;
+	font-size: .75rem;
+}
+.sendtime_left{
+	margin-left: 45px;
+	width: 65px;
+	height: 20px;
+	background-color: white;
+	display: inline-block;
+	text-align: center;
+	color: #adb5bd;
+	font-size: .75rem;
+}
+.sendname_left{
+/* 	width: 65px; */
+	margin-left: 50px;
+	height: 20px;
+	background-color: white;
+	display: inline-block;
+	text-align: center;
+	color: #adb5bd;
+	font-size: .75rem;
+}
+.sendname_right{
+/* 	width: 65px; */
+	margin-right: 50px;
+	height: 20px;
+	background-color: white;
+	display: inline-block;
+	text-align: center;
+	color: #adb5bd;
+	font-size: .75rem;
+}
+.message_content span{
+	word-break: break-all;
+}
+.Message_record{
+	width: 100%;
+	height: 60%;
+	border: 1px solid rgb(235, 235, 235);
+	position: relative;
+}
+.Message_record0{
+	background-color: white;
+	width: 98%;
+	height: 100%;
+	overflow-y:scroll;
+	padding: 0 1%;
+	position: absolute;
+}
+.el-tabs__content{
+	height: 93%;
+}
+
+#empty{
+	position: absolute;
+	background-color: white;
+	height: 100%;
+	width: 100%;
+}
+#friendInfo{
+	width: 100%;
+	height: 100%;
+	padding: 20px 80px;
+	overflow-y:scroll;
+	position: absolute;
+	background-color: white;
+}
+#GroupInfo{
+	width: 100%;
+	height: 100%;
+	padding: 20px 80px;
+	overflow-y:scroll;
+	position: absolute;
+	background-color: white;
+}
+#Chatpanel{
+	height: 100%;
+	width: 100%;
+	position: absolute;
+	background-color: white;
+}
+#Chatpanel{
+	height: 100%;
+	width: 100%;
+	position: absolute;
+	background-color: white;
+}
+.el-tabs__nav-prev{
+	left: 3px;
+	top: 14px;
+}
+.el-tabs__nav-next{
+	right: 3px;
+	top: 14px;
+}
+.emoji {
+    text-align: left;
+    width: 100%;
+    height: 100%;
+    background: #fff;
+    border: 1px solid #dcdfe6;
+    box-shadow: 0 2px 4px 0 rgb(0 0 0 / 12%), 0 0 6px 0 rgb(0 0 0 / 4%);
+}
+
+    .emoji-default {
+        width: 100%;
+        height: 100%;
+        overflow-y: auto;
+/*        @include scroll-bar();
+        padding: 0px 20px; */
+	}
+	.emoji-default li{
+		display: inline-block;
+		padding: 3px;
+		font-size: 24px;
+		width: 32px;
+		height: 32px;
+		overflow: hidden;
+		cursor: pointer;
+		user-select:none;
+	}
+
+	.emoji-default li:hover {
+		background-color: #d5d5d5;
+	}
+	.friend_li:hover {
+		background-color: #d5d5d5;
+	}
+	.messages:hover {
+		background-color: #d5d5d5;
+	}
+
+.el-collapse-item__header{
+	height: 35px;
+	padding-left: 20px;
+}
+.el-collapse-item__content{
+	padding-bottom: 0;
 }

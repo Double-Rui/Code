@@ -22,33 +22,19 @@
                 Login();
             }
         })
-        // window.onload = function () {
-        //     var url = window.location.href;
-        //     if (url.search("=")!=-1) {
-        //         var a = url.substring(url.lastIndexOf("=") + 1, url.length);
-        //         var isnum = /^\d+$/.test(a);
-        //         if (isnum) {
-        //             $("#LoginID").val(a)
-        //         }
-        //     }
-            //var a = url.substring(url.lastIndexOf("=") + 1, url.length);
-            //if (a != "") {
-            //    $("#LoginID").val(a)
-            //}
-        // }
     })
-	function Register() {
-            $.ajax({
-                url: "Register",
-                type: 'get',
-                success: function (data) {
-                    console.log('请求成功');
-                },
-                error: function () {
-                    console.log('发送请求失败'); // 请求失败时的回调函数
-                }
-            });
-        }
+	// function Register() {
+ //            $.ajax({
+ //                url: "Register",
+ //                type: 'get',
+ //                success: function (data) {
+ //                    console.log('请求成功');
+ //                },
+ //                error: function () {
+ //                    console.log('发送请求失败'); // 请求失败时的回调函数
+ //                }
+ //            });
+ //        }
 </script>
 </head>
 <body>
@@ -58,12 +44,12 @@
             <table>
                 <tr>
                     <td>
-                        <input class="username" id="LoginID" v-model="LoginID" name="LoginID" placeholder="账号" type="text"/>
+                        <input class="username" id="LoginID" v-model="Loginform.LoginID" name="LoginID" placeholder="账号" type="text"/>
                     </td>
                 </tr>
                 <tr>
                     <td>
-                        <input class="password" id="PassWord" v-model="PassWord" name="PassWord" placeholder="密码" type="password"/>
+                        <input class="password" id="PassWord" v-model="Loginform.PassWord" name="PassWord" placeholder="密码" type="password"/>
                     </td>
                 </tr>
                 <tr>

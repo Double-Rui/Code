@@ -1,10 +1,17 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>注册</title>
-    <script src="/static/js/jquery-3.6.0.min.js"></script>
+	<link rel="stylesheet" href="{% static "css/Login.css" %}">
+	<link rel="stylesheet" href="{% static "css/element-ui/index.css" %}">
+	<script src="{% static "js/vue.js" %}"></script>
+	<script src="{% static "js/vue-router.js" %}"></script>
+	<script src="{% static "css/element-ui/index.js" %}"></script>
+	<script src="{% static "js/jquery-3.6.0.min.js" %}"></script>
+	<script src="{% static "js/axios-0.26.0/axios.js" %}"></script>
     <style>
         body {
             background-color: #e7ebf1;
@@ -40,7 +47,7 @@
             top: 150px;
         }
 
-        .nickname, .password, .telephone, .post {
+        .nickname, .password, .repassword, .post {
             box-sizing: border-box;
             width: 250px;
             height: 35px;
@@ -54,7 +61,7 @@
             font-size: 20px;
         }
 
-        .password, .telephone {
+        .password, .repassword {
             margin-top: 5px;
         }
 
@@ -75,7 +82,6 @@
             }
 
         p {
-            margin-top: 30px;
             color: #7b7a7a;
             font-size: 1px;
             text-align: center;
@@ -91,63 +97,154 @@
 			text-align:center
         }
     </style>
-    <script>
-        $(document).ready(function () {
-            $("p").click(function () {
-            })
-
-            $(".post").click(function () {
-                Register();
-            })
-
-            $(document).keyup(function (e) {
-                if (e.which == 13) {
-                    Register();
-                }
-            })
-        })
-
-        function Register() {
-            var a = document.getElementById("NickName").value;
-            var b = document.getElementById("PassWord").value;
-            var c = document.getElementById("Telephone").value;
-            $(".tip").text(null)
-            $.ajax({
-                url: "/Register/",
-                type: 'post',
-                dataType: "json",
-                data: { 'NickName': a, 'PassWord': b, 'Telephone': c },
-                success: function (data) {
-                    if (data.status == 0) {
-                        $(".tip").text(data.result);
-                    }else if (data.status == 1) {
-                        $("#Registerid").text(data.ID)
-                        $("#Spring_frame").animate({ "margin-left": "150px" }, 2000);
-                    }
-                    console.log('请求成功');
-                },
-                error: function () {
-                    console.log('发送请求失败'); // 请求失败时的回调函数
-                }
-            });
-        }
-    </script>
 </head>
 <body>
-    <div id="Spring_frame" style="" >
-        <h1 id="Registerid" style="color:goldenrod;font-size:50px;margin-bottom:0" ></h1>
-        <h2 style="color:goldenrod;margin-top:0">请记住你的账号</h2>
-    </div>
-    <div class="Login_panel">
-        <h1 class="front">注册</h1>
-        <form class="Login_form">
-            <input class="nickname" id="NickName" name="NickName" placeholder="昵称" type="text" /><br />
-            <input class="password" id="PassWord" name="PassWord" placeholder="密码" type="password" /><br />
-            <input class="telephone" id="Telephone" name="Telephone" placeholder="手机号" type="tel"/><br />
-            <div class="tip"></div>
-            <input class="post" type="button" value="REGISTER" />
-            <p class="switch" onclick="window.location.href='/Login/'">去登陆</p>
-        </form>
-    </div>
+	<div class="Register_panel" style="height: 700px;width: 50%;background: white;margin-left: 25%;margin-top: 7%;">
+		<div style="width: 100%;height: 80%;">
+			<div style="text-align: center; padding-top: 65px;">
+				<img src="{% static "Logo/GoChat.png" %}" />
+			</div>
+			<div style="padding-left: 30%;padding-right: 30%;padding-top: 8%;">
+				<table v-show="active==1" width="100%">
+					<tr>
+						<td><el-input v-model="Registerform.NickName" placeholder="请输入昵称"></el-input></td>
+					</tr>
+					<tr>
+						<td><el-input v-model="Registerform.PassWord" placeholder="密码" show-password></el-input></td>
+					</tr>
+					<tr>
+						<td><el-input v-model="Registerform.RePassWord" placeholder="再次输入密码" show-password></el-input></td>
+					</tr>
+					<tr><td colspan="2" style="text-align: center;"><span style="color: #878787;font-size: 12px;">密码长度为6-16个字符</span></td></tr>
+				</table>
+				<table v-show="active==2" width="100%">
+					<tr>
+						<td>问题一</td>
+						<td><el-select style="width: 100%;" v-model="question1" placeholder="请选择">
+								<el-option
+								v-for="item in QuestionList"
+								:key="item.value"
+								:label="item.label"
+								:value="item.value">
+								</el-option>
+							</el-select></td>
+					</tr>
+					<tr>
+						<td></td>
+						<td><el-input v-model="answer1" placeholder="答案"></td>
+					</tr>
+					<tr>
+						<td>问题二</td>
+						<td><el-select style="width: 100%;" v-model="question2" placeholder="请选择">
+								<el-option
+								v-for="item in QuestionList"
+								:key="item.value"
+								:label="item.label"
+								:value="item.value">
+								</el-option>
+							</el-select></td>
+					</tr>
+					<tr>
+						<td></td>
+						<td><el-input v-model="answer2" placeholder="答案"></td>
+					</tr>
+				</table>
+				
+				<div v-show="active==3" style="text-align: center;">
+					<h1 style="font-size: 60px;color: #17b9eb;">{[NewID]}</h1>
+					<span>请牢记您的新账号</span>
+				</div>
+			</div>
+		</div>
+		<div>
+			<el-steps :active="active" finish-status="success" align-center>
+			  <el-step title="设置用户名密码"></el-step>
+			  <el-step title="设置密保问题"></el-step>
+			  <el-step title="完成注册"></el-step>
+			</el-steps>
+			<div style="text-align: center;width: 100%;">
+				<el-button v-show="active!=3" style="margin-top: 12px;" @click="last">上一步</el-button>
+				<el-button v-show="active<2" style="margin-top: 12px;" @click="next">下一步</el-button>
+				<el-button v-show="active==2" style="margin-top: 12px;" @click="Register">注册</el-button>
+				<el-button style="margin-top: 12px;" onclick="window.location.href='/Login/'">登录</el-button>
+			</div>
+		</div>
+	</div>
+	<script>
+	new Vue({
+		el:'.Register_panel',
+		delimiters:['{[', ']}'],
+		data:{
+			active: 1,
+			Registerform:{
+				NickName:'',
+				PassWord:'',
+				RePassWord:'',
+			},
+			QuestionList:{{QuestionList|safe}},
+			question1:'',
+			question2:'',
+			answer1:'',
+			answer2:'',
+			NewID:''
+		},
+		methods: {
+			Register(){
+				var self=this
+				axios.post('/Register/',{'NickName':this.Registerform.NickName,
+										'PassWord':this.Registerform.PassWord,
+										'RePassWord':this.Registerform.RePassWord,
+										'question1':this.question1,
+										'question2':this.question2,
+										'answer1':this.answer1,
+										'answer2':this.answer2})
+				.then(function(response){
+					data=response.data
+					if(data.status==0){
+						self.$message.error(data.result);
+					}
+					else if(data.status==1){
+						self.active++
+						self.NewID=data.ID
+					}
+				},function(err){
+					console.log(err)
+				})
+			},
+			next() {
+				if(this.active<3){
+					if(this.active==1){
+						if(this.Registerform.NickName==""){
+							this.$message.error('昵称不能为空');
+						}else if(this.Registerform.PassWord==""){
+							this.$message.error('密码不能为空');
+						}else if(this.Registerform.RePassWord !=this.Registerform.PassWord){
+							this.$message.error('两次密码不一致');
+						}else{
+							this.active++
+						}
+					}else if(this.active==2){
+						if(this.question1=="" || this.question2==""){
+							this.$message.error('请选择密保问题');
+						}else if(this.answer1=="" || this.answer2==""){
+							this.$message.error('请输入答案');
+						}else{
+							this.active++
+						}
+					}
+				}else{
+					
+				}
+			},
+			last() {
+				if(this.active>1){
+					this.active--
+				}else{
+					
+				}
+			}
+		},
+	})
+	</script>
 </body>
 </html>

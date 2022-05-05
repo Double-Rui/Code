@@ -1,14 +1,15 @@
 {% load static %}
+{% csrf_token %}
 <!DOCTYPE html>
 <html lang="en">
-	
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0" /> -->
     <title>GoChat</title>
 	<link rel="shortcut icon" href="{%static 'Logo/favicon.ico' %}"/>
-    <link rel="stylesheet" href="{% static "css/site.css" %}"/>
+    <!-- <link rel="stylesheet" href="{% static "css/site.css" %}"/> -->
     <link rel="stylesheet" href="{% static "css/Shared.css" %}"/>
+	<link type="text/css" rel="styleSheet" href="{% static "css/Find_Friends.css" %}" />
 	<link type="text/css" rel="styleSheet" href="{% static "css/Recent_chat.css" %}" />
 	<link rel="stylesheet" href="{% static "css/element-ui/index.css" %}">
 	<script src="{% static "js/vue-router.js" %}"></script>
@@ -16,10 +17,11 @@
 	<script src="{% static "css/element-ui/index.js" %}"></script>
 	<script src="{% static "js/jquery-3.6.0.min.js" %}"></script>
 	<script src="{% static "js/axios-0.26.0/axios.js" %}"></script>
-	<!-- <script src="{% static "js/JavaScript.js" %}"></script> -->
+	<script src="{% static "js/JavaScript.js" %}"></script>
+	<script src="{% static "js/contextmenu.umd.js" %}"></script>
     <script>
         $(document).ready(function () {
-			$(".Chat_panel li").click(function(){
+			$(".friend_list li").click(function(){
 			    $("li").removeClass("active");
 			    $(this).addClass("active");
 			})
@@ -27,260 +29,83 @@
 			    $(".messages").removeClass("active");
 			    $(this).addClass("active");
 			})
-			// getNewMessages();
-			// loadEmoji();
-			$(function () {
-			    $(".Emoji").click(function () {
-			        $(".Emoji_panel").show();
-			        return false;//关键是这里，阻止冒泡
-			    });
-			    $(".Emoji_panel").click(function () {
-			        return false;
-			    });
-			    $(document).click(function () {
-			        $(".Emoji_panel").hide();
-			    });
+			$(".SwitchButton").click(function(){
+				alert("测试")
+			    $(".SwitchButton .ButtonText").removeClass("Selected");
+			    $(this).children(".ButtonText").addClass("Selected");
 			})
-			//$(document).click(function () {
-			//    $(".Emoji_panel").css("display", "none");
-			// });
-			del_button()
-			$("#messagesContext").focus(function () {
-			    $(document).keyup(function (e) {
-			        if (e.which == 13) {
-			            Send()
-			        }
-			    })
-			})
-			
         })
-        function upload() {
-
-        }
-		
-		
-		// function loadEmoji() {//生成表情
-		//     $(".Emoji_panel").html('');
-		//     var html = '';
-		//     for (var i = 1; i <= 105; i++) {
-		//         //html += '<img class="emoji-img" src="Emoji/' + i + '.png" οnclick="choiceEmoji(' + i + ')" />';
-		//         html += '<img class="emoji-img" src="~/static/Emoji/' + i + '.png" 'style="width:30px;margin:3px" onclick="choiceEmoji(' + i + ')"/>';
-		//         if ((i % 5) == 0) { }
-		//     }
-		//     $(".Emoji_panel").html(html);
-		// }
-		
-		function choiceEmoji(index) {//选择表情
-		    var msg = $("#messagesContext").val();
-		    var emoji = '[em_' + index + ']';
-		    msg = msg + emoji;
-		    //$(".Emoji_panel").hide();//隐藏表情选择
-		    $("#messagesContext").val(msg);//赋值
-		    $("#messagesContext").focus();//输入框获取焦点
-		    moveEnd($("#messagesContext").get(0)); //移动光标至末尾，且切换selection的位置
-		}
-		//光标移至文本后面
-		function moveEnd(obj) {
-		    obj.focus();
-		    var len = obj.value.length;
-		    if (document.selection) {
-		        var sel = obj.createTextRange();
-		        sel.moveStart('character', len); //设置开头的位置
-		        sel.collapse();
-		        sel.select();
-		    } else if (typeof obj.selectionStart == 'number' && typeof obj.selectionEnd == 'number') {
-		        obj.selectionStart = obj.selectionEnd = len;
-		    }
-		}
-		//字符替换为表情
-		function replace_em(str) {
-		    str = str.replace(/\</g, '<');
-		    str = str.replace(/\>/g, '>');
-		    str = str.replace(/\n/g, '<br/>');
-		    str = str.replace(/\[em_([0-9]*)\]/g, '<img class="emoji-size" src="/Emoji/$1.png" border="0" style="width:20px"/>');
-		    return str;
-		}
-		
-		function del_Recent_chat(ID) {
-		    $.ajax({
-		        url: '/Chat/Delsession',
-		        data: { ID: ID },
-		        type: 'post',
-		        dataType: "json",
-		        success: function (data) {
-		            if (data == "1") {
-		                setTimeout("getRecent_chat($('.Friendname').attr('id'));", 300);
-		                setTimeout("del_button()", 100)
-		            } else {
-		                alert("数据库异常")
-		            }
-		        }, error: function (e) {
-		
-		        }
-		    })
-		}
-		
-		function del_button() {
-		    $(".messages").mouseenter(function () {
-		        $(this).find(".del").css("visibility", "unset");
-		    })
-		    $(".messages").mouseleave(function () {
-		        $(this).find(".del").css("visibility", "hidden");
-		    })
-		}
-		
-		function Send() {//发送信息
-		    $.ajax({
-		        url: "/Chat/Send",
-		        type: 'post',
-		        dataType: "json",
-		        data: {
-		            context: $("#messagesContext").val(),
-		            Sendto: $(".Friendname").attr("id")
-		        },
-		        success: function (mags) {
-		            if (mags.Status) {
-		                $("#messagesContext").val(null)
-		                getChatrecord($(".Friendname").attr("id"))
-		                scrolltodown()
-		                getRecent_chat($(".Friendname").attr("id"))
-		                getNewMessages()
-		                del_button();
-		            } else {
-		                alert(mags.Mag);
-		            }
-		            console.log('发送成功');
-		        },
-		        error: function () {
-		            console.log('发送失败'); // 请求失败时的回调函数
-		        }
-		    })
-		}
     </script>
 </head>
 <body>
+    <!-- <div class="Main_panel" @contextmenu.prevent.self="onContextmenu"> -->
     <div class="Main_panel">
 		<div style="width: 100%;height: 250px;min-width: 1400px;background: #4494d5;">
 			<div style="width: 250px;height: 100%;float: left;">
 				<div style="margin: 10%;position: relative;">
-					<img class="HeadPortrait" src="{% static "HeadPortrait/" %}{{ user.headportrait|safe}}" width="100%">
+					<div v-show="connect==0" style="position: absolute;right: -7px;bottom: -7px;width: 30px;height: 30px;border-radius: 15px;background-color: #7B7A7A;">
+					</div>
+					<div v-show="connect==1" style="position: absolute;right: -7px;bottom: -7px;width: 30px;height: 30px;border-radius: 15px;background-color: #05D8A7;">
+					</div>
+					<img class="HeadPortrait" alt="头像" @click="dialogTableVisible = true" :src="Userheadportrait" width="100%">
 				</div>
+				<el-dialog title="修改头像" width="30%" :visible.sync="dialogTableVisible" center>
+					<div style="width: 100%;height: 100px;text-align: center;margin-bottom: 20px;">
+						<el-avatar :size="100" id="Avatarrenderings" :src="Userheadportrait"></el-avatar>
+					</div>
+					<input type="file" style="margin-left: 35%;" id="user-photo" @change="displayAvatar" accept="image/*"/>
+					<span slot="footer" class="dialog-footer">
+					    <el-button @click="dialogTableVisible = false">取 消</el-button>
+					    <el-button type="primary" @click="EditAvatar(),dialogTableVisible = false">修 改</el-button>
+					  </span>
+				</el-dialog>
 			</div>
 			<div style="width: 500px;height: 100%;float: left;">
 				<div style="margin: 5% 0;">
 					<table>
-						<tr >
-							<td style="padding-top: 5%;"><input class="UserNameinput" v-model="UserName" @change="EditUserName"></td>
+						<tr><td style="padding-top: 5%;">
+								<input class="UserNameinput" v-model="UserName" @change="EditUserName">
+							</td>
 						</tr>
-						<tr >
-							<td style="padding-bottom: 5%;"><span style="color: white;font-size: 25px;">ID {{user.id}}</span></td>
+						<tr><td style="padding-bottom: 5%;">
+								<span style="color: white;font-size: 25px;">ID {[UserID]}</span>
+							</td>
 						</tr>
-						<tr>
-							<td><el-input type="text" placeholder="请输入内容" v-model="SignText" @change="EditSign" maxlength="20" style="width: 500px;" clearable show-word-limit></el-input></td>
+						<tr><td><el-input type="text" 
+							placeholder="请输入内容" 
+							v-model="SignText" 
+							@change="EditSign" 
+							maxlength="20" style="width: 500px;" clearable show-word-limit></el-input></td>
 						</tr>
 					</table>
 				</div>
 			</div>
+			<div style="width: 650px;height: 100%;float: left;">
+				<div style="float: right;right: 0;padding: 20px;">
+					<el-color-picker v-model="color"></el-color-picker>
+				</div>
+				
+			</div>
 		</div>
-<!--       <div class="personal_information">
-            <div id="HeadPortrait">
-                <input class="uploadHeadPortrait" accept="image/*" value="更换头像" type="file" onchange="upload()" />
-                <img class="HeadPortrait" width="70">
-            </div>
-            <span class="attrname">账号</span><span class="LoginID"></span><br />
-            <div>
-                <span class="attrname">昵称</span><input class="NickName" value="" />
-                <span class="attrname">性别</span>
-                <select class="Sex">
-                    <option> </option>
-                    <option value="男">男</option>
-                    <option value="女">女</option>
-                </select><br />
-            </div>
-            <div>
-                <span class="attrname">出生年月</span><input class="Birthday" value="" />
-                <span class="attrname">血型</span>
-                <select class="BloodType">
-                    <option> </option>
-                    <option>A型</option>
-                    <option>B型</option>
-                    <option>AB型</option>
-                    <option>O型</option>
-                    <option>其他血型</option>
-                </select><br />
-            </div>
-            <div>
-                <span class="attrname">生肖</span>
-                <select class="ShengXiao">
-                    <option> </option>
-                    <option>鼠</option>
-                    <option>牛</option>
-                    <option>虎</option>
-                    <option>兔</option>
-                    <option>龙</option>
-                    <option>蛇</option>
-                    <option>马</option>
-                    <option>羊</option>
-                    <option>猴</option>
-                    <option>鸡</option>
-                    <option>狗</option>
-                    <option>猪</option>
-                </select>
-                <span class="attrname">年龄</span><input class="Age" value="">
-                <span class="attrname">星座</span>
-                <select class="Constellation">
-                    <option> </option>
-                    <option>水瓶座</option>
-                    <option>双鱼座</option>
-                    <option>白羊座</option>
-                    <option>金牛座</option>
-                    <option>双子座</option>
-                    <option>巨蟹座</option>
-                    <option>狮子座</option>
-                    <option>处女座</option>
-                    <option>天秤座</option>
-                    <option>天蝎座</option>
-                    <option>射手座</option>
-                    <option>摩羯座</option>
-                </select>
-            </div>
-            <span class="attrname">个性签名</span><input class="SignaTure" value="" /><br />
-            <span class="attrname">手机号码</span><input class="Telephone" value="" /><br />
-            <span class="attrname">邮箱</span><input class="Email" value="" /><br />
-            <span class="attrname">毕业学校</span><input class="SchoolTag" value="" /><br />
-            <span class="attrname">职业</span>
-            <select class="Vocation">
-                <option> </option>
-                <option>计算机/互联网/通信</option>
-                <option>生产工艺制造</option>
-                <option>金融银行投资保险</option>
-                <option>商业服务业个体经营</option>
-                <option>文化广告传媒</option>
-                <option>娱乐艺术表演</option>
-                <option>律师法务</option>
-                <option>教育培训</option>
-                <option>公务员行政事业单位</option>
-                <option>模特</option>
-                <option>空姐</option>
-                <option>学生</option>
-                <option>其他</option>
-            </select><br />
-            <div class="Out_Intro"><span class="attrname">个人说明</span><textarea class="Intro"></textarea></div>
-            <span class="tip" style="color:red"></span><br />
-            <input class="Revise" type="button" value="修改" />
-        </div> -->
         <div role="main" class="main" style="width: 100%;height: 650px;display: inline-block;margin-top: 10px;background: white; box-shadow: 0 2px 4px rgba(0, 0, 0, .12), 0 0 6px rgba(0, 0, 0, .04);">
 			<el-row style="width: 100%;height: 100%;">
 			  <el-col :span="1" style="height: 100%;border-right: 1px solid #ebebeb;">
-				  <div class="grid-content bg-purple" style="width: 100%;height: 100%; ">
-					  <ul style="list-style: none;">
+				  <div class="grid-content bg-purple" style="width: 100%;height: 100%;">
+					  <ul style="list-style: none;user-select: none;">
 						<li @click="SwitchKey('message')">
+							<el-badge  style="width:45px;z-index: 1;" :value="109" :max="99">
 							<a href="#"><el-tooltip class="item" effect="dark" content="消息" placement="left">
 								<img v-show="module!='message'" class="fun_icon" src="{% static "icon/信息.png" %}" width="40px"/></el-tooltip>
 								<img v-show="module=='message'" class="fun_icon" src="{% static "icon/信息选中.png" %}" width="40px"/></el-tooltip>
-							</a></li>
+							</a></el-badge></li>
+						<li @click="SwitchKey('ApplicationList'),getAddFriend_applylist(),getAddGroup_applylist()">
+							<el-badge  style="width:45px;z-index: 1;" :value="109" :max="99">
+							<a href="#"><el-tooltip class="item" effect="dark" content="申请列表" placement="left">
+									<img v-show="module!='ApplicationList'" class="fun_icon" src="{% static "icon/添加申请列表.png" %}" width="40px"/></el-tooltip>
+									<img v-show="module=='ApplicationList'" class="fun_icon" src="{% static "icon/添加申请列表选中.png" %}" width="40px"/></el-tooltip>
+							</a></el-badge></li>
 						<li @click="SwitchKey('Zone')">
-							<a href="#"><el-tooltip class="item" effect="dark" content="空间" placement="left">
+							<a href="#"><el-tooltip class="item" effect="dark" content="搜索" placement="left">
 								<img v-show="module!='Zone'" class="fun_icon" src="{% static "icon/个人空间.png" %}" width="40px"/></el-tooltip>
 								<img v-show="module=='Zone'" class="fun_icon" src="{% static "icon/个人空间选中.png" %}" width="40px"/></el-tooltip>
 							</a></li>
@@ -290,151 +115,508 @@
 								<img v-show="module=='seting'" class="fun_icon" src="{% static "icon/设置选中.png" %}" width="40px"/></el-tooltip>
 							</a></li>
 						<li>
-							<a href="/Logout"><el-tooltip class="item" effect="dark" content="登出" placement="left">
+							<a href="/Logout" @click="Logout"><el-tooltip class="item" effect="dark" content="登出" placement="left">
 								<img class="fun_icon" src="{% static "icon/登出.png" %}" width="40px"/></el-tooltip>
 							</a></li>
 					  </ul>
 				  </div>
 				</el-col>
 			  <el-col :span="23" style="height: 100%;">
+				  <!-- 消息 -->
 					<el-row v-show="module=='message'" style="height: 100%;">
 					  <el-col :span="5" style="height: 100%;border: 1px solid rgb(235, 235, 235);">
-						<div class="Chat_panel" style="width: 100%;height: 100%; float: left;user-select: none;">
+						<div class="Chat_panel" style="width: 100%;height: 95%; float: left;user-select: none;">
 						        <div class="Chat_list" style="height: 100%;">
 						            <div class="search">
 										<el-input v-model="search" placeholder="请输入搜索内容"></el-input>
 						                <div class="SearchResult" style="position:relative;width:100%;background-color:white;top:24px;"></div>
 						            </div>
-									<template>
 									  <el-tabs v-model="activeName" stretch="stretch"  @tab-click="handleClick">
 										  <!-- 消息列表 -->
 									    <el-tab-pane  label="消息" name="first">
 											<div class="message_list">
-												{% for item in Recentmessage %}
-											        <div class="messages" id={{item.id}} @click="toChat($event)">
-											<!--            <span class="del" onclick="var ID = $(this).next().next().find('p').first().attr('name');var Friendid=$('.Friendname').attr('id'); del_Recent_chat(ID);">×</span>-->
-											            <div id="FriendHeadPortrait" style=""><el-avatar :size="50" src="{% static "HeadPortrait/" %}{{item.headportrait}}"></div>
-											            <div class="messages_context">
-											                <p class="messages_form" name="">{{item.username}}</p><span class="time">{{item.time}}</span>
-											                <p class="context" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;width:150px;">测试</p>
-											            </div>
-											        </div>
-												{% endfor %}
+												<template v-for="item in Recentmessage">
+													<div  class="messages" :objectid="item.id" 
+														:messagestype="item.messagestype" 
+														@dblclick="toChat($event)" 
+														@contextmenu.prevent="clickmessagemenu(item.id,item.messagestype)">
+															<div id="FriendHeadPortrait">
+																<el-avatar :size="50" :src="HeadPortrait_url+item.headportrait">
+															</div>
+															<div class="messages_context">
+																<p class="messages_form" name="">{[item.username]}</p>
+																<span class="time">{[item.time]}</span>
+																<p class="context" 
+																	style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;width:150px;">
+																	{[item.PostMessages]}
+																</p>
+															</div>
+													</div>
+												</template>
 											    </div>
 										</el-tab-pane>
 										<!-- 好友列表 -->
-									    <el-tab-pane label="联系人" name="second">
-											<div class="friend_list">
-												{% for item in friendGroup %}
-												    <ul class="frindgroup_ul">
-														<div class="group" onclick="$(this).siblings('li').toggle();var icon=$(this).children('i');if(icon.val()==0){icon.val(1);icon.attr('class','el-icon-arrow-down')}else{icon.val(0);icon.attr('class','el-icon-arrow-right')}" style="width: 95%;">
-															<i value="0" class="el-icon-arrow-right"></i><span>{{item.groupname}}</span>
-														</div>
-														{% for item in item.children %}
-												    	<li class="friend_li" id={{item.id}} @click="getFriendInfo($event)">
-															<div class="friend" >
-															        <div id="FriendHeadPortrait" style="">
-																		<el-avatar :size="50" src="{% static "HeadPortrait/" %}{{item.headportrait}}"></el-avatar>
-																	</div>
-															        <div style="float:left">
-															            <p class="friends_form" id="">{{item.username}}</p>
-																		<p class="friends_sign" id="">{{item.sign}}</p>
-															        </div>
-															    </div>
-														</li>
-														{% endfor %}
-												    </ul>
-												{% endfor %}
+									    <el-tab-pane label="联系人" name="second" style="overflow-y: unset">
+											<my-setgroup :setgroupdialog.sync='SetGroupdialog' :friendgroups='FriendGroups' :refresh_friendslist="Refresh_friendslist"></my-SetGroup>
+											<el-tabs type="card">
+											  <el-tab-pane label="好友">
+												  <div class="friend_list" style="overflow-y: auto;height: 93%;">
+													<template v-for="item in FriendList">
+														<el-collapse v-model="friendlistNO" @change="handleChange" style="border: 0;" >
+														  <el-collapse-item :title="item.groupname" :name="item.serialnumber">
+														    <ul class="friend_list">
+																<template v-for="item2 in item.children">
+																<li class="friend_li" :Userid="item2.id"
+																@dblclick="getFriendInfo($event)" 
+																@contextmenu.prevent="clickfriendmenu(item2.id)">
+																	<div class="friend" >
+																	    <div id="FriendHeadPortrait" style="">
+																			<el-avatar :size="50" :src="HeadPortrait_url+item2.headportrait"></el-avatar>
+																		</div>
+																	    <div style="float:left">
+																	        <p class="friends_form" >
+																				<b>{[item2.Remarkname==""?item2.username:item2.Remarkname]}</b>
+																				{[item2.Remarkname==""?"":"("+item2.username+")"]}
+																				</p>
+																			<p class="friends_sign" >{[item2.sign]}</p>
+																	    </div>
+																	    </div>
+																</li>
+																</template>
+															</ul>
+														  </el-collapse-item>
+														</el-collapse>
+													</template>
+												  </div>
+											  </el-tab-pane>
+											  <el-tab-pane label="群聊">
+												  <div class="friend_list" style="overflow-y: auto;height: 93%;">
+													  <template v-for="item in GroupsList">
+													  	<el-collapse v-model="grouplistNO" @change="handleChange" style="border: 0;">
+													  	  <el-collapse-item :title="item.groupname+' '+item.Count" :name="item.serialnumber" >
+													  	    <ul class="friend_list">
+													  			<template v-for="item2 in item.children">
+													  			<li class="friend_li" :Groupid="item2.groupid"
+													  			@dblclick="getGroupInfo($event)" 
+													  			@contextmenu.prevent="clickfriendmenu(item2.groupid)">
+													  				<div class="friend">
+													  				    <div id="FriendHeadPortrait" style="">
+													  						<el-avatar :size="50" :src="HeadPortrait_url+item2.groupavatars"></el-avatar>
+													  					</div>
+													  				    <div style="float:left">
+													  				        <p class="friends_form">
+																				<b>{[item2.Remarkname==""?item2.groupname:item2.Remarkname]}</b>
+																				{[item2.Remarkname==""?"":"("+item2.groupname+")"]}
+																			</p>
+													  				    </div>
+													  				</div>
+													  			</li>
+													  			</template>
+													  		</ul>
+													  	  </el-collapse-item>
+													  	</el-collapse>
+													  </template>
+												  </div>
+											  </el-tab-pane>
+											  <el-tab-pane label="+">
+												<div style="height: 93%;">
+													<div style="text-align: center;padding: 245px 0;">
+														<el-dialog title="创建群聊" :visible.sync="Creategroupdialog"
+														  width="25%" :before-close="handleClose">
+														  <div style="text-align: center;">
+															  <table>
+																  <tr>
+																	<td>群名:</td>
+																	<td>
+																		<el-input type="text" placeholder="群名" v-model="newGroupname" maxlength="10"
+																		show-word-limit></el-input>
+																	</td>
+																  </tr>
+																  <tr>
+																  	<td>加群验证:</td>
+																  	<td>
+																		<el-radio v-model="radio" label="1">允许任何人</el-radio>
+																		<el-radio v-model="radio" label="2">需通过验证</el-radio>
+																		<el-radio v-model="radio" label="3">不允许任何人</el-radio>
+																  	</td>
+																  </tr>
+															  </table>
+														  </div>
+														  <span slot="footer" class="dialog-footer">
+														    <el-button @click="Creategroupdialog = false">取 消</el-button>
+														    <el-button type="primary" @click="Creategroupdialog = false">确 定</el-button>
+														  </span>
+														</el-dialog>
+														<el-button @click="module='Zone'">加好友/群</el-button>
+														<el-button @click="Creategroupdialog=true">创建群聊</el-button>
+													</div>
+												</div>
+												  
+											  </el-tab-pane> 
+											</el-tabs>
+											
 										</el-tab-pane>
 									  </el-tabs>
-									</template>
 						        </div>
-						</div>
+							</div>
 						</el-col>
-						<el-col :span="19" style="height: 100%;border: 1px solid rgb(235, 235, 235);">
-							<!-- 空白界面 -->
-							<el-empty v-if="ChatModulePanel=='empty'" class="empty" description="{{OneWord}}" image="{% static "Logo/GoChat2.png" %}"></el-empty>
-							<!-- 好友信息界面 -->
-							<el-row v-if="ChatModulePanel=='friendInfo'" style="height: 100%;padding: 20px 80px;overflow-y:scroll;">
-								<el-col :span="24" style="height: 100%;">
-									<div style="height: 100%;width: 100%;">
-										<div style="width: 100%;height: 30%;background-color: white;margin-bottom: 31px;border: 1px solid #dcdfe6;border-radius: 6px;">
-											<div style="text-align: center;padding-top: 10px;"><el-avatar :size="100" :src='"{% static "HeadPortrait/" %}"+FriendInfo.headportrait'  style=";"></el-avatar></div>
-											<div style="text-align: center;padding-top: 5px;"><p>{[FriendInfo.username]}</p></div>
-											<div style="text-align: center;padding-top: 5px;"><img src="{% static "icon/发信息.png" %}" width="38px" style="padding-right: 10px;"><img src="{% static "icon/空间.png" %}" width="38px"></div>
-										</div>
-										<div style="width: 100%;background-color: white;border: 1px solid #dcdfe6;border-radius: 6px;">
-											<ul style="width: 100%;list-style: none;">
-												<li v-for="item in FriendInfo.Info" style="height: 40px;padding: 10px;border-bottom: 1px solid #dcdfe6;">
-													<div>
-														<p style="font-size: 0.75rem;font-weight: 400;color: #adb5bd">{[item.labelname]}</p>
-														<p style="font-size: .875rem;color: #495057;">{[item.content]}</p>
-													</div>
-												</li>
-											</ul>
-										</div>
-									</div>
-								</el-col>
-							</el-row>
-							<!-- 聊天界面 -->
-							<el-row v-if="ChatModulePanel=='Chatpanel'" style="height: 100%;">
-								<el-col :span="16" style="height: 100%;">
-									<div style="height: 9%;border: 1px solid rgb(235, 235, 235);padding: 10px 30px;display:flex;align-items: center;">
-										<div style="float: left;">
-											<el-avatar :size="60" :src='"{% static "HeadPortrait/" %}"+ChatInfo.headportrait'></el-avatar>
-										</div>
-										<div style="width: 85%;float: left;padding-left: 30px;">
-											<p>{[ChatInfo.username]}</p>
-											<small style="color: #adb5bd!important;">{[ChatInfo.status]}</small>
-										</div>
-										<div style="float: right;"><i class="el-icon-close" @click="closeplane"></i></div>
-									</div>
-									<div style="width: 100%;height: 60%;border: 1px solid rgb(235, 235, 235);overflow-y:scroll;">
-										
-									</div>
-									<div style="width: 100%;height: 28%;border: 1px solid rgb(235, 235, 235);">
-										<div style="height: 30px;">
+						<el-col id="message_right" :span="19" style="position: relative;height: 100%;border: 1px solid rgb(235, 235, 235);">
+							<el-tabs id="message-tabs" v-model="editableTabsValue" type="card" closable @tab-remove="removeTab">
+							  <el-tab-pane 
+								v-for="(item, index) in editableTabs"
+							      :key="item.name"
+							      :label="item.title"
+							      :name="item.name"
+								  :tabid="item.tabid">
+								<template v-if="item.type=='empty'">
+									<span slot="label"><i class="el-icon-s-home"></i> {[item.title]}</span>
+									<my-empty></my-empty>
+								</template>
+								<template v-else-if="item.type=='friendInfo'">
+									<span slot="label"><i class="el-icon-s-custom"></i> {[item.title]}</span>
+									<my-friendinfo :data="item.data" 
+									:chat="toChat" :newsession="NewSession" 
+									:deletefriend="DeleteFriend" :friendgroups="FriendGroups"
+									:refresh_friendslist="Refresh_friendslist"></my-friendinfo>
+								</template>
+								<template v-else-if="item.type=='GroupInfo'">
+									<span slot="label"><i class="el-icon-s-custom"></i> {[item.title]}</span>
+									<my-groupinfo :data="item.data" :chat="toChat" :newsession="NewSession"></my-groupinfo>
+								</template>
+								<template v-else-if="item.type=='Chatpanel'">
+									<span slot="label"><i class="el-icon-s-comment"></i> {[item.title]}</span>
+									<my-chatpanel :data="item.data" :socket="socket"></my-chatpanel>
+								</template>
+								<template v-else-if="item.type=='GroupChatpanel'">
+									<span slot="label"><i class="el-icon-s-comment"></i> {[item.title]}</span>
+									<my-groupchatpanel :data="item.data" :socket="socket"></my-groupchatpanel>
+								</template>
+							  </el-tab-pane>
+							</el-tabs>
+						</el-col>
+					</el-row>
+					<!-- 申请列表 -->
+					<el-row v-if="module=='ApplicationList'" style="height: 100%;">
+						<el-col :span="24" style="height: 100%;">
+							<el-col :span="12" style="height: 100%;border-right: 1px solid rgb(235, 235, 235);">
+								<div style="width:100%;height:100%;border-radius: 9px;">
+									<el-menu :default-active="applyoption" class="el-menu-demo" mode="horizontal" @select="handleSelect">
+									  <el-menu-item index="1" @click="applyoption='1'">好友验证</el-menu-item>
+									  <el-menu-item index="2" @click="applyoption='2'">群系统消息</el-menu-item>
+									</el-menu>
+									<div class="line"></div>
+									<div style="max-height: 87%;width: 88%;padding: 10px 40px;overflow-y: auto;">
+										<div v-show="applyoption=='1'" style="width: 100%;">
 											
+											<el-dialog title="添加好友" :visible.sync="addfriend_dialogVisible2" width="30%" :before-close="handleClose">
+												<el-form :inline="true" :model="formAddfriend2" class="demo-form-inline">
+													<el-form-item label="分组">
+														<el-select v-model="formAddfriend2.FriendGroups_value" placeholder="请选择分组">
+															<el-option v-for="item in FriendGroups" :key="item.value" :label="item.label" :value="item.value" :disabled="item.disabled">
+															</el-option>
+														</el-select>
+													</el-form-item>
+													<el-form-item label="备注">
+													    <el-input v-model="formAddfriend2.remarksname" placeholder="备注昵称"></el-input>
+													  </el-form-item>
+												</el-form>
+												
+											  <span slot="footer" class="dialog-footer">
+											    <el-button @click="addfriend_dialogVisible2 = false">取 消</el-button>
+											    <el-button type="primary" @click="Processing_requests('agree',formAddfriend2,'friend')">完 成</el-button>
+											  </span>
+											</el-dialog>
+											
+											<div v-for="item in Friend_applylist" style="height: 100px;width: 99%;border: 1px solid rgb(220, 223, 230);border-radius: 5px;margin: 8px 0;position: relative;">
+												<div class="touxiang" style="width: 17%;float: left;display: inline-block;padding: 3px 10px;height: 94%;">
+													<el-avatar :size="95" :src="HeadPortrait_url+item.headportrait"></el-avatar>
+												</div>
+												<div style="display: inline-block;height: 60%;float: left;width: 30%;padding: 20px 0;">
+														<p>{[item.username]}<span style="font-size: 16px;color: #8f8f8f;">({[item.objectid]})</span></p>
+														<p><span style="font-size: 2px;color: #8f8f8f;">发送时间：{[item.sendtime]}</span></p>
+														<p><span style="font-size: 2px;color: #8f8f8f;">附加消息：{[item.remarks]}</span></p>
+												</div>
+												<div style="display: inline-block;float: left;width: 49%;">
+													<p v-if="item.state=='receive' && item.rep_results==0" style="line-height: 6;text-align: center;">
+														<el-button size="mini" type="success" 
+															@click="formAddfriend2.applicantid=item.applicantid,addfriend_dialogVisible2=true"
+														>同意</el-button>
+														<el-button size="mini" type="danger" 
+															@click="formAddfriend2.applicantid=item.applicantid,Processing_requests('refuse',formAddfriend2,'friend')"
+														>拒绝</el-button>
+														<el-button size="mini" type="info" 
+															@click="formAddfriend2.applicantid=item.applicantid,Processing_requests('ignore',formAddfriend2,'friend')"
+														>忽略</el-button>
+													</p>
+													<p v-if="item.state=='receive' && item.rep_results==1" 
+													style="line-height: 6;text-align: center;font-size: 16px;color: #8f8f8f;">已同意</p>
+													<p v-if="item.state=='receive' && item.rep_results==-1" 
+													style="line-height: 6;text-align: center;font-size: 16px;color: #8f8f8f;">已拒绝</p>
+													<p v-if="item.state=='receive' && item.rep_results==2"
+													style="line-height: 6;text-align: center;font-size: 16px;color: #8f8f8f;">忽略</p>
+													
+													<p v-if="item.state=='send' && item.rep_results==0" 
+													style="line-height: 6;text-align: center;font-size: 16px;color: #8f8f8f;">等待验证</p>
+													<p v-if="item.state=='send' && item.rep_results==1" 
+													style="line-height: 6;text-align: center;font-size: 16px;color: #8f8f8f;">已同意</p>
+													<p v-if="item.state=='send' && item.rep_results==-1" 
+													style="line-height: 6;text-align: center;font-size: 16px;color: #8f8f8f;">已拒绝</p>
+													<p v-if="item.state=='send' && item.rep_results==2"
+													style="line-height: 6;text-align: center;font-size: 16px;color: #8f8f8f;">等待验证</p>
+												</div>
+											</div>
 										</div>
-										<el-input
-										  type="textarea"
-										  placeholder=""
-										  v-model="message"
-										  maxlength="500"
-										  show-word-limit
-										  :rows="5"
-											style="border: 0px;"
-										>
+										<div v-show="applyoption=='2'" style="width: 100%;">
+											<div v-for="item in Group_applylist" style="height: 100px;width: 99%;border: 1px solid rgb(220, 223, 230);border-radius: 5px;margin: 8px 0;position: relative;">
+												<div class="touxiang" style="width: 17%;float: left;display: inline-block;padding: 3px 10px;height: 94%;">
+													<el-avatar :size="95" :src="HeadPortrait_url+item.headportrait"></el-avatar>
+												</div>
+												<div style="display: inline-block;height: 60%;float: left;width: 30%;padding: 20px 0;">
+														<p style="font-size: 12px;">
+															<span style="font-size: 12px;color: #0077df;">{[item.name]}</span>
+															<span style="font-size: 12px;color: #8f8f8f;">({[item.objectid]})</span>申请加入群
+															<span style="font-size: 12px;color: #0077df;">{[item.groupname]}</span>
+														</p>
+														<p><span style="font-size: 2px;color: #8f8f8f;">申请时间：{[item.sendtime]}</span></p>
+														<p><span style="font-size: 2px;color: #8f8f8f;">附加消息：{[item.remarks]}</span></p>
+												</div>
+												<div style="display: inline-block;float: left;width: 49%;">
+													<p v-if="item.state=='receive' && item.rep_results==0" style="line-height: 6;text-align: center;">
+														<el-button size="mini" type="success" 
+															@click="formAddfriend2.applicantid=item.applicantid,Processing_requests('agree',formAddfriend2,'group')"
+														>同意</el-button>
+														<el-button size="mini" type="danger" 
+															@click="formAddfriend2.applicantid=item.applicantid,Processing_requests('refuse',formAddfriend2,'group')"
+														>拒绝</el-button>
+														<el-button size="mini" type="info" 
+															@click="formAddfriend2.applicantid=item.applicantid,Processing_requests('ignore',formAddfriend2,'group')"
+														>忽略</el-button>
+													</p>
+													<p v-if="item.state=='receive' && item.rep_results==1" 
+														style="line-height: 6;text-align: center;font-size: 16px;color: #8f8f8f;">已同意</p>
+													<p v-if="item.state=='receive' && item.rep_results==-1" 
+														style="line-height: 6;text-align: center;font-size: 16px;color: #8f8f8f;">已拒绝</p>
+													<p v-if="item.state=='receive' && item.rep_results==2"
+														style="line-height: 6;text-align: center;font-size: 16px;color: #8f8f8f;">忽略</p>
+													
+													<p v-if="item.state=='send' && item.rep_results==0" 
+														style="line-height: 6;text-align: center;font-size: 16px;color: #8f8f8f;">等待验证</p>
+													<p v-if="item.state=='send' && item.rep_results==1" 
+														style="line-height: 6;text-align: center;font-size: 16px;color: #8f8f8f;">已同意</p>
+													<p v-if="item.state=='send' && item.rep_results==-1" 
+														style="line-height: 6;text-align: center;font-size: 16px;color: #8f8f8f;">已拒绝</p>
+													<p v-if="item.state=='send' && item.rep_results==2"
+														style="line-height: 6;text-align: center;font-size: 16px;color: #8f8f8f;">等待验证</p>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</el-col>
+							<el-col :span="12" style="height: 100%;">
+								<div style="width:100%;height:100%;border-radius: 9px;">
+							    测试
+								
+								</div>
+							</el-col>
+						</el-col>
+					</el-row>
+					<!-- 寻找好友 -->
+					<el-row v-if="module=='Zone'" style="height: 100%;">
+						<el-col :span="24" style="height: 100%;">
+							<div style="width:100%;height:100%;border-radius: 9px;">
+							    <div style="height: 25%;background-color:#60c4e7;padding:40px 0 0 0;">
+							        <div style="text-align:center;">
+							            <table style="margin:0 auto;border-collapse:collapse;color: white;" cellpadding="0" cellspacing="0">
+							                <tr class="SwitchAction">
+							                    <td class="SwitchButton" @click="SwitchAddfriendmodule('addfriend')" style="border-right: 2px solid #ffffff;">
+													<span id="addfriend" class="ButtonText Selected">找人</span>
+												</td>
+							                    <td class="SwitchButton" @click="SwitchAddfriendmodule('addgroup')">
+													<span id="addgroup" class="ButtonText">找群</span>
+												</td>
+							                </tr>
+							            </table>
+							        </div>
+							        <div style="text-align:center;margin: 35px 30%;">
+										<el-input placeholder="请输入关键词" prefix-icon="el-icon-search" v-model="Findstr">
+											<el-button slot="append" icon="el-icon-search" @click="Findfriends"></el-button>
 										</el-input>
-										<div style="height: auto;text-align: right;padding: 0 20px;">
-											<el-button size="mini" @click="closeplane(),close_socket()">关闭</el-button>
-											<el-button type="primary" size="mini" @click="send">发送</el-button>
+							            <!-- <input id="Find_Friends_search" placeholder="请输入要搜索的关键词" type="search" />
+							            <!-- <img class="butofFindFriends" src="{% static "icon/search.svg" %}" style="" value=1 /> -->
+							        </div>
+							    </div>
+								<!-- 搜索结果 -->
+							    <div v-show="Addfriendmodule.FindType=='addfriend'" class="result" style="height:69%;overflow-y:auto;padding: 0 200px;">
+									
+									<el-dialog title="添加好友" :visible.sync="addfriend_dialogVisible" width="30%" :before-close="handleClose">
+										<el-form :inline="true" :model="formAddfriend" class="demo-form-inline">
+											<el-form-item label="分组">
+												<el-select v-model="formAddfriend.FriendGroups_value" placeholder="请选择分组">
+													<el-option v-for="item in FriendGroups" :key="item.value" :label="item.label" :value="item.value" :disabled="item.disabled">
+													</el-option>
+												</el-select>
+											</el-form-item>
+											<el-form-item label="备注">
+											    <el-input v-model="formAddfriend.remarksname" placeholder="备注昵称"></el-input>
+											  </el-form-item>
+										</el-form>
+										<el-input type="textarea" placeholder="发送信息" v-model="formAddfriend.remarks" maxlength="50" resize="none" show-word-limit></el-input>
+									  <span slot="footer" class="dialog-footer">
+									    <el-button @click="addfriend_dialogVisible = false">取 消</el-button>
+									    <el-button type="primary" @click="sendFriendapplicat()">发 送</el-button>
+									  </span>
+									</el-dialog>
+									
+									<h1 v-if="Addfriendmodule.ReturnFriendslist==''" style="text-align:center;font-size: 18px;color: #8b8b8b;margin-top: 20%;">未搜索到相关结果</h1>
+									<div v-for="item in Addfriendmodule.ReturnFriendslist" style="height: 100px;width: 99%;border: 1px solid rgb(220, 223, 230);border-radius: 5px;margin: 8px 0;position: relative;">
+										<div class="touxiang" style="width: 100px;float: left;padding: 3px 30px;">
+											<el-avatar :size="90" :src="HeadPortrait_url+item.headportrait"></el-avatar>
+										</div>
+										<div style="display: inline-block;height: 100%;">
+											<table style="color: #8d8d8d;" height="100%" border="0" cellspacing="10px" cellpadding="10px">
+												<tr>
+													<td name="username" style="line-height: 100%;width: 200px;"><h3>{[item.username]}</h3></td>
+													<td name="id" width="100px">{[item.loginid]}</td>
+													<td name="sex" width="35px">{[item.sex==1?'男':item.sex==2?'女':'其他']}</td>
+													<td name="age" width="35px">{[item.age]}</td>
+													<td name="region" width="200px">{[item.region]}</td>
+												</tr>
+											</table>
+										</div>
+										<div style="display: inline-block;width: 145px;height: 100px;float: right;position: absolute;">
+											<el-button style="margin: 30px 15px;" type="primary" icon="el-icon-circle-plus-outline"
+											 @click="formAddfriend.ObjectID=item.loginid,addfriend_dialogVisible = true">加好友</el-button>
 										</div>
 									</div>
-								</el-col>
-								<el-col :span="8" style="height: 100%;border: 1px solid rgb(235, 235, 235);">
-									<div style="height: 9%;border-bottom: 1px solid rgb(235, 235, 235);padding: 10px 30px;display:flex;align-items: center;">
-										<div >
-											<h5 style="font-size: 1.09375rem;color: #7B7A7A;">个人信息</h5>
+							    </div>
+								
+								<div v-show="Addfriendmodule.FindType=='addgroup'" class="result" style="height:69%;overflow-y:auto;padding: 0 200px;">
+									<el-dialog title="添加群组" :visible.sync="formAddgroup.addgroup_dialogVisible" width="30%" :before-close="handleClose">
+										<el-input type="textarea" placeholder="发送信息" v-model="formAddgroup.remarks" maxlength="50" resize="none" show-word-limit></el-input>
+									  <span slot="footer" class="dialog-footer">
+									    <el-button @click="formAddgroup.addgroup_dialogVisible = false">取 消</el-button>
+									    <el-button type="primary" @click="sendGroupapplicat()">发 送</el-button>
+									  </span>
+									</el-dialog>
+									
+									<h1 v-if="Addfriendmodule.Returngrouplist==''" style="text-align:center;font-size: 18px;color: #8b8b8b;margin-top: 20%;">未搜索到相关结果</h1>
+									<div v-for="item in Addfriendmodule.Returngrouplist" style="height: 100px;width: 99%;border: 1px solid rgb(220, 223, 230);border-radius: 5px;margin: 8px 0;position: relative;">
+										<div class="touxiang" style="width: 100px;float: left;padding: 3px 30px;">
+											<el-avatar :size="90" :src="HeadPortrait_url+item.groupavatars"></el-avatar>
+										</div>
+										<div style="display: inline-block;height: 100%;">
+											<table style="color: #8d8d8d;" height="100%" border="0" cellspacing="10px" cellpadding="10px">
+												<tr>
+													<td name="username" style="line-height: 100%;width: 200px;"><h3>{[item.groupname]}</h3></td>
+													<td name="id" width="100px">{[item.groupid]}</td>
+												</tr>
+											</table>
+										</div>
+										<div style="display: inline-block;width: 145px;height: 100px;float: right;right: 0px;position: absolute;">
+											<el-button style="margin: 30px 15px;" type="primary" icon="el-icon-circle-plus-outline"
+											 @click="formAddgroup.ObjectID=item.groupid,formAddgroup.addgroup_dialogVisible = true">申请加群</el-button>
 										</div>
 									</div>
-								</el-col>
-							</el-row>
+								</div>
+								
+							</div>
 						</el-col>
 					</el-row>
-					
-					<el-row v-show="module=='Zone'" style="height: 100%;">
-						<el-col :span="24">
-							空间
-						</el-col>
-					</el-row>
-					
+					<!-- 设置 -->
 					<el-row v-show="module=='seting'" style="height: 100%;">
-						<el-col :span="24">
-							设置
+						<el-col :span="24" style="height: 100%;">
+							<div style="height: 9%;border-bottom: 1px solid rgb(235, 235, 235);padding: 10px 30px;display:flex;align-items: center;">
+								<div >
+									<h1 style="font-size: 1.09375rem;color: #7B7A7A;">设置</h1>
+								</div>
+							</div>
+							<div style="max-height: 79%;overflow-y:scroll;padding: 2% 13%;">
+								<div style="border: 1px solid rgb(205 205 205);border-radius: 5px;margin-bottom: 60px;">
+									<div style="width: 100%;height: 45px;background: #f8f9fa;">
+										<h3 style="color: #616461;padding: 9px;">个人信息</h3>
+									</div>
+									<table style="width: 100%;" border="0" cellspacing="10px" cellpadding="10px">
+										<tr>
+											<td style="width: 33%;">性别:</td>
+											<td style="width: 33%;">年龄:</td>
+											<td style="width: 33%;">血型:</td>
+										</tr>
+										<tr>
+											<td>
+												<el-radio v-model="UserInfo.UserSex" label="1">男</el-radio>
+												<el-radio v-model="UserInfo.UserSex" label="2">女</el-radio>
+												<el-radio v-model="UserInfo.UserSex" label="3">其他</el-radio>
+											</td>
+											<td>
+												<el-input-number v-model="UserInfo.UserAge" controls-position="right" @change="handleChange" :min="0" :max="999"></el-input-number>
+											</td>
+											<td>
+												<el-select v-model="UserInfo.UserBloodType" placeholder="请选择血型">
+												    <el-option v-for="item in Bloodtype" :key="item.value" :label="item.label" :value="item.value"></el-option>
+												  </el-select>
+											</td>
+										</tr>
+										<tr>
+											<td style="width: 33%;">生肖:</td>
+											<td style="width: 33%;">星座:</td>
+											<td style="width: 33%;">出生日期:</td>
+										</tr>
+										<tr>
+											<td><el-select v-model="UserInfo.UserShengXiao" placeholder="请选择生肖">
+												    <el-option v-for="item in ShengXiaoOptions" :key="item.value" :label="item.label" :value="item.value"></el-option>
+												  </el-select></td>
+											<td><el-select v-model="UserInfo.UserConstellation" placeholder="请选择星座">
+												    <el-option v-for="item in ConstellationOptions" :key="item.value" :label="item.label" :value="item.value"></el-option>
+												  </el-select></td>
+											<td><el-date-picker v-model="UserInfo.UserDateBirth" type="date" placeholder="选择日期" value-format="yyyy-MM-dd"></el-date-picker></td>
+										</tr>
+										<tr>
+											<td style="width: 33%;">手机号:</td>
+											<td style="width: 33%;">邮箱:</td>
+											<td style="width: 33%;">职业:</td>
+											
+										</tr>
+										<tr>
+											<td><el-input v-model="UserInfo.UserPhone" placeholder="手机号"></el-input></td>
+											<td><el-input v-model="UserInfo.UserMail" placeholder="邮箱"></el-input></td>
+											<td><el-input v-model="UserInfo.UserProfession" placeholder="职业"></el-input></td>
+										</tr>
+										<tr>
+											<td>地区:</td>
+											<td colspan="2">地址:</td>
+										</tr>
+										<tr>
+											<td><el-input v-model="UserInfo.UserRegion" placeholder="地区"></td>
+											<td colspan="2"><el-input v-model="UserInfo.UserAddress" placeholder="地址"></el-input></td>
+										</tr>
+									</table>
+									<div style="width: 100%;height: 45px;background: #f8f9fa;">
+										 <el-button type="primary" size="small" @click="EditUserInfo" style="float: right;margin: 7px 15px;">保存修改</el-button>
+									</div>
+								</div>
+								
+								<div style="border: 1px solid rgb(205 205 205);border-radius: 5px;">
+									<div style="width: 100%;height: 45px;background: #f8f9fa;">
+										<h3 style="color: #616461;padding: 9px;">修改密码</h3>
+									</div>
+									<table style="width: 100%;" border="0" cellspacing="10px" cellpadding="10px">
+										<tr>
+											<td style="width: 33%;text-align: right;">原密码:</td>
+											<td><el-input style="width: 33%;" v-model="UserInfo.Oldpassword" placeholder="原密码" show-password></el-input></td>
+										</tr>
+										<tr>
+											<td style="width: 33%;text-align: right;">新密码:</td>
+											<td><el-input style="width: 33%;" v-model="UserInfo.Newpassword" placeholder="新密码" show-password></el-input></td>
+										</tr>
+									</table>
+									<div style="width: 100%;height: 45px;background: #f8f9fa;">
+										 <el-button type="primary" size="small" @click="ChangePassword" style="float: right;margin: 7px 15px;">保存修改</el-button>
+									</div>
+								</div>
+							</div>
 						</el-col>
 					</el-row>
-					
 				  </div>
 			  </el-col>
 			</el-row>
@@ -446,33 +628,285 @@
 		el:'.Main_panel',
 		data: {
 			UserName:'{{user.username}}',
+			UserID:'{{user.id}}',
+			Userheadportrait:"{% static "HeadPortrait/" %}{{ user.headportrait|safe}}",
+			UserInfo:{UserAge:'{{user.age}}',
+					UserSex:'{{user.sex}}',
+					UserPhone:'{{user.phonenumber}}',
+					UserAddress:'{{user.address}}',
+					UserBloodType:'{{user.bloodtype}}',
+					UserDateBirth:'{{user.datebirth}}',
+					UserConstellation:'{{user.constellation}}',
+					UserShengXiao:'{{user.shengxiao}}',
+					UserProfession:'{{user.profession}}',
+					UserRegion:'{{user.region}}',
+					UserMail:'{{user.mail}}',
+					Oldpassword:'',
+					Newpassword:'',},
 			module:'message',
 			SignText: '{{user.sign}}',
+			Recentmessage:{{Recentmessage|safe}},
 			activeName: 'first',
+			friendlistNO:'',
+			grouplistNO:'',
+			
 			tabPosition: 'left',
 			search:'',
 			ChatModulePanel:'empty',
+			
 			FriendID:"",
 			FriendInfo:"",
+			GroupInfo:"",
+			Friend_applylist:"",
+			Group_applylist:"",
+			
 			ChatInfo:"",
-			message:"",
 			circleUrl:"",
-			testsocket:'',
+			socket:'',
+			connect:0,
+			applyoption:'1',
+			HeadPortrait_url:"{% static "HeadPortrait/" %}",
+			Chatrecord:'{{Chatrecord}}',
+			Addfriendmodule:{FindType:'addfriend',
+							ReturnFriendslist:'',
+							Returngrouplist:''},
+			Findstr:'',
+			Bloodtype: [{value: 'A型血',label: 'A型血'}, 
+					{value: 'B型血',label: 'B型血'}, 
+					{value: 'O型血',label: 'O型血'}, 
+					{value: '其它',label: '其它'}],
+			ShengXiaoOptions: [{value: '鼠',label: '鼠'},
+					{value: '牛',label: '牛'}, 
+					{value: '虎',label: '虎'}, 
+					{value: '兔',label: '兔'},
+					{value: '龙',label: '龙'},
+					{value: '蛇',label: '蛇'},
+					{value: '马',label: '马'},
+					{value: '羊',label: '羊'},
+					{value: '猴',label: '猴'},
+					{value: '鸡',label: '鸡'},
+					{value: '狗',label: '狗'},
+					{value: '猪',label: '猪'},
+					{value: '无',label: '无'}],
+			ConstellationOptions: [{value: '水瓶座',label: '水瓶座'},
+					{value: '双鱼座',label: '双鱼座'}, 
+					{value: '白羊座',label: '白羊座'}, 
+					{value: '金牛座',label: '金牛座'},
+					{value: '双子座',label: '双子座'},
+					{value: '巨蟹座',label: '巨蟹座'},
+					{value: '狮子座',label: '狮子座'},
+					{value: '处女座',label: '处女座'},
+					{value: '天秤座',label: '天秤座'},
+					{value: '天蝎座',label: '天蝎座'},
+					{value: '射手座',label: '射手座'},
+					{value: '摩羯座',label: '摩羯座'},
+					{value: '无',label: '无'}],
+			FriendList:{{friendGroup|safe}},
+			GroupsList:{{Groups|safe}},
+			FriendGroups:{{FriendGroups|safe}},
+			
+			formAddfriend:{
+				ObjectID:'',
+				FriendGroups_value:'',
+				remarksname:'',
+				remarks:''
+			},
+			formAddfriend2:{
+				applicantid:'',
+				FriendGroups_value:'',
+				remarksname:'',
+			},
+			formAddgroup:{
+				addgroup_dialogVisible:false,
+				ObjectID:'',
+				remarks:''
+			},
+			
+			dialogTableVisible: false,
+			addfriend_dialogVisible:false,
+			addfriend_dialogVisible2:false,
+			SetGroupdialog:false,
+			Creategroupdialog:false,
+			radio:'2',
+			newGroupname:'',
+			color:'#409EFF',
+			circleUrl: "https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png",
+			editableTabsValue: '1',
+			editableTabs: [{
+			  title: '欢迎页',
+			  name: '1',
+			  type:'empty',
+			}],
+			tabIndex: 1
 		},
-	    methods: {
+		methods: {
+			handleSelect(key, keyPath) {
+			    // console.log(key, keyPath);
+			},
 			handleClick(tab, event) {
-	        // console.log(tab, event);
+			// console.log(tab, event);
+			},
+			handleChange(value) {
+				// console.log(value);
+			},
+			handleClose(done) {
+			    // this.$confirm('确认关闭？')
+			      // .then(_ => {
+			        done();
+			      // })
+			    //   .catch(_ => {});
+			},
+			addTab(title,tabid,type,data) {
+			  let newTabName = ++this.tabIndex + '';
+			  this.editableTabs.push({
+			    title: title,
+			    name: newTabName,
+				type: type,
+			    data: data,
+				tabid:tabid
+			  });
+			  this.editableTabsValue = newTabName;
+			},
+			removeTab(targetName) {
+			  let tabs = this.editableTabs;
+			  let activeName = this.editableTabsValue;
+			  if (activeName === targetName) {
+			    tabs.forEach((tab, index) => {
+			      if (tab.name === targetName) {
+			        let nextTab = tabs[index + 1] || tabs[index - 1];
+			        if (nextTab) {
+			          activeName = nextTab.name;
+			        }
+			      }
+			    });
+			  }
+			  
+			  this.editableTabsValue = activeName;
+			  this.editableTabs = tabs.filter(tab => tab.name !== targetName);
+			},
+			Logout(){
+				if(this.socket){
+					if(this.socket.readyState==this.socket.OPEN){
+						this.socket.close();
+					}
+				}
 			},
 			EditSign(){
 				axios.post('/EditSign','NewSign='+this.SignText)
 				.then(function(response){
+					// console.log(response)
+				},function(err){
+					// console.log(err)
+				})
+			},
+			displayAvatar(){
+				var self=this
+				var file = document.getElementById("user-photo").files[0];
+				var reader = new FileReader();
+				reader.readAsDataURL(file);
+				reader.onloadend = function () {
+					// $("#Avatarrenderings img").attr("src",self.HeadPortrait_url+file.name)
+					$("#Avatarrenderings img").attr("src",reader.result)
+				};
+			},
+			EditAvatar(){
+				var self=this
+				var img_file = document.getElementById("user-photo").files[0];
+				var reader = new FileReader();
+				reader.readAsDataURL(img_file);
+				reader.onload = function () {
+					var formdata = new FormData();
+					formdata.append('img_name', img_file.name);
+					formdata.append('img_file', img_file);
+					formdata.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+					axios.post('/EditAvatar',formdata)
+					.then(function(response){
+						if(response.data.status==1){
+							self.$message.success("修改成功")
+							// self.Userheadportrait=self.HeadPortrait_url+img_file.name
+							self.Userheadportrait=reader.result
+						}else{
+							self.$message.error("修改失败")
+						}
+					},function(err){
+						console.log(err)
+					})
+				};
+			},
+			EditUserInfo(){
+				var self=this
+				var UserInfo=this.UserInfo
+				axios.post('/EditUserInfo',{UserInfo:UserInfo})
+				.then(function(response){
 					console.log(response)
+					if(response.data.status==1){
+						self.$message.success("修改成功")
+					}else{
+						self.$message.error("修改失败")
+					}
 				},function(err){
 					console.log(err)
 				})
 			},
+			ChangePassword(){
+				var self=this
+				if(this.UserInfo.Oldpassword==''||this.UserInfo.Newpassword==''){
+					self.$message.success("未输入内容")
+				}else{
+					axios.post('/ChangePassword','Oldpassword='+this.UserInfo.Oldpassword+'&Newpassword='+this.UserInfo.Newpassword)
+					.then(function(response){
+						if(response.data.status==1){
+							self.$message.success(response.data.result)
+						}else if(response.data.status==0){
+							self.$message.error(response.data.result)
+						}
+					},function(err){
+						console.log(err)
+					})
+				}
+			},
+			Findfriends(){
+				var self=this
+				if(this.Addfriendmodule.FindType=='addfriend'){
+					axios.post('/Findfriends',"str="+this.Findstr).then(
+					function(response){
+						// console.log(response)
+						if(response.data.status==1){
+							self.Addfriendmodule.ReturnFriendslist=response.data.result
+						}else{
+							self.Addfriendmodule.ReturnFriendslist=''
+						}
+					},function(err){
+						console.log(err)
+					})
+				}else if(this.Addfriendmodule.FindType=='addgroup'){
+					axios.post('/Findgroups',"str="+this.Findstr).then(
+					function(response){
+						// console.log(response)
+						if(response.data.status==1){
+							self.Addfriendmodule.Returngrouplist=response.data.result
+						}else{
+							self.Addfriendmodule.Returngrouplist=''
+						}
+					},function(err){
+						console.log(err)
+					})
+				}
+			},
 			SwitchKey(module){
 				this.module=module
+			},
+			Switchpanel(module){
+				this.ChatModulePanel=module
+			},
+			// SwitchChatpanel(module){
+			// 	$(".Message_record >div").removeClass("display");
+			// 	$(".Message_record0[Userid$='"+module+"']").addClass("display");
+			// },
+			SwitchAddfriendmodule(module){
+				this.Addfriendmodule.FindType=module
+				$(".SwitchButton .ButtonText").removeClass("Selected");
+				$("#"+module).addClass("Selected");
 			},
 			EditUserName(){
 				var self=this
@@ -488,82 +922,1398 @@
 					console.log(err)
 				})
 			},
+			Refresh_friendslist(){
+				var self=this
+				axios.get('/getFriendGroup')
+				.then(function(response){
+					var data=response.data
+					self.FriendList=data
+				},function(err){
+					console.log(err)
+				})
+			},
 			getFriendInfo(e){
 				var self=this
-				axios.post('/getFriendInfo','friendid='+e.currentTarget.id)
+				var friendid=e.currentTarget.getAttribute('Userid')
+				var div =$('.el-tab-pane[tabid$="friend-info-'+friendid+'"]')
+				if(div.length > 0){
+					var tab = div.attr('aria-labelledby')
+					$('#'+tab).trigger("click")
+					console.log("好友资料存在")
+				}else{
+					axios.post('/getFriendInfo','friendid='+friendid)
+					.then(function(response){
+						var data=response.data
+						self.addTab('好友信息','friend-info-'+data.Userid,'friendInfo',data)
+					},function(err){
+						console.log(err)
+					})
+				}
+			},
+			getFriendInfo2(friendid){
+				var self=this
+				console.log(friendid)
+				axios.post('/getFriendInfo','friendid='+friendid)
 				.then(function(response){
-					console.log(response)
-					self.FriendInfo=response.data
-					self.ChatModulePanel='friendInfo'
+					var data=response.data
+					var div =$('.el-tab-pane[tabid$="friend-info-'+data.Userid+'"]')
+					if(div.length > 0){
+						var tab = div.attr('aria-labelledby')
+						$('#'+tab).trigger("click")
+						console.log("好友资料存在")
+					}else{
+						self.addTab('好友信息','friend-info-'+data.Userid,'friendInfo',data)
+					}
+				},function(err){
+					console.log(err)
+				})
+			},
+			getGroupInfo(e){
+				var self=this
+				var groupid=e.currentTarget.getAttribute('Groupid')
+				axios.post('/getGroupInfo','groupid='+groupid)
+				.then(function(response){
+					var data=response.data
+					var div =$('.el-tab-pane[tabid$="group-info-'+data.groupid+'"]')
+					if(div.length > 0){
+						var tab = div.attr('aria-labelledby')
+						$('#'+tab).trigger("click")
+						// console.log("好友聊天框存在")
+					}else{
+						self.addTab('群资料','group-info-'+data.groupid,'GroupInfo',data)
+					}
+				},function(err){
+					console.log(err)
+				})
+			},
+			getGroupInfo2(groupid){
+				var self=this
+				axios.post('/getGroupInfo','groupid='+groupid)
+				.then(function(response){
+					var data=response.data
+					var div =$('.el-tab-pane[tabid$="group-info-'+data.groupid+'"]')
+					if(div.length > 0){
+						var tab = div.attr('aria-labelledby')
+						$('#'+tab).trigger("click")
+						// console.log("好友聊天框存在")
+					}else{
+						self.addTab('群资料','group-info-'+data.groupid,'GroupInfo',data)
+					}
+				},function(err){
+					console.log(err)
+				})
+			},
+			getFriendGroups(){
+				var self=this
+				axios.get('/getFriendGroups')
+				.then(function(response){
+					console.log(response.data)
+					self.FriendGroups=response.data.result
+				},function(err){
+					// console.log(err)
+				})
+			},
+			getAddFriend_applylist(){
+				var self=this
+				axios.get('/getAddFriend_applylist')
+				.then(function(response){
+					// console.log(response)
+					if(response.data.status==0){
+						
+					}else if(response.data.status==1){
+						self.Friend_applylist=response.data.result
+					}
+				},function(err){
+					console.log(err)
+				})
+			},
+			getAddGroup_applylist(){
+				var self=this
+				axios.get('/getAddGroup_applylist')
+				.then(function(response){
+					// console.log(response)
+					if(response.data.status==0){
+						
+					}else if(response.data.status==1){
+						self.Group_applylist=response.data.result
+					}
 				},function(err){
 					console.log(err)
 				})
 			},
 			toChat(e){
 				var self=this
-				axios.post('/getChatInfo','friendid='+e.currentTarget.id)
+				var objectid=e.currentTarget.getAttribute('objectid')
+				var messagestype=e.currentTarget.getAttribute('messagestype')
+				if(messagestype=='friend'){
+					var div = $('.el-tab-pane[tabid$="friend-chat-'+objectid+'"]')
+					if(div.length > 0){
+						var tab = div.attr('aria-labelledby')
+						$('#'+tab).trigger("click")
+						// console.log("好友聊天框存在")
+					}else{
+						axios.post('/ToChat','objectid='+objectid+'&messagestype='+messagestype)
+						.then(function(response){
+							var data=response.data
+							self.addTab(data.ChatInfo.username,'friend-chat-'+data.ChatInfo.id,'Chatpanel',data)
+							self.NewSession('friend',objectid)
+							self.$nextTick(()=>{
+								var div = $(".Message_record0[userid$='"+objectid+"']");
+								// console.log(div);
+								div.scrollTop(div[0].scrollHeight)
+							})
+						},function(err){
+							console.log(err)
+						})
+					}
+				}
+				else if(messagestype=='group'){
+					var div =$('.el-tab-pane[tabid$="group-chat-'+objectid+'"]')
+					if(div.length > 0){
+						var tab=div.attr('aria-labelledby')
+						$('#'+tab).trigger("click")
+						// console.log("好友聊天框存在")
+					}else{
+						axios.post('/ToChat','objectid='+objectid+'&messagestype='+messagestype)
+						.then(function(response){
+							var data=response.data
+							self.addTab(data.ChatInfo.groupname,'group-chat-'+data.ChatInfo.groupid,'GroupChatpanel',data)
+							self.NewSession('group',objectid)
+							self.$nextTick(()=>{
+								var div = $(".Message_record0[groupid$='"+objectid+"']");
+								// console.log(div);
+								div.scrollTop(div[0].scrollHeight)
+							})
+						},function(err){
+							console.log(err)
+						})
+					}
+				}
+			},
+			toChat2(objectid,messagestype){
+				var self=this
+				if(messagestype=='friend'){
+					var div = $('.el-tab-pane[tabid$="friend-chat-'+objectid+'"]')
+					if(div.length > 0){
+						var tab = div.attr('aria-labelledby')
+						$('#'+tab).trigger("click")
+						// console.log("好友聊天框存在")
+					}else{
+						axios.post('/ToChat','objectid='+objectid+'&messagestype='+messagestype)
+						.then(function(response){
+							var data=response.data
+							self.addTab(data.ChatInfo.username,'friend-chat-'+data.ChatInfo.id,'Chatpanel',data)
+							self.NewSession('friend',objectid)
+							self.$nextTick(()=>{
+								var div = $(".Message_record0[userid$='"+objectid+"']");
+								// console.log(div);
+								div.scrollTop(div[0].scrollHeight)
+							})
+						},function(err){
+							console.log(err)
+						})
+					}
+				}
+				else if(messagestype=='group'){
+					var div =$('.el-tab-pane[tabid$="group-chat-'+objectid+'"]')
+					if(div.length > 0){
+						var tab=div.attr('aria-labelledby')
+						$('#'+tab).trigger("click")
+						// console.log("好友聊天框存在")
+					}else{
+						axios.post('/ToChat','objectid='+objectid+'&messagestype='+messagestype)
+						.then(function(response){
+							var data=response.data
+							self.addTab(data.ChatInfo.groupname,'group-chat-'+data.ChatInfo.groupid,'GroupChatpanel',data)
+							self.NewSession('group',objectid)
+							self.$nextTick(()=>{
+								var div = $(".Message_record0[groupid$='"+objectid+"']");
+								// console.log(div);
+								div.scrollTop(div[0].scrollHeight)
+							})
+						},function(err){
+							console.log(err)
+						})
+					}
+				}
+			},
+			// send(){
+			// 	if(!this.socket){return false;}
+			// 	if(this.socket.readyState !=this.socket.OPEN){return false;}
+			// 	if(this.message==null || this.message==""){
+			// 		this.$message.error("未输入任何内容")
+			// 		return false;
+			// 	}else{
+			// 		var data = {"message":this.message,"message_type":"Friendmessage","to_user":this.ChatInfo.id}
+			// 		this.socket.send(JSON.stringify(data))
+			// 		this.sendMessage('self',this.ChatInfo.id, this.ChatInfo.id, this.message);
+			// 		this.message=""
+			// 		this.SlidertoEnd()
+			// 		return true;
+			// 	}
+			// },
+			sendFriendapplicat(){
+				var self=this
+				if(!this.socket){return false;}
+				if(this.socket.readyState !=this.socket.OPEN){return false;}
+				axios.post('/verificat_isfriend','friendid='+self.formAddfriend.ObjectID)
 				.then(function(response){
-					console.log(response)
-					self.ChatInfo=response.data
-					self.ChatModulePanel='Chatpanel'
+					if(!response.data.result){
+						if(self.formAddfriend.FriendGroups_value==null || self.formAddfriend.FriendGroups_value==""){
+							self.$message.error("请选择好友分组")
+							return false;
+						}else if(self.formAddfriend.ObjectID==self.UserID){
+							self.$message.error("无法添加自己为好友")
+							return false;
+						}else{
+							var data = {"message_type":"friendapplicat",
+										"ObjectID":self.formAddfriend.ObjectID,
+										"FriendsGroupID":self.formAddfriend.FriendGroups_value,
+										"Addway":"通过好友搜索",
+										"Remarksname":self.formAddfriend.remarksname,
+										"Remarks":self.formAddfriend.remarks}
+							self.socket.send(JSON.stringify(data))
+							self.getAddFriend_applylist()
+							self.addfriend_dialogVisible = false
+							// return true;
+						}
+					}else{
+						self.$message.error("好友已存在")
+					}
 				},function(err){
-					console.log(err)
+					// console.log(err)
 				})
 			},
-			closeplane(){
-				this.ChatModulePanel='empty'
+			sendGroupapplicat(){
+				var self=this
+				if(!this.socket){return false;}
+				if(this.socket.readyState !=this.socket.OPEN){return false;}
+				var data = {"message_type":"groupapplicat",
+							"ObjectID":self.formAddgroup.ObjectID,
+							"Addway":"通过搜索添加",
+							"Remarks":self.formAddgroup.remarks}
+				self.socket.send(JSON.stringify(data))
+				self.getAddGroup_applylist()
+				self.formAddgroup.addgroup_dialogVisible = false
+				// return true;
 			},
-			send(){
-			    //    send  发送信息
-			    //    close 关闭连接
-			        var data1 = {"message":this.message,"to_user":this.ChatInfo.id}
-			       
-			        this.testsocket.send(JSON.stringify(data1))
-			        this.testsocket.onmessage = (res) => {
-			            console.log("WS的返回结果",res.data);         
-			        }
-	
-			    },
-			close_socket(){
-			    this.testsocket.close()
+			// SlidertoEnd(){
+			// 	//发送之后滑到底部
+			// 	this.$nextTick(()=>{
+			// 	var div = $(".Message_record0[Userid$='"+this.ChatInfo.id+"']");
+			// 	div.scrollTop(div[0].scrollHeight)
+			// 	})
+			// },
+			receiveFriendMessage(object,target, sender, text,sendtime) {
+				var chatCard = $(".Message_record0[userid$='"+target+"']");
+				var date = new Date();
+				var meg=''
+				function message(type,text){
+					return '<div class="'+type+'">'+
+								'<div>'+
+									'<div class="message_content" >'+
+										'<span>'+text+'</span>'+
+									'</div>'+
+								'</div>'+
+								'<div class="sendtime">'+
+									'<span>'+sendtime+'</span>'+
+								'</div>'+
+							'</div>'
+				}
+				if(object=='other'){
+					meg = message('message_other',text)
+				}else{
+					meg = message('message_self',text)
+				}
+				chatCard.append(meg);
 			},
-			generate_uuid: function() {
-			    var d = new Date().getTime();
-			    if (window.performance && typeof window.performance.now === "function") {
-			        d += performance.now(); //use high-precision timer if available
-			    }
-			    var uuid = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
-			        /[xy]/g,
-			        function(c) {
-			        var r = (d + Math.random() * 16) % 16 | 0;
-			        d = Math.floor(d / 16);
-			        return (c == "x" ? r : (r & 0x3) | 0x8).toString(16);
-			        }
-			    );
-			    return uuid;
+			receiveGroupMessage(object,objectid, sender, text,sendtime) {
+				var chatCard = $(".Message_record0[groupid$='"+objectid+"']");
+				var date = new Date();
+				var meg=''
+				function message(type,text){
+					return '<div class="'+type+'">'+
+								'<div>'+
+									'<div class="message_content" >'+
+										'<span>'+text+'</span>'+
+									'</div>'+
+								'</div>'+
+								'<div class="sendtime">'+
+									'<span>'+sendtime+'</span>'+
+								'</div>'+
+							'</div>'
+							
+
+				}
+				if(object=='other'){
+					meg = message('message_other',text)
+				}else{
+					meg = message('message_self',text)
+				}
+				chatCard.append(meg);
 			},
-	    },
+			// loadMegrecord(object,target, sender, text,time) {
+			// 	var chatCard = $(".Message_record0[Userid$='"+target+"']");
+			// 	var meg=''
+			// 	function message(type,text){
+			// 		return '<div class="'+type+'">'+
+			// 					'<div>'+
+			// 						'<div class="message_content" >'+
+			// 							'<span>'+text+'</span>'+
+			// 						'</div>'+
+			// 					'</div>'+
+			// 					'<div class="sendtime">'+
+			// 						'<span>'+time.slice(10, 16)+'</span>'+
+			// 					'</div>'+
+			// 				'</div>'
+			// 	}
+			// 	if(object=='other'){
+			// 		meg = message('message_other',text)
+			// 	}else{
+			// 		meg = message('message_self',text)
+			// 	}
+			// 	chatCard.append(meg);
+			// },
+			// keyDown(e) {
+			// 	if(e.ctrlKey && e.keyCode==13) {  //用户点击了ctrl+enter触发
+			// 		this.message += '\n';
+			// 	}else if(e.keyCode==13){
+			// 		this.send()
+			// 		event.preventDefault()
+			// 	}else {
+			// 		if(e != undefined){
+			// 			e.preventDefault();  // 阻止浏览器默认的敲击回车换行的方法
+			// 		}
+			// 	} 
+			// },
+			Processing_requests(Response,formAddfriend,type){
+				var self=this
+				axios.post('/Processing_requests',{response:Response,formAddfriend:formAddfriend,type:type})
+				// axios.post('/Processing_requests','response='+Response+'&formAddfriend='+formAddfriend)
+				.then(function(response){
+					// console.log(response)
+					if(response.data.status==1){
+						self.$message.success(response.data.result)
+						if(type=='friend'){
+							self.getAddFriend_applylist()
+						}
+						else if(type=='group'){
+							self.getAddGroup_applylist()
+						}
+						self.addfriend_dialogVisible2 = false
+					}else{
+						self.$message.error(response.data.result)
+					}
+				},function(err){
+					// console.log(err)
+				})
+			},
+			NewSession(messagestype,objectid){
+				var self=this
+				axios.post('/NewSession','messagestype='+messagestype+'&objectid='+objectid)
+				.then(function(response){
+					// console.log(response)
+					if(response.data.status==1){
+						self.Recentmessage.unshift(response.data.result)
+						// self.$message.success(response.data.result)
+					}else if(response.data.status==0){
+						self.$message.error(response.data.result)
+					}
+				},function(err){
+					// console.log(err)
+				})
+			},
+			DeleteSession(messagestype,objectid){
+				var self = this
+				var div =$('.messages[objectid="'+objectid+'"][messagestype="'+messagestype+'"]')
+				axios.post('/DeleteSession','messagestype='+messagestype+'&objectid='+objectid)
+				.then(function(response){
+					// console.log(response)
+					if(response.data.status==1){
+						div.remove()
+						// self.$message.success(response.data.result)
+					}else{
+						self.$message.error(response.data.result)
+					}
+				},function(err){
+					// console.log(err)
+				})
+			},
+			DeleteFriend(objectid){
+				var self=this
+				this.$confirm('你确定要该删除好友吗？', '提示', {
+					confirmButtonText: '确定',
+					cancelButtonText: '取消',
+					type: 'warning'
+				}).then(() => {
+					axios.post('/DeleteFriend','objectid='+objectid)
+					.then(function(response){
+						// console.log(response)
+						if(response.data.status==1){
+							self.$message.success(response.data.result)
+							setTimeout(self.Refresh_friendslist(),1000)
+						}else{
+							self.$message.error(response.data.result)
+						}
+					},function(err){
+						// console.log(err)
+					})
+				}).catch(() => {
+					this.$message({
+						type: 'info',
+						message: '已取消删除'
+					});          
+				});
+			},
+			onContextmenu(event) {
+				var self=this
+			    this.$contextmenu({
+			      items: [
+			        { label: "信息",icon: "el-icon-refresh",
+						onClick: () => {
+							self.module='message';
+						}
+			        },
+			        { label: "申请列表", icon: "el-icon-user",
+						onClick: () => {
+							self.module='ApplicationList';
+							self.getAddFriend_applylist();
+						}
+					},
+			        { label: "寻找好友", divided: true, icon: "el-icon-search",
+						onClick: () => {
+							self.module='Zone';
+						}
+					},
+			        { label: "设置" ,icon: "el-icon-setting",
+						onClick: () => {
+							self.module='seting';
+						}
+					},
+					{ label: "重新加载", divided: true, icon: "el-icon-refresh" },
+					],
+					event, // 鼠标事件信息
+					customClass: "custom-class", // 自定义菜单 class
+					zIndex: 4, // 菜单样式 z-index
+					minWidth: 230 // 主菜单最小宽度
+			    });
+			    return false;
+			},
+			clickfriendmenu(objectid) {
+				var self=this
+			    this.$contextmenu({
+			      items: [
+			        { label: "发消息",icon: "el-icon-chat-dot-square",
+						onClick: () => {
+							this.toChat2(objectid,'friend')
+						}
+			        },
+			        { label: "查看资料", icon: "el-icon-user",
+						onClick: () => {
+							this.getFriendInfo2(objectid)
+						}
+					},
+			        { label: "删除好友", icon: "el-icon-delete",
+						onClick: () => {
+							this.DeleteFriend(objectid)
+						}
+					},
+			        { label: "分组管理" ,icon: "el-icon-setting",
+						onClick: () => {
+							this.SetGroupdialog=true
+						}
+					},
+					{ label: "刷新分组" ,icon: "el-icon-refresh",
+						onClick: () => {
+							this.Refresh_friendslist()
+						}
+					},
+					],
+					event, // 鼠标事件信息
+					customClass: "custom-class", // 自定义菜单 class
+					zIndex: 3, // 菜单样式 z-index
+					minWidth: 230 // 主菜单最小宽度
+			    });
+			    return false;
+			},
+			clickgroupmenu(objectid) {
+				var self=this
+			    this.$contextmenu({
+			      items: [
+			        { label: "发群消息",icon: "el-icon-chat-dot-square",
+						onClick: () => {
+							this.toChat2(objectid,'group')
+						}
+			        },
+			        { label: "查看资料", icon: "el-icon-user",
+						onClick: () => {
+							this.getGroupInfo2(objectid)
+						}
+					},
+			        { label: "退出群聊", icon: "el-icon-delete",
+						onClick: () => {
+			
+						}
+					},
+			        { label: "设置" ,icon: "el-icon-setting",
+						onClick: () => {
+			
+						}
+					},
+					],
+					event, // 鼠标事件信息
+					customClass: "custom-class", // 自定义菜单 class
+					zIndex: 3, // 菜单样式 z-index
+					minWidth: 230 // 主菜单最小宽度
+			    });
+			    return false;
+			},
+			clickmessagemenu(objectid,messagestype) {
+				var self=this
+			    this.$contextmenu({
+			      items: [
+			        { label: "发送消息",icon: "el-icon-chat-dot-square",
+						onClick: () => {
+							this.toChat2(objectid,messagestype)
+						}
+			        },
+			        { label: "查看资料", icon: "el-icon-user",
+						onClick: () => {
+							if(messagestype=='friend'){
+								this.getFriendInfo2(objectid)
+							}else if(messagestype=='group'){
+								this.getGroupInfo2(objectid)
+							}
+							
+						}
+					},
+			        { label: "从会话列表删除", icon: "el-icon-delete",
+						onClick: () => {
+							self.DeleteSession(messagestype,objectid)
+						}
+					},
+					],
+					event, // 鼠标事件信息
+					customClass: "custom-class", // 自定义菜单 class
+					zIndex: 3, // 菜单样式 z-index
+					minWidth: 230 // 主菜单最小宽度
+			    });
+			    return false;
+			}
+		},
 		mounted(){
-		    var username = this.generate_uuid();
-		    console.log(username)
-		    this.testsocket = new WebSocket("ws://127.0.0.1:8000/ws/"+ username +"/") 
-		    console.log(this.testsocket)
-	
-		  	this.testsocket.onmessage = (res) => {
-		        console.log("WS的返回结果",res.data);         
-		    }
-		  	
-		    // onopen     定义打开时的函数
-		    // onclose    定义关闭时的函数
-		    // onmessage  定义接收数据时候的函数
-		    this.testsocket.onopen = function(){
-		        console.log("开始连接socket")
-		    }
-		    // this.testsocket.onclose = function(){
-		    //     console.log("socket连接已经关闭")
-		    // }
-		}
+			var self=this
+			this.socket = new WebSocket("ws://127.0.0.1:8001/?auth="+this.UserID)
+			var ws=this.socket
+			// console.log(ws)
+			ws.onmessage = (e) => {
+				var meg = JSON.parse(e.data);
+				console.log(meg)
+				if (meg.sender == 'system') {
+					if (meg.message_type == 'SystemNotice') {
+						this.$message(meg.message);
+					}
+					// else if (meg.message_type == 'friendsList') {
+					//     // 加载好友列表
+					//     loadFriendsList(meg.message);
+					// }
+					// else if (meg.message_type == 'addFriend') {
+					//     // 新增好友
+					//     addFriend(meg.message);
+					// }
+					// else if (meg.message_type == 'removeFriend') {
+					//     // 移除好友
+					//     removeFriend(meg.message);
+					// }
+				}
+				else {
+					if(meg.message_type == 'Friendmessage'){
+						self.receiveFriendMessage('other',meg.sender, meg.sender, meg.message,meg.sendtime);
+					}
+					if(meg.message_type == 'Groupmessage'){
+						if(meg.sender==this.UserID){
+							self.receiveGroupMessage('self',meg.sendto,meg.sender, meg.message,meg.sendtime);
+						}else{
+							self.receiveGroupMessage('other',meg.sendto,meg.sender,  meg.message,meg.sendtime);
+						}
+					}
+					else if(meg.message_type == 'friendapplicat'){
+						console.log("接到申请")
+					}
+				}
+			}
+			ws.onopen = function(){
+				self.connect=1
+				console.log("开始连接socket")
+			}
+			ws.onclose = function(){
+				self.connect=0
+				console.log("socket连接已经关闭")
+			}
+			ws.onerror = function(){
+				self.connect=0
+				console.log("socket连接错误")
+			}
+		},
+		components: {
+			'my-empty': {
+			      template:'<el-empty id="empty" description="{{OneWord}}" image="{% static "Logo/GoChat2.png" %}"></el-empty>'
+			},
+			'my-friendinfo':{
+				delimiters:['{[', ']}'],
+				props: {
+					friendgroups:'',
+					data:'',
+				    chat: {
+				        type: Function,
+				        default: null
+				    },
+					newsession:{
+						type: Function,
+						default: null
+					},
+					deletefriend:{
+						type: Function,
+						default: null
+					},
+					refresh_friendslist:{
+						type: Function,
+						default: null
+					}
+				},
+				methods:{
+					toChat(e){
+						if (this.chat) {
+						    this.chat(e);
+						 }
+					},
+					NewSession(messagestype,objectid){
+						if (this.newsession) {
+						    this.newsession(messagestype,objectid);
+						 }
+					},
+					DeleteFriend(objectid){
+						if (this.deletefriend) {
+						    this.deletefriend(objectid);
+						 }
+					},
+					Refresh_friendslist(){
+						if (this.refresh_friendslist) {
+						    this.refresh_friendslist();
+						 }
+					},
+					EditFriendname(Newname,objectid){
+						var self=this
+						axios.post('/EditFriendname','Newname='+Newname+'&objectid='+objectid)
+						.then(function(response){
+							// console.log(response)
+							if(response.data.status==1){
+								self.$message.success(response.data.result)
+								setTimeout(function() {self.Refresh_friendslist()},1000)
+							}else if(response.data.status==0){
+								self.$message.error(response.data.result)
+							}
+						},function(err){
+							// console.log(err)
+						})
+					},
+					EditFriendGroup(FriendGroupid,objectid){
+						var self=this
+						axios.post('/EditFriendGroup','FriendGroupid='+FriendGroupid+'&objectid='+objectid)
+						.then(function(response){
+							// console.log(response)
+							if(response.data.status==1){
+								self.$message.success(response.data.result)
+								setTimeout(function() {self.Refresh_friendslist()},1000)
+							}else if(response.data.status==0){
+								self.$message.error(response.data.result)
+							}
+						},function(err){
+							// console.log(err)
+						})
+					}
+				},
+				// props: ["data"],
+				template:'<el-row id="friendInfo">'+
+							'<el-col :span="10" style="height: 100%;background-color: #4494d5;text-align: center;">'+
+								'<div style="width: 100%;height: 40%;">'+
+									'<el-avatar :size="150" :src="data.Headportrait" style="margin-top: 60px;"></el-avatar>'+
+								'</div>'+
+								'<div style="width: 100%;height: 30%;text-align: center;color: white;">'+
+									'<h1>{[data.Username]}</h1>'+
+									'<p>{[data.Userid]}</p><br>'+
+									'<p>{[data.sign]}</p>'+
+								'</div>'+
+								'<div style="width: 100%;height: 30%;text-align: center;">'+
+									'<el-button size="small" '+
+										':objectid="data.Userid" '+
+										'messagestype="friend" style="width: 100px;" '+
+										'@click="toChat($event)"">发消息</el-button>'+
+									'<el-button size="small" '+
+										':objectid="data.Userid" type="danger" '+
+										'messagestype="friend" style="width: 100px;" '+
+										'@click="DeleteFriend(data.Userid)"">删除好友</el-button>'+
+								'</div>'+
+							'</el-col>'+
+							'<el-col :span="14" style="height: 100%;background-color: rgb(255 255 255);border: 1px solid #e1e1e1;padding: 3%;">'+
+								'<table border="0" cellpadding="10px" cellspacing="10px">'+
+									'<tbody>'+
+										'<tr>'+
+											'<td style="color: #909193;">账号</td><td>{[data.Userid]}</td>'+
+										'</tr>'+
+										'<tr>'+
+											'<td style="color: #909193;">昵称</td><td>{[data.Username]}</td>'+
+										'</tr>'+
+										'<tr>'+
+											'<td style="color: #909193;">备注</td>'+
+											'<td><el-input size="mini" v-model="data.Remarkname" placeholder="备注" '+
+											'@change="EditFriendname(data.Remarkname,data.Userid)"></el-input></td>'+
+										'</tr>'+
+										'<tr>'+
+											'<td style="color: #909193;">分组</td>'+
+											'<td><el-select size="mini" v-model="data.friendgroupsid" placeholder="请选择分组" '+
+											'@change="EditFriendGroup(data.friendgroupsid,data.Userid)">'+
+												'<el-option v-for="item in friendgroups" '+
+												':key="item.value" :label="item.label" :value="item.value" :disabled="item.disabled">'+
+												'</el-option>'+
+											'</el-select></td>'+
+										'</tr>'+
+										'<tr>'+
+											'<td style="color: #909193;">年龄</td><td>{[data.Age==null?"":data.Age+"岁"]}</td>'+
+										'</tr>'+
+										'<tr>'+
+											'<td style="color: #909193;">性别</td><td>{[data.Sex==1?"男":data.sex==2?"女":"其他"]}</td>'+
+										'</tr>'+
+										'<tr>'+
+											'<td style="color: #909193;">生日</td><td>{[data.Birthday]}</td>'+
+										'</tr>'+
+										'<tr>'+
+											'<td style="color: #909193;">生肖</td><td>{[data.Shengxiao==null?"":"属"+data.Shengxiao]}</td>'+
+										'</tr>'+
+										'<tr>'+
+											'<td style="color: #909193;">星座</td><td>{[data.Constellation]}</td>'+
+										'</tr>'+
+										
+									'</tbody>'+
+								'</table>'+
+							'</el-col>'+
+						'</el-row>'
+			},
+			'my-groupinfo':{
+				delimiters:['{[', ']}'],
+				props: {
+					data:'',
+				    chat: {
+				        type: Function,
+				        default: null
+				    },
+					newsession:{
+						type: Function,
+						default: null
+					}
+				},
+				methods:{
+					handleClick(tab, event) {
+					// console.log(tab, event);
+					},
+					toChat(e){
+						if (this.chat) {
+						    this.chat(e);
+						 }
+					},
+					NewSession(messagestype,objectid){
+						if (this.newsession) {
+						    this.newsession(messagestype,objectid);
+						 }
+					}
+				},
+				// props: ["data"],
+				template:'<el-row id="GroupInfo">'+
+							'<el-col :span="8" style="height: 100%;background-color: #4494d5;text-align: center;">'+
+								'<div style="width: 100%;height: 40%;">'+
+									'<el-avatar :size="150" :src="data.groupavatars" style="margin-top: 60px;"></el-avatar>'+
+								'</div>'+
+								'<div style="width: 100%;height: 30%;text-align: center;color: white;">'+
+									'<h1>{[data.groupname]}</h1>'+
+									'<p>{[data.groupid]}</p>'+
+								'</div>'+
+								'<div style="width: 100%;height: 30%;text-align: center;">'+
+									'<el-button size="small" '+
+										':objectid="data.groupid" '+
+										'messagestype="group" style="width: 100px;" '+
+										'@click="toChat($event)">发消息</el-button>'+
+									'<el-button size="small" '+
+										':objectid="data.groupid" type="danger" '+
+										'messagestype="group" style="width: 100px;" '+
+										'@click="toChat($event)">退出群聊</el-button>'+
+								'</div>'+
+							'</el-col>'+
+							'<el-col :span="16" style="height: 100%;background-color: rgb(255 255 255);border: 1px solid #e1e1e1;padding: 3%;">'+
+								' <el-tabs value="first" @tab-click="handleClick" >'+
+								    '<el-tab-pane label="首页" name="first">'+
+										'<table border="0" cellpadding="10px" cellspacing="10px">'+
+											'<tbody>'+
+												'<tr>'+
+													'<td style="color: #909193;">群号码</td><td>{[data.groupid]}</td>'+
+												'</tr>'+
+												'<tr>'+
+													'<td style="color: #909193;">群名称</td><td>{[data.groupname]}</td>'+
+												'</tr>'+
+												'<tr>'+
+													'<td style="color: #909193;">群备注</td><td>{[data.groupremarks]}</td>'+
+												'</tr>'+
+												'<tr>'+
+													'<td style="color: #909193;">群介绍</td><td>{[data.groupintro]}</td>'+
+												'</tr>'+
+												'<tr>'+
+													'<td style="color: #909193;">群主/管理员</td>'+
+												'</tr>'+
+											'</tbody>'+
+										'</table>'+
+									'</el-tab-pane>'+
+								   ' <el-tab-pane label="成员" name="second">'+
+										' <el-table'+
+										     ' :data="data.members"'+
+										    '  style="width: 100%">'+
+										      '<el-table-column prop="username" label="成员" width="150"></el-table-column>'+
+										      '<el-table-column prop="userremarks" label="群昵称" width="150"></el-table-column>'+
+										      '<el-table-column prop="role" label="角色"></el-table-column>'+
+											  '<el-table-column prop="jointime" label="加入时间"></el-table-column>'+
+										    '</el-table>'+
+									'</el-tab-pane>'+
+								    '<el-tab-pane label="设置" name="third">设置</el-tab-pane>'+
+								  '</el-tabs>'+
+							'</el-col>'+
+						'</el-row>'
+			},
+			'my-chatpanel':{
+				delimiters:['{[', ']}'],
+				data:function(){
+					return{
+						message:'',
+						UserID:{{user.id}},
+						emoji:{"data": ['😀', '😁', '😂', '😃', '😄', '😅', '😆', '😉', '😊', '😋', '😎', '😍', '😘', '😗', '😙', '😚', '😇', '😐', '😑', '😶', '😏', '😣', '😥', '😮', '😯', '😪', '😫', '😴', '😌', '😛', '😜', '😝', '😒', '😓', '😔', '😕', '😲', '😷', '😖', '😞', '😟', '😤', '😢', '😭', '😦', '😧', '😨', '😬', '😰', '😱', '😳', '😵', '😡', '😠', '💘', '❤', '💓', '💔', '💕', '💖', '💗', '💙', '💚', '💛', '💜', '💝', '💞', '💟', '❣', '💪', '👈', '👉', '☝', '👆', '👇', '✌', '✋', '👌', '👍', '👎', '✊', '👊', '👋', '👏', '👐', '✍', '🍇', '🍈', '🍉', '🍊', '🍋', '🍌', '🍍', '🍎', '🍏', '🍐', '🍑', '🍒', '🍓', '🍅', '🍆', '🌽', '🍄', '🌰', '🍞', '🍖', '🍗', '🍔', '🍟', '🍕', '🍳', '🍲', '🍱', '🍘', '🍙', '🍚', '🍛', '🍜', '🍝', '🍠', '🍢', '🍣', '🍤', '🍥', '🍡', '🍦', '🍧', '🍨', '🍩', '🍪', '🎂', '🍰', '🍫', '🍬', '🍭', '🍮', '🍯', '🍼', '☕', '🍵', '🍶', '🍷', '🍸', '🍹', '🍺', '🍻', '🍴', '🌹', '🍀', '🍎', '💰', '📱', '🌙', '🍁', '🍂', '🍃', '🌷', '💎', '🔪', '🔫', '🏀', '⚽', '⚡', '👄', '👍', '🔥', '🙈', '🙉', '🙊', '🐵', '🐒', '🐶', '🐕', '🐩', '🐺', '🐱', '😺', '😸', '😹', '😻', '😼', '😽', '🙀', '😿', '😾', '🐈', '🐯', '🐅', '🐆', '🐴', '🐎', '🐮', '🐂', '🐃', '🐄', '🐷', '🐖', '🐗', '🐽', '🐏', '🐑', '🐐', '🐪', '🐫', '🐘', '🐭', '🐁', '🐀', '🐹', '🐰', '🐇', '🐻', '🐨', '🐼', '🐾', '🐔', '🐓', '🐣', '🐤', '🐥', '🐦', '🐧', '🐸', '🐊', '🐢', '🐍', '🐲', '🐉', '🐳', '🐋', '🐬', '🐟', '🐠', '🐡', '🐙', '🐚', '🐌', '🐛', '🐜', '🐝', '🐞', '🦋', '😈', '👿', '👹', '👺', '💀', '☠', '👻', '👽', '👾', '💣']}
+					}
+				},
+				methods:{
+					handleChange(value) {
+						// console.log(value);
+					},
+					send(objectid){
+						if(!this.socket){return false;}
+						if(this.socket.readyState !=this.socket.OPEN){return false;}
+						if(this.message==null || this.message==""){
+							this.$message.error("未输入任何内容")
+							return false;
+						}else{
+							var data = {"message":this.message,"message_type":"Friendmessage","to_user":objectid}
+							this.socket.send(JSON.stringify(data))
+							this.sendMessage('self',objectid, objectid, this.message);
+							this.message=""
+							this.$nextTick(()=>{
+								var div = $(".Message_record0[userid$='"+objectid+"']");
+								// console.log(div);
+								div.scrollTop(div[0].scrollHeight)
+							})
+							// this.SlidertoEnd(objectid)
+							return true;
+						}
+					},
+					sendMessage(object,target, sender, text) {
+						var chatCard = $(".Message_record0[userid$='"+target+"']");
+						var date = new Date();
+						var meg=''
+						function message(type,text){
+							return '<div class="'+type+'">'+
+										'<div>'+
+											'<div class="message_content" >'+
+												'<span>'+text+'</span>'+
+											'</div>'+
+										'</div>'+
+										'<div class="sendtime">'+
+											'<span>'+date.getHours()+':'+date.getMinutes()+':'+date.getSeconds()+'</span>'+
+										'</div>'+
+									'</div>'
+						}
+						if(object=='other'){
+							meg = message('message_other',text)
+						}else{
+							meg = message('message_self',text)
+						}
+						chatCard.append(meg);
+					},
+					keyDown(e) {
+						// console.log(e.path[0].attributes[2].value)
+						if(e.ctrlKey && e.keyCode==13) {  //用户点击了ctrl+enter触发
+							this.message += '\n';
+						}else if(e.keyCode==13){
+							this.send(e.path[0].attributes[2].value)
+							event.preventDefault()
+						}else {
+							if(e != undefined){
+								e.preventDefault();  // 阻止浏览器默认的敲击回车换行的方法
+							}
+						} 
+					},
+					SlidertoEnd(objectid){
+						//发送之后滑到底部
+						this.$nextTick(()=>{
+						var div = $(".Message_record0[userid$='"+objectid+"']");
+							// console.log(div);
+							div.scrollTop(div[0].scrollHeight)
+						})
+					},
+					chooseEmojiDefault(emoji) {
+						console.log(emoji)
+						var elInput = document.getElementById('Chatinput'); //根据id选择器选中对象
+						var startPos = elInput.selectionStart;// input 第0个字符到选中的字符
+						var endPos = elInput.selectionEnd;// 选中的字符到最后的字符
+						if (startPos === undefined || endPos === undefined) return
+						var txt = elInput.value;
+						// 将表情添加到选中的光标位置
+						var result = txt.substring(0, startPos) + emoji + txt.substring(endPos)
+						this.message=result
+					},
+				},
+				mounted(){
+					
+				},
+				props: ["data","socket"],
+				template:'<el-row id="Chatpanel">'+
+								'<el-col :span="16" style="height: 100%;">'+
+									'<div style="height: 7%;padding: 10px 30px;display:flex;align-items: center;">'+
+										'<div style="float: left;">'+
+											'<el-avatar :size="60" :src="data.ChatInfo.headportrait"></el-avatar>'+
+										'</div>'+
+										'<div style="width: 85%;float: left;padding-left: 30px;">'+
+											'<p>{[data.ChatInfo.username]}</p>'+
+											'<small style="color: #adb5bd!important;">{[data.ChatInfo.status==0?\'离线\':\'在线\']}</small>'+
+										'</div>'+
+									'</div>'+
+									'<!-- 聊天记录框 -->'+
+									'<div class="Message_record">'+
+										'<div class="Message_record0" :userid="data.ChatInfo.id">'+
+											'<template v-for="item in data.Messages_record.Session">'+
+												'<template v-if="item.FromUserID=='+{{user.id}}+'">'+
+													'<div class="message_self">'+
+														'<div>'+
+															'<div class="message_content" >'+
+																'<span>{[item.PostMessages]}</span>'+
+															'</div>'+
+														'</div>'+
+														'<div class="sendtime">'+
+															'<span>{[item.SendTime.slice(11,19)]}</span>'+
+														'</div>'+
+													'</div>'+
+												'</template>'+
+												'<template v-else>'+
+													'<div class="message_other">'+
+														'<div>'+
+															'<div class="message_content">'+
+																'<span>{[item.PostMessages]}</span>'+
+															'</div>'+
+														'</div>'+
+														'<div class="sendtime">'+
+															'<span>{[item.SendTime.slice(11,19)]}</span>'+
+														'</div>'+
+													'</div>'+
+												'</template>'+
+											'</template>'+
+										'</div>'+
+									'</div>'+
+									'<!-- 聊天输入框 -->'+
+									'<div style="width: 100%;height: 30%;border: 1px solid rgb(235, 235, 235);">'+
+										'<div style="height: 30px;">'+
+										'<el-popover placement="top-start" width="400" trigger="click">'+
+											'<div style="height:300;">'+
+												'<div class="emoji">'+
+												        '<ul class="emoji-default">'+
+												            '<li v-for="(item, index) in emoji.data" :key="index"'+
+												                '@click.stop="chooseEmojiDefault(item)">'+
+												                '{[item]}'+
+												            '</li>'+
+												        '</ul>'+
+												    '</div>'+
+											'</div>'+
+											'<img class="Emojibutten" slot="reference" src="{% static "/Emoji/2.png" %}" style="width: 30px; margin-left: 3%"/>'+
+										'</el-popover>'+
+										'</div>'+
+										'<el-input id="Chatinput" :userid="data.ChatInfo.id"'+
+											'@keydown.enter.native="keyDown" '+
+											'type="textarea" placeholder="" '+
+											'v-model="message" '+
+											'maxlength="500" show-word-limit :rows="5" style="border: 0px;" resize="none">'+
+										'</el-input>'+
+										'<div style="height: auto;text-align: right;padding: 0 20px;">'+
+											'<el-button type="primary" size="mini" @click="send(data.ChatInfo.id)">发送</el-button>'+
+										'</div>'+
+									'</div>'+
+									
+								'</el-col>'+
+								'<el-col :span="8" style="height: 100%;border: 1px solid rgb(235, 235, 235);">'+
+									'<div style="height: 7%;border-bottom: 1px solid rgb(235, 235, 235);padding: 10px 30px;display:flex;align-items: center;">'+
+										'<div >'+
+											'<h5 style="font-size: 1.09375rem;color: #7B7A7A;">详细</h5>'+
+										'</div>'+
+									'</div>'+
+									'<div style="height: 88%;">'+
+										'<div style="padding: 20px;height: 30%;border-bottom: 1px solid rgb(235, 235, 235);">'+
+											'<div style="text-align: center;">'+
+												'<el-avatar :size="120" :src="data.ChatInfo.headportrait"></el-avatar>'+
+											'</div>'+
+											'<div style="text-align: center;padding: 10px 0;">'+
+												'<h5 style="font-size: 1.09375rem;color: #464646;margin-bottom: 2px;">{[data.ChatInfo.username]}</h5>'+
+												'<p><i class="el-icon-location-outline"></i> '+
+												'<span style="color: #adb5bd!important;font-size: .875rem;">{[data.ChatInfo.region]}</span></p>'+
+											'</div>'+
+										'</div>'+
+										'<div style="padding: 0 10px;">'+
+											'<el-collapse :value="[\'1\']" @change="handleChange">'+
+												'<el-collapse-item title="个人信息" name="1">'+
+												    '<div>'+
+														'<ul>'+
+															'<li style="padding:5px 10px;">'+
+																'<p style="color: #adb5bd;">手机号</p>'+
+																'<p>{[data.ChatInfo.phone]}</p>'+
+															'</li>'+
+															'<li style="padding:5px 10px;">'+
+																'<p style="color: #adb5bd;">邮箱</p>'+
+																'<p>{[data.ChatInfo.email]}</p>'+
+															'</li>'+
+															'<li style="padding:5px 10px;">'+
+																'<p style="color: #adb5bd;">地址</p>'+
+																'<p>{[data.ChatInfo.address]}</p>'+
+															'</li>'+
+														'</ul>'+
+													'</div>'+
+												'</el-collapse-item>'+
+											'</el-collapse>'+
+										'</div>'+
+									'</div>'+
+								'</el-col>'+
+							'</el-row>'
+			},
+			'my-groupchatpanel':{
+				delimiters:['{[', ']}'],
+				data:function(){
+					return{
+						message:'',
+						UserID:{{user.id}},
+						HeadPortrait_url:"{% static "HeadPortrait/" %}",
+						emoji:{"data": ['😀', '😁', '😂', '😃', '😄', '😅', '😆', '😉', '😊', '😋', '😎', '😍', '😘', '😗', '😙', '😚', '😇', '😐', '😑', '😶', '😏', '😣', '😥', '😮', '😯', '😪', '😫', '😴', '😌', '😛', '😜', '😝', '😒', '😓', '😔', '😕', '😲', '😷', '😖', '😞', '😟', '😤', '😢', '😭', '😦', '😧', '😨', '😬', '😰', '😱', '😳', '😵', '😡', '😠', '💘', '❤', '💓', '💔', '💕', '💖', '💗', '💙', '💚', '💛', '💜', '💝', '💞', '💟', '❣', '💪', '👈', '👉', '☝', '👆', '👇', '✌', '✋', '👌', '👍', '👎', '✊', '👊', '👋', '👏', '👐', '✍', '🍇', '🍈', '🍉', '🍊', '🍋', '🍌', '🍍', '🍎', '🍏', '🍐', '🍑', '🍒', '🍓', '🍅', '🍆', '🌽', '🍄', '🌰', '🍞', '🍖', '🍗', '🍔', '🍟', '🍕', '🍳', '🍲', '🍱', '🍘', '🍙', '🍚', '🍛', '🍜', '🍝', '🍠', '🍢', '🍣', '🍤', '🍥', '🍡', '🍦', '🍧', '🍨', '🍩', '🍪', '🎂', '🍰', '🍫', '🍬', '🍭', '🍮', '🍯', '🍼', '☕', '🍵', '🍶', '🍷', '🍸', '🍹', '🍺', '🍻', '🍴', '🌹', '🍀', '🍎', '💰', '📱', '🌙', '🍁', '🍂', '🍃', '🌷', '💎', '🔪', '🔫', '🏀', '⚽', '⚡', '👄', '👍', '🔥', '🙈', '🙉', '🙊', '🐵', '🐒', '🐶', '🐕', '🐩', '🐺', '🐱', '😺', '😸', '😹', '😻', '😼', '😽', '🙀', '😿', '😾', '🐈', '🐯', '🐅', '🐆', '🐴', '🐎', '🐮', '🐂', '🐃', '🐄', '🐷', '🐖', '🐗', '🐽', '🐏', '🐑', '🐐', '🐪', '🐫', '🐘', '🐭', '🐁', '🐀', '🐹', '🐰', '🐇', '🐻', '🐨', '🐼', '🐾', '🐔', '🐓', '🐣', '🐤', '🐥', '🐦', '🐧', '🐸', '🐊', '🐢', '🐍', '🐲', '🐉', '🐳', '🐋', '🐬', '🐟', '🐠', '🐡', '🐙', '🐚', '🐌', '🐛', '🐜', '🐝', '🐞', '🦋', '😈', '👿', '👹', '👺', '💀', '☠', '👻', '👽', '👾', '💣']}
+					}
+				},
+				methods:{
+					send(objectid){
+						if(!this.socket){return false;}
+						if(this.socket.readyState !=this.socket.OPEN){return false;}
+						if(this.message==null || this.message==""){
+							this.$message.error("未输入任何内容")
+							return false;
+						}else{
+							var data = {"message":this.message,"message_type":"Groupmessage","to_user":objectid}
+							this.socket.send(JSON.stringify(data))
+							// this.sendMessage('self',objectid, objectid, this.message);
+							this.message=""
+							this.$nextTick(()=>{
+								var div = $(".Message_record0[groupid$='"+objectid+"']");
+							// console.log(div);
+								div.scrollTop(div[0].scrollHeight)
+							})
+							// this.SlidertoEnd(objectid)
+							return true;
+						}
+					},
+					keyDown(e) {
+						if(e.ctrlKey && e.keyCode==13) {  //用户点击了ctrl+enter触发
+							this.message += '\n';
+						}else if(e.keyCode==13){
+							this.send(e.path[0].attributes[2].value)
+							event.preventDefault()
+						}else {
+							if(e != undefined){
+								e.preventDefault();  // 阻止浏览器默认的敲击回车换行的方法
+							}
+						} 
+					},
+					SlidertoEnd(objectid){
+						//发送之后滑到底部
+						this.$nextTick(()=>{
+							var div = $(".Message_record0[groupid$='"+objectid+"']");
+						// console.log(div);
+							div.scrollTop(div[0].scrollHeight)
+						})
+					},
+					chooseEmojiDefault(emoji) {
+						console.log(emoji)
+						var elInput = document.getElementById('Chatinput'); //根据id选择器选中对象
+						var startPos = elInput.selectionStart;// input 第0个字符到选中的字符
+						var endPos = elInput.selectionEnd;// 选中的字符到最后的字符
+						if (startPos === undefined || endPos === undefined) return
+						var txt = elInput.value;
+						// 将表情添加到选中的光标位置
+						var result = txt.substring(0, startPos) + emoji + txt.substring(endPos)
+						this.message=result
+					},
+				},
+				props: ["data","socket"],
+				template:'<el-row id="Chatpanel">'+
+							'<el-col :span="18" style="height: 100%;">'+
+								'<div style="height: 7%;padding: 10px 30px;display:flex;align-items: center;">'+
+									'<div style="width: 85%;float: left;padding-left: 30px;">'+
+										'<p>{[data.ChatInfo.groupname]}</p>'+
+									'</div>'+
+								'</div>'+
+								'<!-- 聊天记录框 -->'+
+								'<div class="Message_record">'+
+									'<div class="Message_record0" :groupid="data.ChatInfo.groupid">'+
+										'<template v-for="item in data.Messages_record.Session">'+
+											'<template v-if="item.FromUserID=='+{{user.id}}+'">'+
+												'<div class="message_self">'+
+													'<div class="sendname_right">'+
+														'<span>{[item.UserName]}</span>'+
+													'</div>'+
+													'<div>'+
+														'<div class="message_content" >'+
+															'<span>{[item.PostMessages]}</span>'+
+														'</div>'+
+														'<div style="display: inline-block;margin-left: 10px;vertical-align: top;">'+
+															'<el-avatar :size="35" :src="HeadPortrait_url+item.HeadPortrait"></el-avatar>'+
+														'</div>'+
+													'</div>'+
+													'<div class="sendtime_right">'+
+														'<span>{[item.SendTime.slice(11,19)]}</span>'+
+													'</div>'+
+												'</div>'+
+											'</template>'+
+											'<template v-else>'+
+												'<div class="message_other">'+
+													'<div class="sendname_left">'+
+														'<span>{[item.UserName]}</span>'+
+													'</div>'+
+													'<div>'+
+														'<div style="display: inline-block;margin-right: 10px;vertical-align: top;">'+
+															'<el-avatar :size="35" :src="HeadPortrait_url+item.HeadPortrait"></el-avatar>'+
+														'</div>'+
+														'<div class="message_content">'+
+															'<span>{[item.PostMessages]}</span>'+
+														'</div>'+
+													'</div>'+
+													'<div class="sendtime_left">'+
+														'<span>{[item.SendTime.slice(11,19)]}</span>'+
+													'</div>'+
+												'</div>'+
+											'</template>'+
+										'</template>'+
+									'</div>'+
+								'</div>'+
+								'<!-- 聊天输入框 -->'+
+								'<div style="width: 100%;height: 30%;border: 1px solid rgb(235, 235, 235);">'+
+									'<div style="height: 30px;">'+
+										'<el-popover placement="top-start" width="400" trigger="click">'+
+											'<div style="height:300;">'+
+												'<div class="emoji">'+
+												        '<ul class="emoji-default">'+
+												            '<li v-for="(item, index) in emoji.data" :key="index"'+
+												                '@click.stop="chooseEmojiDefault(item)">'+
+												                '{[item]}'+
+												            '</li>'+
+												        '</ul>'+
+												    '</div>'+
+											'</div>'+
+											'<img class="Emojibutten" slot="reference" src="{% static "/Emoji/2.png" %}" style="width: 30px; margin-left: 3%"/>'+
+										'</el-popover>'+
+									'</div>'+
+									'<el-input id="Chatinput" @keydown.enter.native="keyDown" :groupid="data.ChatInfo.groupid" '+
+									 'type="textarea" placeholder="" v-model="message" maxlength="500" show-word-limit :rows="5" style="border: 0px;" resize="none">'+
+									'</el-input>'+
+									'<div style="height: auto;text-align: right;padding: 0 20px;">'+
+										'<el-button type="primary" size="mini" @click="send(data.ChatInfo.groupid)">发送</el-button>'+
+									'</div>'+
+								'</div>'+
+									
+							'</el-col>'+
+							'<el-col :span="6" style="height: 100%;border: 1px solid rgb(235, 235, 235);">'+
+								'<div style="height: 7%;border-bottom: 1px solid rgb(235, 235, 235);padding: 10px 30px;display:flex;align-items: center;">'+
+									'<div >'+
+										'<h5 style="font-size: 1.09375rem;color: #7B7A7A;">详细</h5>'+
+									'</div>'+
+								'</div>'+
+								'<div style="height: 88%;">'+
+									'<div style="height: 30%;padding:10px 10px;border-bottom: 1px #ebebeb solid;">【简介】<span style="color: #a1a1a1;font-size: 13px;">{[data.ChatInfo.Info]}</span></div>'+
+									'<div style="height: 70%;">'+
+										'<div style="height: 6%;padding: 8px 15px;border-bottom: 1px #ebebeb solid;">'+
+											'<span>群成员</span>'+
+										'</div>'+
+										'<div style="height: 88%;overflow-y: scroll;">'+
+											'<ul>'+
+												'<li v-for="item in data.ChatInfo.members" style="padding: 3px 20px;">'+
+													'<el-avatar :size="25" :src="HeadPortrait_url+item.headportrait" style="vertical-align: text-bottom;"></el-avatar>'+
+													'<span style="vertical-align: text-top;font-size: 13px;padding: 0 7px;">{[item.username]}</span>'+
+												'</li>'+
+											'</ul>'+
+										'</div>'+
+									'</div>'+
+								'</div>'+
+							'</el-col>'+
+						'</el-row>'
+			},
+			"my-setgroup":{
+				data(){
+					return {
+						setgroup:this.setgroupdialog,
+					}
+				},
+				props: {
+					friendgroups:'',
+					setgroupdialog:{
+						type:Boolean,
+						default:''
+					},
+					refresh_friendslist:{
+						type: Function,
+						default: null
+					}
+
+				},
+				watch:{
+					setgroup(val){
+						this.$emit('update:setgroupdialog',val)
+					},
+					setgroupdialog(val){
+						this.setgroup=val
+					},
+				},
+				methods:{
+					handleClose(done) {
+					    // this.$confirm('确认关闭？')
+					      // .then(_ => {
+					        done();
+					      // })
+					    //   .catch(_ => {});
+					},
+					Refresh_friendslist(){
+						if (this.refresh_friendslist) {
+							this.refresh_friendslist();
+						}
+					},
+					up(index){
+						if(index==0){
+							return false
+						}else{
+							var self=this
+							axios.post('/MoveFriendGroup',{groupid: [this.friendgroups[index].value,this.friendgroups[index-1].value],
+															serial:[this.friendgroups[index-1].serial,this.friendgroups[index].serial]})
+							.then(function(response){
+								if(response.data.status==1){
+									var label=self.friendgroups[index].label
+									var serial=self.friendgroups[index].serial
+									self.friendgroups[index].label=self.friendgroups[index-1].label
+									self.friendgroups[index].serial=self.friendgroups[index-1].serial
+									self.friendgroups[index-1].label=label
+									self.friendgroups[index-1].serial=serial
+								}else if(response.data.status==0){
+									self.$message.error(response.data.result)
+								}
+							},function(err){
+								// console.log(err)
+							})
+						}
+					},
+					down(index){
+						if(index==this.friendgroups.length-1){
+							return false
+						}else{
+							var self=this
+							axios.post('/MoveFriendGroup',{groupid: [this.friendgroups[index].value,this.friendgroups[index+1].value],
+															serial:[this.friendgroups[index+1].serial,this.friendgroups[index].serial]})
+							.then(function(response){
+								if(response.data.status==1){
+									var label=this.friendgroups[index].label
+									var serial=this.friendgroups[index].serial
+									this.friendgroups[index].label=this.friendgroups[index+1].label
+									this.friendgroups[index].serial=this.friendgroups[index+1].serial
+									this.friendgroups[index+1].label=label
+									this.friendgroups[index+1].serial=serial
+								}else if(response.data.status==0){
+									self.$message.error(response.data.result)
+								}
+							},function(err){
+								// console.log(err)
+							})
+						}
+					},
+					EditFriendGroupname(index){
+						var self=this
+						axios.post('/EditFriendGroupname',{groupid: this.friendgroups[index].value,label:this.friendgroups[index].label})
+						.then(function(response){
+							if(response.data.status==1){
+								self.$message.success(response.data.result)
+							}else if(response.data.status==0){
+								self.$message.error(response.data.result)
+							}
+						},function(err){
+							// console.log(err)
+						})
+					},
+					deletegroup(index){
+						var self=this
+						axios.post('/DeleteFriendGroup',{groupid: this.friendgroups[index].value})
+						.then(function(response){
+							if(response.data.status==1){
+								self.friendgroups.splice(index,1)
+							}else if(response.data.status==0){
+								self.$message.error(response.data.result)
+							}
+						},function(err){
+							// console.log(err)
+						})
+					},
+					Addgroup(){
+						var self=this
+						var serial=this.friendgroups.length+1
+						axios.post('/AddFriendGroup',{label: '未定义',serial:serial})
+						.then(function(response){
+							if(response.data.status==1){
+								self.friendgroups.push({value:response.data.groupid, label: '未定义',serial:serial})
+							}
+						},function(err){
+							// console.log(err)
+						})
+					}
+				},
+				template:'<el-dialog '+
+						  'title="管理分组" '+
+						  ':visible.sync="setgroup" '+
+						  'width="20%" '+
+						  ':before-close="handleClose">'+
+						  '<div style="max-height: 200px;overflow-y: scroll;"><table>'+
+							  '<tr v-for="(item,index) in friendgroups">'+
+								'<td style="width: 50%;">'+
+									'<el-input size="mini" v-model="item.label" @change="EditFriendGroupname(index)" placeholder="请输入内容"></el-input>'+
+								'</td>'+
+								'<td style="text-align: center;">'+
+									'<el-button size="mini" type="info" icon="el-icon-caret-top" '+
+									'@click="up(index)" circle></el-button>'+
+									
+									'<el-button size="mini" type="info" icon="el-icon-caret-bottom" '+
+									'@click="down(index)" circle></el-button>'+
+									
+									'<el-button size="mini" type="danger" icon="el-icon-delete" '+
+									'@click="deletegroup(index)" circle></el-button>'+
+								'</td>'+
+							  '</tr>'+
+						  '</table></div>'+
+						  '<el-button size="mini" style="width: 48%;margin-left: 2px;" icon="el-icon-plus" @click="Addgroup"></el-button>'+
+						  '<span slot="footer" class="dialog-footer">'+
+						    '<el-button type="primary" @click="Refresh_friendslist(),setgroup = false">完 成</el-button>'+
+						  '</span>'+
+						'</el-dialog>'
+			}
+			
+		  }
 	})
 	</script>
+<!-- 	<script src="{% static "js/Home.js" %}"></script> -->
 </body>
 </html>

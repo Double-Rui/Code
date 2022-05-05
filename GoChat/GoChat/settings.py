@@ -38,11 +38,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # 'channels',
     'users',
     'Home',
-    'chats',
-    'channels',
+    # 'channels',
 ]
 
 MIDDLEWARE = [
@@ -75,17 +73,19 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'GoChat.wsgi.application'
-ASGI_APPLICATION = 'GoChat.routing.application'
+# ASGI_APPLICATION = 'GoChat.routing.application'
 
-CHANNEL_LAYERS = {
-  "default": {
-    "BACKEND": "channels_redis.core.RedisChannelLayer",
-    "CONFIG": {
-      "hosts": [('127.0.0.1', 6379)],
-    },
-    # 配置路由的路径
-    # "ROUTING": "exmchannels.routing.channel_routing",
-  },
+# 添加django-redis缓存配置
+CACHES = {
+    "default": {
+        # 后台引擎
+        "BACKEND": "django_redis.cache.RedisCache",
+        # 缓存器类型://host:port/1号库
+        "LOCATION": "redis://127.0.0.1:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
 }
 
 # Database
@@ -98,7 +98,8 @@ DATABASES = {
         'HOST': '127.0.0.1',  # mysql的ip地址
         'PORT': 3306,  # mysql的端口
         'USER': 'root',  # mysql的用户名
-        'PASSWORD': '123456'  # mysql的密码
+        'PASSWORD': '123456',  # mysql的密码
+        'OPTIONS': {'charset':'utf8mb4'},
     }
 }
 
@@ -137,6 +138,8 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
+
+MEDIA_ROOT = os.path.join( BASE_DIR, 'static').replace('\\','/')
 
 STATIC_URL = '/static/'
 
