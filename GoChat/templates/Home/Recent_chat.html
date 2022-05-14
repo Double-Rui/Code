@@ -40,7 +40,7 @@
 <body>
     <!-- <div class="Main_panel" @contextmenu.prevent.self="onContextmenu"> -->
     <div class="Main_panel">
-		<div style="width: 100%;height: 250px;min-width: 1400px;background: #4494d5;">
+		<div id="header" :style="headerstyle">
 			<div style="width: 250px;height: 100%;float: left;">
 				<div style="margin: 10%;position: relative;">
 					<div v-show="connect==0" style="position: absolute;right: -7px;bottom: -7px;width: 30px;height: 30px;border-radius: 15px;background-color: #7B7A7A;">
@@ -82,9 +82,8 @@
 			</div>
 			<div style="width: 650px;height: 100%;float: left;">
 				<div style="float: right;right: 0;padding: 20px;">
-					<el-color-picker v-model="color"></el-color-picker>
+					<el-color-picker @change="EditHeaderstyle" v-model="headerstyle.background"></el-color-picker>
 				</div>
-				
 			</div>
 		</div>
         <div role="main" class="main" style="width: 100%;height: 650px;display: inline-block;margin-top: 10px;background: white; box-shadow: 0 2px 4px rgba(0, 0, 0, .12), 0 0 6px rgba(0, 0, 0, .04);">
@@ -138,7 +137,7 @@
 												<template v-for="item in Recentmessage">
 													<div  class="messages" :objectid="item.id" 
 														:messagestype="item.messagestype" 
-														@dblclick="toChat($event)" 
+														@dblclick="toChat2(item.id,item.messagestype)" 
 														@contextmenu.prevent="clickmessagemenu(item.id,item.messagestype)">
 															<div id="FriendHeadPortrait">
 																<el-avatar :size="50" :src="HeadPortrait_url+item.headportrait">
@@ -146,10 +145,9 @@
 															<div class="messages_context">
 																<p class="messages_form" name="">{[item.username]}</p>
 																<span class="time">{[item.time]}</span>
-																<p class="context" 
-																	style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;width:150px;">
+																<p class="context" >
 																	{[item.PostMessages]}
-																</p>
+																</p><el-badge v-if="item.unreadnum>0" style="vertical-align: bottom;float: right;" class="mark" :value="item.unreadnum" />
 															</div>
 													</div>
 												</template>
@@ -197,8 +195,8 @@
 													  	    <ul class="friend_list">
 													  			<template v-for="item2 in item.children">
 													  			<li class="friend_li" :Groupid="item2.groupid"
-													  			@dblclick="getGroupInfo($event)" 
-													  			@contextmenu.prevent="clickfriendmenu(item2.groupid)">
+													  			@dblclick="getGroupInfo2(item2.groupid)" 
+													  			@contextmenu.prevent="clickgroupmenu(item2.groupid)">
 													  				<div class="friend">
 													  				    <div id="FriendHeadPortrait" style="">
 													  						<el-avatar :size="50" :src="HeadPortrait_url+item2.groupavatars"></el-avatar>
@@ -221,34 +219,34 @@
 											  <el-tab-pane label="+">
 												<div style="height: 93%;">
 													<div style="text-align: center;padding: 245px 0;">
-														<el-dialog title="创建群聊" :visible.sync="Creategroupdialog"
+														<el-dialog title="创建群聊" :visible.sync="Creategroupdialog.dialogVisible"
 														  width="25%" :before-close="handleClose">
 														  <div style="text-align: center;">
 															  <table>
 																  <tr>
 																	<td>群名:</td>
 																	<td>
-																		<el-input type="text" placeholder="群名" v-model="newGroupname" maxlength="10"
+																		<el-input type="text" placeholder="群名" v-model="Creategroupdialog.newGroupname" maxlength="15"
 																		show-word-limit></el-input>
 																	</td>
 																  </tr>
 																  <tr>
 																  	<td>加群验证:</td>
 																  	<td>
-																		<el-radio v-model="radio" label="1">允许任何人</el-radio>
-																		<el-radio v-model="radio" label="2">需通过验证</el-radio>
-																		<el-radio v-model="radio" label="3">不允许任何人</el-radio>
+																		<el-radio v-model="Creategroupdialog.radio" label="1">允许任何人</el-radio>
+																		<el-radio v-model="Creategroupdialog.radio" label="2">需通过验证</el-radio>
+																		<el-radio v-model="Creategroupdialog.radio" label="3">不允许任何人</el-radio>
 																  	</td>
 																  </tr>
 															  </table>
 														  </div>
 														  <span slot="footer" class="dialog-footer">
-														    <el-button @click="Creategroupdialog = false">取 消</el-button>
-														    <el-button type="primary" @click="Creategroupdialog = false">确 定</el-button>
+														    <el-button @click="Creategroupdialog.dialogVisible = false">取 消</el-button>
+														    <el-button type="primary" @click="Creategroup(),Creategroupdialog.dialogVisible = false">确 定</el-button>
 														  </span>
 														</el-dialog>
 														<el-button @click="module='Zone'">加好友/群</el-button>
-														<el-button @click="Creategroupdialog=true">创建群聊</el-button>
+														<el-button @click="Creategroupdialog.dialogVisible=true">创建群聊</el-button>
 													</div>
 												</div>
 												  
@@ -261,7 +259,7 @@
 							</div>
 						</el-col>
 						<el-col id="message_right" :span="19" style="position: relative;height: 100%;border: 1px solid rgb(235, 235, 235);">
-							<el-tabs id="message-tabs" v-model="editableTabsValue" type="card" closable @tab-remove="removeTab">
+							<el-tabs id="message-tabs" v-model="editableTabsValue" style="height: 100%;" type="card" closable @tab-remove="removeTab">
 							  <el-tab-pane 
 								v-for="(item, index) in editableTabs"
 							      :key="item.name"
@@ -285,11 +283,11 @@
 								</template>
 								<template v-else-if="item.type=='Chatpanel'">
 									<span slot="label"><i class="el-icon-s-comment"></i> {[item.title]}</span>
-									<my-chatpanel :data="item.data" :socket="socket"></my-chatpanel>
+									<my-chatpanel :data="item.data" :socket="socket" :rfrecentmeg="RefreshRecentmessage"></my-chatpanel>
 								</template>
 								<template v-else-if="item.type=='GroupChatpanel'">
 									<span slot="label"><i class="el-icon-s-comment"></i> {[item.title]}</span>
-									<my-groupchatpanel :data="item.data" :socket="socket"></my-groupchatpanel>
+									<my-groupchatpanel :data="item.data" :socket="socket" :rfrecentmeg="RefreshRecentmessage"></my-groupchatpanel>
 								</template>
 							  </el-tab-pane>
 							</el-tabs>
@@ -598,7 +596,8 @@
 								
 								<div style="border: 1px solid rgb(205 205 205);border-radius: 5px;">
 									<div style="width: 100%;height: 45px;background: #f8f9fa;">
-										<h3 style="color: #616461;padding: 9px;">修改密码</h3>
+										<h3 style="color: #616461;padding: 9px;">修改密码
+										<el-link onclick="window.open('/SecurityCenter', '_blank')" stlye="vertical-align: inherit;" type="primary">(修改密保)</el-link></h3>
 									</div>
 									<table style="width: 100%;" border="0" cellspacing="10px" cellpadding="10px">
 										<tr>
@@ -726,10 +725,16 @@
 			addfriend_dialogVisible:false,
 			addfriend_dialogVisible2:false,
 			SetGroupdialog:false,
-			Creategroupdialog:false,
-			radio:'2',
-			newGroupname:'',
-			color:'#409EFF',
+			
+			Creategroupdialog:{
+				newGroupname:'',
+				dialogVisible:false,
+				radio:'2',
+			},
+			
+			headerstyle:{
+				background:'{{user.headercolor}}',
+			},
 			circleUrl: "https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png",
 			editableTabsValue: '1',
 			editableTabs: [{
@@ -838,7 +843,19 @@
 				var UserInfo=this.UserInfo
 				axios.post('/EditUserInfo',{UserInfo:UserInfo})
 				.then(function(response){
-					console.log(response)
+					if(response.data.status==1){
+						self.$message.success("修改成功")
+					}else{
+						self.$message.error("修改失败")
+					}
+				},function(err){
+					console.log(err)
+				})
+			},
+			EditHeaderstyle(){
+				var self=this
+				axios.post('/EditHeaderstyle',"background="+this.headerstyle.background)
+				.then(function(response){
 					if(response.data.status==1){
 						self.$message.success("修改成功")
 					}else{
@@ -932,14 +949,25 @@
 					console.log(err)
 				})
 			},
+			Refresh_groupslist(){
+				var self=this
+				axios.get('/getGroupslist')
+				.then(function(response){
+					var data=response.data
+					self.GroupsList=data.result
+				},function(err){
+					console.log(err)
+				})
+			},
 			getFriendInfo(e){
 				var self=this
 				var friendid=e.currentTarget.getAttribute('Userid')
 				var div =$('.el-tab-pane[tabid$="friend-info-'+friendid+'"]')
 				if(div.length > 0){
 					var tab = div.attr('aria-labelledby')
-					$('#'+tab).trigger("click")
-					console.log("好友资料存在")
+					self.editableTabsValue=tab.slice(4)
+					// $('#'+tab).trigger("click")
+					// console.log("好友资料存在")
 				}else{
 					axios.post('/getFriendInfo','friendid='+friendid)
 					.then(function(response){
@@ -950,6 +978,16 @@
 					})
 				}
 			},
+			RefreshRecentmessage(){
+				var self=this
+				axios.get('/RefreshRecentmessage')
+				.then(function(response){
+					var data=response.data
+					self.Recentmessage=data.result
+				},function(err){
+					console.log(err)
+				})
+			},
 			getFriendInfo2(friendid){
 				var self=this
 				console.log(friendid)
@@ -959,8 +997,9 @@
 					var div =$('.el-tab-pane[tabid$="friend-info-'+data.Userid+'"]')
 					if(div.length > 0){
 						var tab = div.attr('aria-labelledby')
-						$('#'+tab).trigger("click")
-						console.log("好友资料存在")
+						self.editableTabsValue=tab.slice(4)
+						// $('#'+tab).trigger("click")
+						// console.log("好友资料存在")
 					}else{
 						self.addTab('好友信息','friend-info-'+data.Userid,'friendInfo',data)
 					}
@@ -977,7 +1016,8 @@
 					var div =$('.el-tab-pane[tabid$="group-info-'+data.groupid+'"]')
 					if(div.length > 0){
 						var tab = div.attr('aria-labelledby')
-						$('#'+tab).trigger("click")
+						self.editableTabsValue=tab.slice(4)
+						// $('#'+tab).trigger("click")
 						// console.log("好友聊天框存在")
 					}else{
 						self.addTab('群资料','group-info-'+data.groupid,'GroupInfo',data)
@@ -994,7 +1034,8 @@
 					var div =$('.el-tab-pane[tabid$="group-info-'+data.groupid+'"]')
 					if(div.length > 0){
 						var tab = div.attr('aria-labelledby')
-						$('#'+tab).trigger("click")
+						self.editableTabsValue=tab.slice(4)
+						// $('#'+tab).trigger("click")
 						// console.log("好友聊天框存在")
 					}else{
 						self.addTab('群资料','group-info-'+data.groupid,'GroupInfo',data)
@@ -1096,7 +1137,8 @@
 					var div = $('.el-tab-pane[tabid$="friend-chat-'+objectid+'"]')
 					if(div.length > 0){
 						var tab = div.attr('aria-labelledby')
-						$('#'+tab).trigger("click")
+						self.editableTabsValue=tab.slice(4)
+						// $('#'+tab).trigger("click")
 						// console.log("好友聊天框存在")
 					}else{
 						axios.post('/ToChat','objectid='+objectid+'&messagestype='+messagestype)
@@ -1118,7 +1160,8 @@
 					var div =$('.el-tab-pane[tabid$="group-chat-'+objectid+'"]')
 					if(div.length > 0){
 						var tab=div.attr('aria-labelledby')
-						$('#'+tab).trigger("click")
+						self.editableTabsValue=tab.slice(4)
+						// $('#'+tab).trigger("click")
 						// console.log("好友聊天框存在")
 					}else{
 						axios.post('/ToChat','objectid='+objectid+'&messagestype='+messagestype)
@@ -1137,21 +1180,6 @@
 					}
 				}
 			},
-			// send(){
-			// 	if(!this.socket){return false;}
-			// 	if(this.socket.readyState !=this.socket.OPEN){return false;}
-			// 	if(this.message==null || this.message==""){
-			// 		this.$message.error("未输入任何内容")
-			// 		return false;
-			// 	}else{
-			// 		var data = {"message":this.message,"message_type":"Friendmessage","to_user":this.ChatInfo.id}
-			// 		this.socket.send(JSON.stringify(data))
-			// 		this.sendMessage('self',this.ChatInfo.id, this.ChatInfo.id, this.message);
-			// 		this.message=""
-			// 		this.SlidertoEnd()
-			// 		return true;
-			// 	}
-			// },
 			sendFriendapplicat(){
 				var self=this
 				if(!this.socket){return false;}
@@ -1197,13 +1225,15 @@
 				self.formAddgroup.addgroup_dialogVisible = false
 				// return true;
 			},
-			// SlidertoEnd(){
-			// 	//发送之后滑到底部
-			// 	this.$nextTick(()=>{
-			// 	var div = $(".Message_record0[Userid$='"+this.ChatInfo.id+"']");
-			// 	div.scrollTop(div[0].scrollHeight)
-			// 	})
-			// },
+			Creategroup(){
+				var self=this
+				if(!this.socket){return false;}
+				if(this.socket.readyState !=this.socket.OPEN){return false;}
+				var data = {"message_type":"Creategroup",
+							"newGroupname":self.Creategroupdialog.newGroupname,
+							"Groupverification":self.Creategroupdialog.radio}
+				self.socket.send(JSON.stringify(data))
+			},
 			receiveFriendMessage(object,target, sender, text,sendtime) {
 				var chatCard = $(".Message_record0[userid$='"+target+"']");
 				var date = new Date();
@@ -1227,65 +1257,55 @@
 				}
 				chatCard.append(meg);
 			},
-			receiveGroupMessage(object,objectid, sender, text,sendtime) {
+			receiveGroupMessage(object,objectid, sender, text,sendtime,headportrait,name) {
 				var chatCard = $(".Message_record0[groupid$='"+objectid+"']");
 				var date = new Date();
 				var meg=''
-				function message(type,text){
-					return '<div class="'+type+'">'+
+				function message(type,sendnametype,sendtimetype){
+					if(type=='message_self'){
+						return  '<div class="'+type+'">'+
+								'<div class="'+sendnametype+'">'+
+									'<span>'+name+'</span>'+
+								'</div>'+
 								'<div>'+
 									'<div class="message_content" >'+
 										'<span>'+text+'</span>'+
 									'</div>'+
+									'<div style="display: inline-block;margin-left: 10px;vertical-align: top;">'+
+										'<img style="width: 35px;border-radius: 50%;" src="{% static "HeadPortrait/" %}'+headportrait+'"/>'+
+									'</div>'+
 								'</div>'+
-								'<div class="sendtime">'+
+								'<div class="'+sendtimetype+'">'+
 									'<span>'+sendtime+'</span>'+
 								'</div>'+
 							'</div>'
-							
-
+					}else{
+						return  '<div class="'+type+'">'+
+								'<div class="'+sendnametype+'">'+
+									'<span>'+name+'</span>'+
+								'</div>'+
+								'<div>'+
+									'<div style="display: inline-block;margin-right: 10px;vertical-align: top;">'+
+										'<img style="width: 35px;border-radius: 50%;" src="{% static "HeadPortrait/" %}'+headportrait+'"/>'+
+									'</div>'+
+									'<div class="message_content" >'+
+										'<span>'+text+'</span>'+
+									'</div>'+
+								'</div>'+
+								'<div class="'+sendtimetype+'">'+
+									'<span>'+sendtime+'</span>'+
+								'</div>'+
+							'</div>'
+					}
+					
 				}
 				if(object=='other'){
-					meg = message('message_other',text)
+					meg = message('message_other','sendname_left','sendtime_left')
 				}else{
-					meg = message('message_self',text)
+					meg = message('message_self','sendname_right','sendtime_right')
 				}
 				chatCard.append(meg);
 			},
-			// loadMegrecord(object,target, sender, text,time) {
-			// 	var chatCard = $(".Message_record0[Userid$='"+target+"']");
-			// 	var meg=''
-			// 	function message(type,text){
-			// 		return '<div class="'+type+'">'+
-			// 					'<div>'+
-			// 						'<div class="message_content" >'+
-			// 							'<span>'+text+'</span>'+
-			// 						'</div>'+
-			// 					'</div>'+
-			// 					'<div class="sendtime">'+
-			// 						'<span>'+time.slice(10, 16)+'</span>'+
-			// 					'</div>'+
-			// 				'</div>'
-			// 	}
-			// 	if(object=='other'){
-			// 		meg = message('message_other',text)
-			// 	}else{
-			// 		meg = message('message_self',text)
-			// 	}
-			// 	chatCard.append(meg);
-			// },
-			// keyDown(e) {
-			// 	if(e.ctrlKey && e.keyCode==13) {  //用户点击了ctrl+enter触发
-			// 		this.message += '\n';
-			// 	}else if(e.keyCode==13){
-			// 		this.send()
-			// 		event.preventDefault()
-			// 	}else {
-			// 		if(e != undefined){
-			// 			e.preventDefault();  // 阻止浏览器默认的敲击回车换行的方法
-			// 		}
-			// 	} 
-			// },
 			Processing_requests(Response,formAddfriend,type){
 				var self=this
 				axios.post('/Processing_requests',{response:Response,formAddfriend:formAddfriend,type:type})
@@ -1455,9 +1475,9 @@
 			
 						}
 					},
-			        { label: "设置" ,icon: "el-icon-setting",
+			        { label: "刷新群列表" ,icon: "el-icon-refresh",
 						onClick: () => {
-			
+							this.Refresh_groupslist()
 						}
 					},
 					],
@@ -1490,6 +1510,11 @@
 			        { label: "从会话列表删除", icon: "el-icon-delete",
 						onClick: () => {
 							self.DeleteSession(messagestype,objectid)
+						}
+					},
+					{ label: "刷新会话", icon: "el-icon-refresh",
+						onClick: () => {
+							self.RefreshRecentmessage()
 						}
 					},
 					],
@@ -1528,17 +1553,35 @@
 				}
 				else {
 					if(meg.message_type == 'Friendmessage'){
+						self.RefreshRecentmessage()
+						const h = this.$createElement;
+						this.$notify({
+						  title: meg.sender,
+						  message: h('i', { style: 'color: teal'}, meg.message)
+						});
 						self.receiveFriendMessage('other',meg.sender, meg.sender, meg.message,meg.sendtime);
 					}
-					if(meg.message_type == 'Groupmessage'){
+					else if(meg.message_type == 'Groupmessage'){
+						self.RefreshRecentmessage()
 						if(meg.sender==this.UserID){
-							self.receiveGroupMessage('self',meg.sendto,meg.sender, meg.message,meg.sendtime);
+							self.receiveGroupMessage('self',meg.sendto,meg.sender, meg.message,meg.sendtime,meg.headportrait,meg.name);
 						}else{
-							self.receiveGroupMessage('other',meg.sendto,meg.sender,  meg.message,meg.sendtime);
+							const h = this.$createElement;
+							this.$notify({
+							  title: meg.sender,
+							  message: h('i', { style: 'color: teal'}, meg.message)
+							});
+							self.receiveGroupMessage('other',meg.sendto,meg.sender,  meg.message,meg.sendtime,meg.headportrait,meg.name);
 						}
 					}
 					else if(meg.message_type == 'friendapplicat'){
-						console.log("接到申请")
+						console.log(111)
+						this.$notify({
+						  title: '提示',
+						  message: '有新的好友申请',
+						  type: 'warning',
+						  duration: 0
+						});
 					}
 				}
 			}
@@ -1635,7 +1678,7 @@
 				},
 				// props: ["data"],
 				template:'<el-row id="friendInfo">'+
-							'<el-col :span="10" style="height: 100%;background-color: #4494d5;text-align: center;">'+
+							'<el-col :span="10" :style="data.background" style="height: 100%;text-align: center;">'+
 								'<div style="width: 100%;height: 40%;">'+
 									'<el-avatar :size="150" :src="data.Headportrait" style="margin-top: 60px;"></el-avatar>'+
 								'</div>'+
@@ -1701,6 +1744,19 @@
 			},
 			'my-groupinfo':{
 				delimiters:['{[', ']}'],
+				data:function(){
+					return{
+						dialog:false,
+						value:this.data.value,
+						member:this.data.memberlist,
+						module:'index',
+						Profileform:{
+							'groupavatars':this.data.groupavatars,
+							'groupname':this.data.groupname,
+							'groupintro':this.data.groupintro
+						}
+					}
+				},
 				props: {
 					data:'',
 				    chat: {
@@ -1721,17 +1777,222 @@
 						    this.chat(e);
 						 }
 					},
-					NewSession(messagestype,objectid){
+					NewSession(messagestype){
 						if (this.newsession) {
-						    this.newsession(messagestype,objectid);
+						    this.newsession(messagestype,this.data.groupid);
 						 }
-					}
+					},
+					EditGroupname(){
+						var self=this
+						axios.post('/EditGroupname','remarkname='+this.data.groupremarks+'&objectid='+this.data.groupid)
+						.then(function(response){
+							// console.log(response)
+							if(response.data.status==1){
+								self.$message.success(response.data.result)
+								// setTimeout(function() {self.Refresh_friendslist()},1000)
+							}else if(response.data.status==0){
+								self.$message.error(response.data.result)
+							}
+						},function(err){
+							// console.log(err)
+						})
+					},
+					EditUserremarks(){
+						var self=this
+						axios.post('/EditGroupUserremarks','remarkname='+this.data.userremarks+'&objectid='+this.data.groupid)
+						.then(function(response){
+							// console.log(response)
+							if(response.data.status==1){
+								self.$message.success(response.data.result)
+								// setTimeout(function() {self.Refresh_friendslist()},1000)
+							}else if(response.data.status==0){
+								self.$message.error(response.data.result)
+							}
+						},function(err){
+							// console.log(err)
+						})
+					},
+					Editgroupverification(type){
+						var self=this
+						axios.post('/Editgroupverification','type='+type+'&objectid='+this.data.groupid)
+						.then(function(response){
+							if(response.data.status==1){
+								self.$message.success(response.data.result)
+							}else if(response.data.status==0){
+								self.$message.error(response.data.result)
+							}
+						},function(err){
+							// console.log(err)
+						})
+					},
+					Disbandgroup(){
+						var self=this
+						this.$confirm('此操作将永久解散该群, 是否继续?', '提示', {
+						  confirmButtonText: '确定',
+						  cancelButtonText: '取消',
+						  type: 'warning'
+						}).then(() => {
+						  axios.post('/Disbandgroup','objectid='+this.data.groupid)
+						  .then(function(response){
+						  	if(response.data.status==1){
+						  		self.$message.success(response.data.result)
+						  	}else if(response.data.status==0){
+						  		self.$message.error(response.data.result)
+						  	}
+						  },function(err){
+						  	// console.log(err)
+						  })
+						}).catch(() => {
+						  self.$message({
+						    type: 'info',
+						    message: '已取消删除'
+						  });          
+						});
+					},
+					Exitgroup(){
+						var self=this
+						this.$confirm('确定退出该群聊?', '提示', {
+						  confirmButtonText: '确定',
+						  cancelButtonText: '取消',
+						  type: 'warning'
+						}).then(() => {
+						  axios.post('/Exitgroup','objectid='+this.data.groupid)
+						  .then(function(response){
+						  	if(response.data.status==1){
+						  		self.$message.success(response.data.result)
+						  	}else if(response.data.status==0){
+						  		self.$message.error(response.data.result)
+						  	}
+						  },function(err){
+						  	// console.log(err)
+						  })
+						}).catch(() => {
+						  self.$message({
+						    type: 'info',
+						    message: '已取消删除'
+						  });          
+						});
+					},
+					SetupAdmin(){
+						var self=this
+						axios.post('/SetupAdmin',{NewAdmin:this.value,objectid:this.data.groupid})
+						.then(function(response){
+							if(response.data.status==1){
+								self.dialog = false
+								self.$message.success(response.data.result)
+							}else if(response.data.status==0){
+								self.$message.error(response.data.result)
+							}
+						},function(err){
+							// console.log(err)
+						})
+					},
+					selectable(row,index) {
+						if(this.data.role=="Groupleader"){
+							if(row.role==="群主"){
+							    return false
+							}else{
+								return true
+							}
+						}else if(row.role==="群主" || row.role==="管理员"){
+						    return false
+						}else {
+						    return true
+						}
+					},
+					RemoveMembers(){
+						var self=this
+						axios.post('/RemoveMembers',{Members:this.$refs.multipleTable.selection,objectid:this.data.groupid})
+						.then(function(response){
+							if(response.data.status==1){
+								self.$message.success(response.data.result)
+								for (var i = self.$refs.multipleTable.selection.length - 1; i >= 0; i--) {
+								    self.data.members.splice(self.$refs.multipleTable.selection[i].index, 1)
+								}
+							}else if(response.data.status==0){
+								self.$message.error(response.data.result)
+							}
+						},function(err){
+							// console.log(err)
+						})
+					},
+					tableRowClassName({row, rowIndex}) {
+						if (rowIndex === 1) {
+							return 'warning-row';
+						} else if (rowIndex === 3) {
+							return 'success-row';
+						}
+						return '';
+					},
+					tableRowClassName ({row, rowIndex}) {
+					      // 把每一行的索引放进row
+					      row.index = rowIndex;
+					},
+					displayAvatar(){
+						var self=this
+						var file = document.getElementById("avatarsupload").files[0];
+						var reader = new FileReader();
+						reader.readAsDataURL(file);
+						reader.onloadend = function () {
+							$(".groupavatars img").attr("src",reader.result)
+						};
+					},
+					EditProfile(){
+						var self=this
+						if(self.Profileform.groupname==""){
+							self.$message.error("群名不能为空")
+						}else{
+							var img_file = document.getElementById("avatarsupload").files[0];
+							var formdata = new FormData();
+								if(img_file!=null){
+									formdata.append('img_name', img_file.name);
+									formdata.append('img_file', img_file);
+									formdata.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+									formdata.append('objectid', self.data.groupid);
+									formdata.append('groupname', self.Profileform.groupname);
+									formdata.append('groupintro', self.Profileform.groupintro);
+								}else{
+									formdata.append('img_name', "");
+									formdata.append('objectid', self.data.groupid);
+									formdata.append('groupname', self.Profileform.groupname);
+									formdata.append('groupintro', self.Profileform.groupintro);
+								}
+								axios.post('/EditProfile',formdata).then(function(response){
+									if(response.data.status==1){
+										self.$message.success("修改成功")
+										var reader = new FileReader();
+										reader.readAsDataURL(img_file);
+										reader.onloadend = function () {
+											$(".avatar img").attr("src",reader.result)
+										};
+										self.data.groupname=self.Profileform.groupname
+										self.data.groupintro=self.Profileform.groupintro
+										self.module='index'
+									}else{
+										self.$message.error("修改失败")
+									}
+								},function(err){
+									console.log(err)
+								})
+						}
+					},
+					handleClose(done) {
+					    done();
+					},
 				},
 				// props: ["data"],
 				template:'<el-row id="GroupInfo">'+
+							'<el-dialog title="管理员设置" :visible.sync="dialog" '+
+							  'width="35%" :before-close="handleClose">'+
+							  '<el-transfer v-model="value" :data="member" :titles="[\'成员\', \'管理员\']"></el-transfer>'+
+							  '<span slot="footer" class="dialog-footer">'+
+							    '<el-button @click="dialog = false">取 消</el-button>'+
+							    '<el-button type="primary" @click="SetupAdmin">完 成</el-button>'+
+							  '</span>'+
+							'</el-dialog>'+
 							'<el-col :span="8" style="height: 100%;background-color: #4494d5;text-align: center;">'+
 								'<div style="width: 100%;height: 40%;">'+
-									'<el-avatar :size="150" :src="data.groupavatars" style="margin-top: 60px;"></el-avatar>'+
+									'<el-avatar class="avatar" :size="150" :src="data.groupavatars" style="margin-top: 60px;"></el-avatar>'+
 								'</div>'+
 								'<div style="width: 100%;height: 30%;text-align: center;color: white;">'+
 									'<h1>{[data.groupname]}</h1>'+
@@ -1742,15 +2003,48 @@
 										':objectid="data.groupid" '+
 										'messagestype="group" style="width: 100px;" '+
 										'@click="toChat($event)">发消息</el-button>'+
-									'<el-button size="small" '+
+									'<el-button size="small" v-if="data.role==\'Member\'" '+
 										':objectid="data.groupid" type="danger" '+
 										'messagestype="group" style="width: 100px;" '+
-										'@click="toChat($event)">退出群聊</el-button>'+
+										'@click="Exitgroup">退出群聊</el-button>'+
 								'</div>'+
 							'</el-col>'+
 							'<el-col :span="16" style="height: 100%;background-color: rgb(255 255 255);border: 1px solid #e1e1e1;padding: 3%;">'+
-								' <el-tabs value="first" @tab-click="handleClick" >'+
+								'<div v-if="module==\'EditProfile\'" style="width:100%;height: 100%;">'+
+									'<div style="height: 97%;">'+
+									'<table border="0" cellpadding="10px" cellspacing="10px">'+
+										'<tbody>'+
+											'<tr>'+
+												'<td style="vertical-align: baseline;">群头像</td>'+
+												'<td>'+
+													'<el-avatar :size="70" class="groupavatars" shape="square" onclick="$(\'#avatarsupload\').click()" :src="Profileform.groupavatars"></el-avatar>'+
+													'<input id="avatarsupload" @change="displayAvatar" type="file" style="display:none"/>'+
+												'</td>'+
+											'</tr>'+
+											'<tr>'+
+												'<td>群名称</td>'+
+												'<td><el-input size="mini" style="width: 170px;" v-model="Profileform.groupname" placeholder="群名称"></el-input></td>'+
+											'</tr>'+
+											'<tr>'+
+												'<td style="vertical-align: baseline;"">群介绍</td>'+
+												'<td>'+
+													'<el-input type="textarea" rows="3" style="width: 300px;" v-model="Profileform.groupintro" resize="none"'+
+													'maxlength="50" clearable show-word-limit placeholder="群介绍"></el-input>'+
+												'</td>'+
+											'</tr>'+
+										'</tbody>'+
+									'</table>'+
+									'</div>'+
+									'<span slot="footer" style="float: right;" class="dialog-footer">'+
+									  '<el-button size="mini" @click="module = \'index\'">取 消</el-button>'+
+									  '<el-button size="mini" type="primary" @click="EditProfile">保 存</el-button>'+
+									'</span>'+
+								'</div>'+
+								' <el-tabs v-if="module==\'index\'" value="first" @tab-click="handleClick" >'+
 								    '<el-tab-pane label="首页" name="first">'+
+										'<div v-if="data.role==\'Groupleader\' || data.role==\'Administrators\'">'+
+										'<span style="float: right;font-size: 12px;color: #4d9ff3;" @click="module=\'EditProfile\'" >编辑群资料</span>'+	
+										'</div>'+
 										'<table border="0" cellpadding="10px" cellspacing="10px">'+
 											'<tbody>'+
 												'<tr>'+
@@ -1760,7 +2054,18 @@
 													'<td style="color: #909193;">群名称</td><td>{[data.groupname]}</td>'+
 												'</tr>'+
 												'<tr>'+
-													'<td style="color: #909193;">群备注</td><td>{[data.groupremarks]}</td>'+
+													'<td style="color: #909193;">群备注</td>'+
+													'<td>'+
+														'<el-input size="mini" style="width: 150px;" v-model="data.groupremarks" '+
+														'@change="EditGroupname" placeholder="群备注名"></el-input>'+
+													'</td>'+
+												'</tr>'+
+												'<tr>'+
+													'<td style="color: #909193;">群内备注</td>'+
+													'<td>'+
+														'<el-input size="mini" style="width: 150px;" v-model="data.userremarks" '+
+														'@change="EditUserremarks" placeholder="群内备注名"></el-input>'+
+													'</td>'+
 												'</tr>'+
 												'<tr>'+
 													'<td style="color: #909193;">群介绍</td><td>{[data.groupintro]}</td>'+
@@ -1772,16 +2077,46 @@
 										'</table>'+
 									'</el-tab-pane>'+
 								   ' <el-tab-pane label="成员" name="second">'+
-										' <el-table'+
-										     ' :data="data.members"'+
-										    '  style="width: 100%">'+
-										      '<el-table-column prop="username" label="成员" width="150"></el-table-column>'+
-										      '<el-table-column prop="userremarks" label="群昵称" width="150"></el-table-column>'+
-										      '<el-table-column prop="role" label="角色"></el-table-column>'+
-											  '<el-table-column prop="jointime" label="加入时间"></el-table-column>'+
+										' <el-table ref="multipleTable" :row-class-name="tableRowClassName"'+
+										    ' :data="data.members"'+
+										    ' style="width: 100%" max-height="430">'+
+												'<el-table-column v-if="data.role!=\'Member\'" :selectable="selectable" type="selection" width="55"></el-table-column>'+
+												'<el-table-column prop="username" label="成员" width="150"></el-table-column>'+
+												'<el-table-column prop="userremarks" label="群昵称" width="100"></el-table-column>'+
+												'<el-table-column prop="role" label="角色"></el-table-column>'+
+												'<el-table-column prop="jointime" label="加入时间"></el-table-column>'+
 										    '</el-table>'+
+											'<div style="margin-top: 20px">'+
+											    '<el-button v-if="data.role==\'Groupleader\' || data.role==\'Administrators\'" size="mini" type="danger" 													@click="RemoveMembers">移除</el-button>'+
+											'</div>'+
 									'</el-tab-pane>'+
-								    '<el-tab-pane label="设置" name="third">设置</el-tab-pane>'+
+								    '<el-tab-pane v-if="data.role==\'Groupleader\' || data.role==\'Administrators\'" label="设置" name="third"> '+
+										'<table border="0" cellpadding="10px" cellspacing="10px">'+
+											'<tbody>'+
+												'<tr>'+
+													'<td style="color: #909193;">加群方式:</td>'+
+													'<td>'+
+														'<el-radio v-model="data.groupverification" @change="Editgroupverification(1)" label="1">允许任何人</el-radio><br>'+
+														'<el-radio v-model="data.groupverification" @change="Editgroupverification(2)" label="2">需通过验证</el-radio><br>'+
+														'<el-radio v-model="data.groupverification" @change="Editgroupverification(3)" label="3">不允许任何人</el-radio>'+
+													'</td>'+
+												'</tr>'+
+												'<tr v-if="data.role==\'Groupleader\'">'+
+													'<td style="color: #909193;">权限设置:</td>'+
+													'<td>'+
+														'<el-button size="mini" @click="dialog=true">设置管理员</el-button>'+
+													'</td>'+
+												'</tr>'+
+												'<tr>'+
+													'<td style="color: #909193;">其他:</td>'+
+													'<td>'+
+														'<el-button v-if="data.role==\'Groupleader\'" @click="Disbandgroup" size="mini">解散该群</el-button>'+
+														'<el-button v-if="data.role==\'Administrators\'" @click="Exitgroup" size="mini">退出该群</el-button>'+
+													'</td>'+
+												'</tr>'+
+											'</tbody>'+
+										'</table>'+
+									'</el-tab-pane>'+
 								  '</el-tabs>'+
 							'</el-col>'+
 						'</el-row>'
@@ -1820,6 +2155,7 @@
 						}
 					},
 					sendMessage(object,target, sender, text) {
+						var self=this
 						var chatCard = $(".Message_record0[userid$='"+target+"']");
 						var date = new Date();
 						var meg=''
@@ -1841,6 +2177,7 @@
 							meg = message('message_self',text)
 						}
 						chatCard.append(meg);
+						setTimeout(function() {self.RefreshRecentmessage()},1000)
 					},
 					keyDown(e) {
 						// console.log(e.path[0].attributes[2].value)
@@ -1853,7 +2190,7 @@
 							if(e != undefined){
 								e.preventDefault();  // 阻止浏览器默认的敲击回车换行的方法
 							}
-						} 
+						}
 					},
 					SlidertoEnd(objectid){
 						//发送之后滑到底部
@@ -1874,11 +2211,23 @@
 						var result = txt.substring(0, startPos) + emoji + txt.substring(endPos)
 						this.message=result
 					},
+					RefreshRecentmessage(){
+						if (this.rfrecentmeg) {
+						    this.rfrecentmeg();
+						 }
+					},
 				},
 				mounted(){
 					
 				},
-				props: ["data","socket"],
+				props:{
+					data:'',
+					socket:'',
+					rfrecentmeg: {
+					    type: Function,
+					    default: null
+					},
+				},
 				template:'<el-row id="Chatpanel">'+
 								'<el-col :span="16" style="height: 100%;">'+
 									'<div style="height: 7%;padding: 10px 30px;display:flex;align-items: center;">'+
@@ -2015,12 +2364,11 @@
 							this.socket.send(JSON.stringify(data))
 							// this.sendMessage('self',objectid, objectid, this.message);
 							this.message=""
+							this.RefreshRecentmessage()
 							this.$nextTick(()=>{
 								var div = $(".Message_record0[groupid$='"+objectid+"']");
-							// console.log(div);
 								div.scrollTop(div[0].scrollHeight)
 							})
-							// this.SlidertoEnd(objectid)
 							return true;
 						}
 					},
@@ -2055,8 +2403,20 @@
 						var result = txt.substring(0, startPos) + emoji + txt.substring(endPos)
 						this.message=result
 					},
+					RefreshRecentmessage(){
+						if (this.rfrecentmeg) {
+						    this.rfrecentmeg();
+						 }
+					},
 				},
-				props: ["data","socket"],
+				props:{
+					data:'',
+					socket:'',
+					rfrecentmeg: {
+					    type: Function,
+					    default: null
+					},
+				},
 				template:'<el-row id="Chatpanel">'+
 							'<el-col :span="18" style="height: 100%;">'+
 								'<div style="height: 7%;padding: 10px 30px;display:flex;align-items: center;">'+

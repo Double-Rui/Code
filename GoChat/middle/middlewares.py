@@ -3,8 +3,8 @@ from django.utils.deprecation import MiddlewareMixin
 from users.models import User
 
 class AuthMD(MiddlewareMixin):
-    white_list = ['/','/Login', '/Register/','/admin/','/admin/login/' ]  # 白名单
-    black_list = ['Home/Recent_chat/','Home/Friends_list/','Home/Find_Friends/', ]  # 黑名单
+    white_list = ['/','/Login', '/Register/','/admin/','/admin/login/','/ForgotPassword','/Verifyaccount','/Verifysecurity','/ResetPassword' ]  # 白名单
+    black_list = ['GoChat/' ]  # 黑名单
     def process_request(self, request):
         # print(request.path)
         if request.user.is_superuser:

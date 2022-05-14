@@ -45,6 +45,7 @@ class Group(models.Model):
     groupleaderid = models.CharField(db_column='GroupleaderID', max_length=50, blank=True) #群主账号
     groupavatars = models.CharField(db_column='GroupAvatars', max_length=50, blank=True,default="Groupdefault.png") #群头像
     groupintro = models.CharField(db_column='GroupIntro', max_length=50, blank=True, null=True) #群简介
+    createtime=models.CharField(db_column='Createtime', max_length=50, default='') #群简介
     groupverification = models.IntegerField(db_column='Groupverification',default=2) #加群验证
 
 class Groupmembers(models.Model):

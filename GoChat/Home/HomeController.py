@@ -69,6 +69,24 @@ def getGroups(ID): #获得群列表
 
     return Groupslist
 
+def getGroupslist(ID): #获得群列表
+    Groups = Groupmembers.objects.filter(userid=ID)
+    Groupslist=[]
+    Groupname=['我创建的群聊','我管理的群聊','我加入的群聊']
+    role=['Groupleader','Administrators','Member']
+    j=0
+    for i in role:
+        Groups1=Groups.filter(role=i).values()
+        Count=Groups.filter(role=i).count()
+        group=[]
+        for k in list(Groups1):
+            a=Group.objects.get(groupid=k['groupid'])
+            group.append({'groupid':a.groupid, 'groupname':a.groupname,'serialnumber': j+1, 'Remarkname':isNull(k['groupname']),'groupavatars':a.groupavatars})
+        Groupslist.append({'groupname': Groupname[j],'children':group,'Count':Count})
+        j+=1
+
+    return {'status': 1, 'result': Groupslist}
+
 def getFriends(ID): #获得好友列表
     friends = Friends.objects.filter(userid=ID)
     # friends=model_to_dict(friends)
@@ -95,6 +113,7 @@ def get_myInfo(user): #获取个人信息
     UserInfo.sign = user.sign
     UserInfo.profession = user.profession
     UserInfo.region = user.region
+    UserInfo.headercolor=user.headercolor
     return UserInfo
 
 def getOneWord(): #一言功能
@@ -167,6 +186,7 @@ def getFriendInfo(request): #获得好友信息
             "Birthday":user.datebirth[5:11],
             "Constellation":user.constellation,
             "Shengxiao":user.shengxiao,
+            "background": "background-color:" + user.headercolor,
             # "Info" : [{"labelname":'账号',"content" : str(isNull(user.loginid))},
             #         {"labelname": '性别', "content" : str(getSex(isNull(user.sex)))},
             #         {"labelname": '年龄', "content" : str(isNull(user.age))},
@@ -192,22 +212,39 @@ def getGroupInfo(request): #获得群组信息
         group = Group.objects.get(groupid=int(groupid))
         groupmembers=Groupmembers.objects.get(userid=UserID,groupid=int(groupid))
         if group:
-            groupmembers1 = Groupmembers.objects.filter(groupid=int(groupid)).values("userid","name","groupname","role","jointime")
+            groupmembers1 = Groupmembers.objects.filter(groupid=int(groupid)).values("userid","name","groupname","role","jointime","userid")
             members=[]
+            memberlist=[]
+            value=[]
             for i in  list(groupmembers1):
                 members.append({
+                    "userid":i['userid'],
                     "headportrait":User.objects.get(loginid=i['userid']).headportrait,
                     "username":User.objects.get(loginid=i['userid']).username,
                     "userremarks":i['name'],
                     "role":getrole(i['role']),
-                    "jointime":i['jointime'][:11]
+                    "jointime":i['jointime'][:11],
                 })
+                if i['role'] != 'Groupleader':
+                    memberlist.append({
+                        "label":User.objects.get(loginid=i['userid']).username,
+                        "key":i['userid'],
+                        # "disabled": True if i['role']=='Groupleader' else False
+                    })
+                if i['role']=='Administrators':
+                    value.append(i['userid'])
+
             result =json.dumps({
                 "groupname" : group.groupname,
                 "groupid":group.groupid,
                 "groupremarks":groupmembers.groupname,
+                "userremarks": groupmembers.name,
                 "groupavatars" : "/static/HeadPortrait/"+group.groupavatars,
                 "groupintro":group.groupintro,
+                "role": Groupmembers.objects.get(userid=UserID,groupid=int(groupid)).role,
+                "groupverification":str(group.groupverification),
+                "memberlist":memberlist,
+                "value":value,
                 "members" : members
             })
         else:
@@ -240,39 +277,71 @@ def getNewMessages(userid,objectid,MessagesType):
     cursor.close()
     conn.close()
 
-def getRecentmessage(ID): #获得最近会话
-    ID=int(ID)
+def getRecentmessage(request): #获得最近会话
+    ID=request.COOKIES.get('LoginID')
     messageslist = Messageslist.objects.filter(userid=ID).order_by('-time')
     result=[]
     for i in messageslist:
         if i.messagestype=='friend':
             user = User.objects.get(loginid=i.objectid)
             Messages=getNewMessages(ID,user.loginid,'friend')
+            username=Friends.objects.get(userid=int(ID),friendid=user.loginid).name
             result.append({
                 "id": user.loginid,
-                "username": user.username,
+                "username": user.username if username==None or username=="" else username,
                 "headportrait": user.headportrait,
                 "messagestype":i.messagestype,
                 "PostMessages": Messages[0]['PostMessages'] if len(Messages)>0 else ' ' ,
-                # "time": Messages[0]['SendTime'][10:16] if len(Messages)>0 else ''
-                "time": i.createtime[10:16] if i.time=="" else i.time[10:16]
-                # "PostMessages": '测试',
-                # "time": '测试'
+                "time": i.createtime[10:16] if i.time=="" else i.time[10:16],
+                "unreadnum":i.unreadnum
             })
         elif i.messagestype=='group':
             group = Group.objects.get(groupid=i.objectid)
             Messages=getNewMessages(ID, group.groupid, 'group')
+            groupname = Groupmembers.objects.get(userid=int(ID), groupid=group.groupid).groupname
             result.append({
                 "id": group.groupid,
-                "username": group.groupname,
+                "username": group.groupname if groupname==None or groupname=="" else groupname,
                 "headportrait": group.groupavatars,
                 "messagestype": i.messagestype,
                 "PostMessages":Messages[0]['PostMessages'] if len(Messages)>0 else ' ' ,
-                "time": Messages[0]['SendTime'][10:16] if len(Messages)>0 else ''
-                # "PostMessages": '测试',
-                # "time": '测试'
+                "time": Messages[0]['SendTime'][10:16] if len(Messages)>0 else '',
+                "unreadnum": i.unreadnum
             })
     return result
+
+def RefreshRecentmessage(request): #获得最近会话
+    ID=request.COOKIES.get('LoginID')
+    messageslist = Messageslist.objects.filter(userid=ID).order_by('-time')
+    result=[]
+    for i in messageslist:
+        if i.messagestype == 'friend':
+            user = User.objects.get(loginid=i.objectid)
+            Messages = getNewMessages(ID, user.loginid, 'friend')
+            username = Friends.objects.get(userid=int(ID), friendid=user.loginid).name
+            result.append({
+                "id": user.loginid,
+                "username": user.username if username == None or username == "" else username,
+                "headportrait": user.headportrait,
+                "messagestype": i.messagestype,
+                "PostMessages": Messages[0]['PostMessages'] if len(Messages) > 0 else ' ',
+                "time": i.createtime[10:16] if i.time == "" else i.time[10:16],
+                "unreadnum": i.unreadnum
+            })
+        elif i.messagestype == 'group':
+            group = Group.objects.get(groupid=i.objectid)
+            Messages = getNewMessages(ID, group.groupid, 'group')
+            groupname = Groupmembers.objects.get(userid=int(ID), groupid=group.groupid).groupname
+            result.append({
+                "id": group.groupid,
+                "username": group.groupname if groupname == "" or groupname==None else groupname,
+                "headportrait": group.groupavatars,
+                "messagestype": i.messagestype,
+                "PostMessages": Messages[0]['PostMessages'] if len(Messages) > 0 else ' ',
+                "time": Messages[0]['SendTime'][10:16] if len(Messages) > 0 else '',
+                "unreadnum": i.unreadnum
+            })
+    return {'status':1,'result':result}
 
 def getChatInfo(request): #获取聊天对象信息
     if request.method == "POST":
@@ -336,17 +405,17 @@ def EditUserInfo(request): #编辑个人信息
     UserInfo = json.loads(UserInfo)
     UserInfo=UserInfo.get('UserInfo')
     user = User.objects.get(loginid=UserID)
-    user.age = UserInfo.get('UserAge')
-    user.sex = UserInfo.get('UserSex')
-    user.phonenumber = UserInfo.get('UserPhone')
-    user.address = UserInfo.get('UserAddress')
-    user.bloodtype = UserInfo.get('UserBloodType')
-    user.datebirth = UserInfo.get('UserDateBirth')
-    user.constellation = UserInfo.get('UserConstellation')
-    user.shengxiao = UserInfo.get('UserShengXiao')
-    user.profession = UserInfo.get('UserProfession')
-    user.region = UserInfo.get('UserRegion')
-    user.mail = UserInfo.get('UserMail')
+    user.age = UserInfo.get('UserAge') if UserInfo.get('UserAge')==None else 0
+    user.sex = isNull(UserInfo.get('UserSex'))
+    user.phonenumber = isNull(UserInfo.get('UserPhone'))
+    user.address = isNull(UserInfo.get('UserAddress'))
+    user.bloodtype = isNull(UserInfo.get('UserBloodType'))
+    user.datebirth = isNull(UserInfo.get('UserDateBirth'))
+    user.constellation = isNull(UserInfo.get('UserConstellation'))
+    user.shengxiao = isNull(UserInfo.get('UserShengXiao'))
+    user.profession = isNull(UserInfo.get('UserProfession'))
+    user.region = isNull(UserInfo.get('UserRegion'))
+    user.mail = isNull(UserInfo.get('UserMail'))
     user.save()
     if (user != None):
         return True
@@ -415,8 +484,8 @@ def getFriendGroups(request): #获取好友分组选项（添加好友时）
 
 def getAddFriend_applylist(request):
     UserID = request.COOKIES.get('LoginID')
-    addfriends1 = Addfriends.objects.filter(userid=UserID)
-    addfriends2 = Addfriends.objects.filter(objectid=UserID)
+    addfriends1 = Addfriends.objects.filter(userid=UserID).exclude(rep_results=2)
+    addfriends2 = Addfriends.objects.filter(objectid=UserID).exclude(rep_results=2)
     AddFriend_applylist=addfriends1|addfriends2
     AddFriend_applylist=AddFriend_applylist.order_by("-sendtime").values("applicantid", "userid", "objectid", "addway", "remarks", "rep_results", "responsetime", "sendtime")
     a=[]
@@ -457,7 +526,7 @@ def getAddFriend_applylist(request):
 
 def getAddGroup_applylist(request):
     UserID = request.COOKIES.get('LoginID')
-    Groups = Groupmembers.objects.filter(userid=UserID,role__in=('Groupleader','Administrators')).values('groupid')
+    Groups = Groupmembers.objects.filter(userid=UserID,role__in=('Groupleader','Administrators')).exclude(rep_results=2).values('groupid')
     group=[]
     for i in Groups:
         group.append(i['groupid'])
@@ -510,7 +579,7 @@ def verificat_isfriend(request):
     else:
         return False
 
-def Processing_requests(request): #处理好友申请
+def Processing_requests(request): #处理添加请求
     UserID = request.COOKIES.get('LoginID')
     form = request.body.decode("utf-8")
     form=json.loads(form)
@@ -524,32 +593,43 @@ def Processing_requests(request): #处理好友申请
         Applicant = AddGroups.objects.get(applicantid=formAddfriend['applicantid'])
     if Applicant!=None:
         if response=="agree":
-            Applicant.rep_results=1
-            Applicant.responsetime = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
             if type=="friend":
-                Friendship=[]
-                Friendship.append(Friends(
-                    userid=Applicant.userid,
-                    friendid=Applicant.objectid,
-                    name=Applicant.remarksname,
-                    friendtypeid = 1,
-                    friendgroupsid=Applicant.friendsGroupid
-                ))
-                Friendship.append(Friends(
-                    userid=UserID,
-                    friendid=Applicant.userid,
-                    name=formAddfriend['remarksname'],
-                    friendtypeid=1,
-                    friendgroupsid=formAddfriend['FriendGroups_value']
-                ))
-                Friends.objects.bulk_create(Friendship)
+                friend=Friends.objects.filter(userid=UserID,friendid=Applicant.userid)
+                print(friend)
+                if len(friend)>0:
+                    return {'status': 0, 'result': '好友已存在'}
+                else:
+                    Applicant.rep_results = 1
+                    Applicant.responsetime = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+                    Friendship = []
+                    Friendship.append(Friends(
+                        userid=Applicant.userid,
+                        friendid=Applicant.objectid,
+                        name=Applicant.remarksname,
+                        friendtypeid=1,
+                        friendgroupsid=Applicant.friendsGroupid
+                    ))
+                    Friendship.append(Friends(
+                        userid=UserID,
+                        friendid=Applicant.userid,
+                        name=formAddfriend['remarksname'],
+                        friendtypeid=1,
+                        friendgroupsid=formAddfriend['FriendGroups_value']
+                    ))
+                    Friends.objects.bulk_create(Friendship)
             elif type=="group":
-                Groupmembers.objects.create(
-                    userid=Applicant.userid,
-                    groupid=Applicant.objectid,
-                    role='Member',
-                    jointime=time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
-                )
+                groupmembers = Groupmembers.objects.filter(userid=Applicant.userid, groupid=Applicant.objectid)
+                if len(groupmembers) > 0:
+                    return {'status': 0, 'result': '该用户已在群内'}
+                else:
+                    Applicant.rep_results = 1
+                    Applicant.responsetime = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+                    Groupmembers.objects.create(
+                        userid=Applicant.userid,
+                        groupid=Applicant.objectid,
+                        role='Member',
+                        jointime=time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+                    )
         elif response=="refuse":
             Applicant.rep_results = -1
             Applicant.responsetime = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
@@ -676,6 +756,32 @@ def EditFriendname(request):
     else:
         return {'status': 0, 'result': '非法操作'}
 
+def EditGroupname(request): #修改群备注
+    UserID = request.COOKIES.get('LoginID')
+    objectid = request.POST.get("objectid")
+    remarkname = request.POST.get("remarkname")
+    group = Groupmembers.objects.get(userid=UserID, groupid=objectid)
+    if group!=None:
+    # if len(friends) > 0:
+        group.groupname=remarkname
+        group.save()
+        return {'status': 1, 'result': '备注修改成功'}
+    else:
+        return {'status': 0, 'result': '非法操作'}
+
+def EditGroupUserremarks(request): #修改群内备注
+    UserID = request.COOKIES.get('LoginID')
+    objectid = request.POST.get("objectid")
+    remarkname = request.POST.get("remarkname")
+    group = Groupmembers.objects.get(userid=UserID, groupid=objectid)
+    if group!=None:
+    # if len(friends) > 0:
+        group.name=remarkname
+        group.save()
+        return {'status': 1, 'result': '备注修改成功'}
+    else:
+        return {'status': 0, 'result': '非法操作'}
+
 def EditFriendGroup(request):
     UserID = request.COOKIES.get('LoginID')
     objectid = request.POST.get("objectid")
@@ -754,4 +860,132 @@ def EditFriendGroupname(request):
     else:
         return {'status': 0, 'result': '非法操作'}
 
+def EditHeaderstyle(request):
+    UserID = request.COOKIES.get('LoginID')
+    background = request.POST.get("background")
+    user = User.objects.get(loginid=UserID)
+    user.headercolor=background
+    user.save()
+    return {'status': 1, 'result': '修改成功'}
 
+def Editgroupverification(request):
+    UserID = request.COOKIES.get('LoginID')
+    type = request.POST.get("type")
+    objectid = request.POST.get("objectid")
+    groupmembers = Groupmembers.objects.filter(userid=UserID,groupid=objectid,role__in=('Groupleader','Administrators'))
+    if len(groupmembers)>0:
+        group=Group.objects.get(groupid=objectid)
+        group.groupverification=type
+        group.save()
+        return {'status': 1, 'result': '修改成功'}
+    else:
+        return {'status': 0, 'result': '非法操作'}
+
+def Disbandgroup(request):
+    UserID = request.COOKIES.get('LoginID')
+    objectid = request.POST.get("objectid")
+    groupmembers = Groupmembers.objects.filter(userid=UserID,groupid=objectid,role='Groupleader')
+    if len(groupmembers)>0:
+        group=Group.objects.get(groupid=objectid)
+        group.delete()
+        return {'status': 1, 'result': '解散成功'}
+    else:
+        return {'status': 0, 'result': '非法操作'}
+
+def Exitgroup(request):
+    UserID = request.COOKIES.get('LoginID')
+    objectid = request.POST.get("objectid")
+    groupmembers = Groupmembers.objects.filter(userid=UserID,groupid=objectid,role__in=('Administrators','Member'))
+    if len(groupmembers)>0:
+        group=Groupmembers.objects.get(userid=UserID,groupid=objectid)
+        group.delete()
+        return {'status': 1, 'result': '退出成功'}
+    else:
+        return {'status': 0, 'result': '非法操作'}
+
+def SetupAdmin(request):
+    UserID = request.COOKIES.get('LoginID')
+    form = request.body.decode("utf-8")
+    form = json.loads(form)
+    NewAdmin = form.get('NewAdmin')
+    objectid = form.get('objectid')
+    print(NewAdmin)
+    groupmembers = Groupmembers.objects.filter(userid=UserID,groupid=objectid,role='Groupleader')
+    if len(groupmembers)>0:
+        members=Groupmembers.objects.exclude(userid__in=NewAdmin).exclude(role='Groupleader').filter(groupid=objectid)
+        members.update(**{'role':'Member'})
+        admin = Groupmembers.objects.filter(groupid=objectid,userid__in=NewAdmin)
+        admin.update(**{'role':'Administrators'})
+        return {'status': 1, 'result': '完成操作'}
+    else:
+        return {'status': 0, 'result': '非法操作'}
+
+def RemoveMembers(request):
+    UserID = request.COOKIES.get('LoginID')
+    form = request.body.decode("utf-8")
+    form = json.loads(form)
+    Members = form.get('Members')
+    objectid = form.get('objectid')
+    members=[]
+    for i in Members:
+        members.append(i['userid'])
+    groupmembers = Groupmembers.objects.filter(userid=UserID,groupid=objectid,role__in=('Groupleader','Administrators'))
+    if len(groupmembers)>0:
+        user=Groupmembers.objects.filter(userid__in=members,groupid=objectid)
+        user.delete()
+        return {'status': 1, 'result': '完成操作'}
+    else:
+        return {'status': 0, 'result': '非法操作'}
+
+def EditProfile(request): #编辑群资料
+    UserID = request.COOKIES.get('LoginID')
+    objectid = request.POST.get('objectid')
+    img_name = request.POST.get('img_name')
+    groupname=request.POST.get('groupname')
+    groupintro = request.POST.get('groupintro')
+    if groupname=="":
+        return {'status': 0, 'result': '群名不能为空'}
+    if img_name!="":
+        groupmembers = Groupmembers.objects.filter(userid=UserID, groupid=objectid,role__in=('Groupleader', 'Administrators'))
+        if len(groupmembers)>0:
+            group = Group.objects.get(groupid=objectid)
+            img = request.FILES.get('img_file')
+            timeid = '{0:%Y%m%d%H%M%S%f}'.format(datetime.datetime.now()) + ''.join([str(random.randint(1, 10)) for i in range(5)])  # 生成唯一的时间序列
+            img_name = img_name.split('.')
+            img_name[0]=timeid
+            OldHeadPortrait=settings.MEDIA_ROOT+"/HeadPortrait/"+group.groupavatars
+            HeadPortrait=img_name[0]+'.'+img_name[1]
+            url = settings.MEDIA_ROOT+"/HeadPortrait/"+HeadPortrait
+
+            with open(url, 'wb') as f:
+                for chunk in img.chunks():
+                    f.write(chunk)
+
+            if os.path.exists(OldHeadPortrait):
+                os.remove(OldHeadPortrait)
+            else:
+                print("The file does not exist")
+            group.groupavatars = HeadPortrait
+            group.groupname=groupname
+            group.groupintro=groupintro
+            group.save()
+            if (group != None):
+                return {'status':1,'result':'编辑成功'}
+            else:
+                return {'status':0,'result':'编辑失败'}
+        else:
+            return {'status':0,'result':'非法操作'}
+    else:
+        groupmembers = Groupmembers.objects.filter(userid=UserID, groupid=objectid,
+                                                   role__in=('Groupleader', 'Administrators'))
+        if len(groupmembers) > 0:
+            group = Group.objects.get(groupid=objectid)
+            group.groupname = groupname
+            group.groupintro = groupintro
+            group.save()
+            if (group != None):
+                return {'status': 1, 'result': '编辑成功'}
+            else:
+                return {'status': 0, 'result': '编辑失败'}
+        else:
+            return {'status':0,'result':'非法操作'}

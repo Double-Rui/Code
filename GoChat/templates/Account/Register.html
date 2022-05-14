@@ -163,10 +163,10 @@
 			  <el-step title="完成注册"></el-step>
 			</el-steps>
 			<div style="text-align: center;width: 100%;">
-				<el-button v-show="active!=3" style="margin-top: 12px;" @click="last">上一步</el-button>
+				<el-button v-show="active==2" style="margin-top: 12px;" @click="last">上一步</el-button>
 				<el-button v-show="active<2" style="margin-top: 12px;" @click="next">下一步</el-button>
 				<el-button v-show="active==2" style="margin-top: 12px;" @click="Register">注册</el-button>
-				<el-button style="margin-top: 12px;" onclick="window.location.href='/Login/'">登录</el-button>
+				<el-button style="margin-top: 12px;" onclick="window.location.href='/Login/'">返回登录</el-button>
 			</div>
 		</div>
 	</div>

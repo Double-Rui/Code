@@ -6,10 +6,10 @@ urlpatterns = [
     # 参数1：路由
     # 参数2：视图函数
     # 参数3：路由名，方便通过reverse来获取路由
-    path('Home/Recent_chat/', Recent_chat),
-    path('Home/Friends_list/', Friends_list),
-    path('Home/Find_Friends/', Find_Friends),
-    path('Home/Chat_panel', Chat_panel),
+    # path('GoChat/', Recent_chat),
+    # path('Home/Friends_list/', Friends_list),
+    # path('Home/Find_Friends/', Find_Friends),
+    # path('Home/Chat_panel', Chat_panel),
     path('EditSign', EditSign),
     path('EditUserName', EditUserName),
     path('getFriendInfo', getFriendInfo),
@@ -35,4 +35,15 @@ urlpatterns = [
     path('AddFriendGroup', AddFriendGroup),
     path('DeleteFriendGroup', DeleteFriendGroup),
     path('EditFriendGroupname', EditFriendGroupname),
+    path('RefreshRecentmessage', RefreshRecentmessage),
+    path('EditHeaderstyle', EditHeaderstyle),
+    path('getGroupslist', getGroupslist),
+    path('EditGroupname', EditGroupname),
+    path('EditGroupUserremarks', EditGroupUserremarks),
+    path('Editgroupverification', Editgroupverification),
+    path('Disbandgroup', Disbandgroup),
+    path('Exitgroup', Exitgroup),
+    path('SetupAdmin', SetupAdmin),
+    path('RemoveMembers', RemoveMembers),
+    path('EditProfile', EditProfile),
 ]

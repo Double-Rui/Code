@@ -25,7 +25,9 @@ class User(models.Model):
     region = models.CharField(db_column='Region', max_length=50, blank=True, null=True)  # Field name made lowercase.
     mail = models.CharField(db_column='Mail', max_length=50, blank=True, null=True)  # Field name made lowercase.
     addtimeid = models.CharField(db_column='AddtimeID', max_length=50)  # Field name made lowercase.
+    registertime=models.CharField(db_column='Registertime', max_length=50)  # Field name made lowercase.
     loginstatus=models.IntegerField(db_column='LoginStatus',default=0) #在线状态
+    headercolor=models.CharField(db_column='HeaderColor', max_length=50,default='#3483D5')
     question1 = models.CharField(db_column='question1', max_length=50, blank=True, null=True)
     question2 = models.CharField(db_column='question2', max_length=50, blank=True, null=True)
     answer1 = models.CharField(db_column='answer1', max_length=50, blank=True, null=True)

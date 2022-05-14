@@ -19,18 +19,18 @@ def Recent_chat(request):
                                                     "friends":HomeController.getFriends(ID),
                                                     "friendGroup": HomeController.getFriendGroup(ID),
                                                     "OneWord":HomeController.getOneWord(),
-                                                    "Recentmessage":HomeController.getRecentmessage(ID),
+                                                    "Recentmessage":HomeController.getRecentmessage(request),
                                                     "Groups":HomeController.getGroups(ID),
                                                     "FriendGroups":HomeController.getFriendGroups(request)})
 
-def Friends_list(request):
-    return render(request, "Home/Friends_list.html")
-
-def Find_Friends(request):
-    return render(request, "Home/Find_Friends.html")
-
-def Chat_panel(request):
-    return render(request, "Home/Chat_panel.html")
+# def Friends_list(request):
+#     return render(request, "Home/Friends_list.html")
+#
+# def Find_Friends(request):
+#     return render(request, "Home/Find_Friends.html")
+#
+# def Chat_panel(request):
+#     return render(request, "Home/Chat_panel.html")
 
 def EditSign(request):
     if(HomeController.EditSign(request)):
@@ -53,6 +53,9 @@ def getFriendInfo(request):
 
 def getGroupInfo(request):
     return HttpResponse(HomeController.getGroupInfo(request))
+
+def RefreshRecentmessage(request):
+    return HttpResponse(json.dumps(HomeController.RefreshRecentmessage(request)))
 
 def ToChat(request):
     if request.method == "POST":
@@ -159,6 +162,18 @@ def EditFriendname(request):
     else:
         pass
 
+def EditGroupname(request):
+    if request.method == "POST":
+        return HttpResponse(json.dumps(HomeController.EditGroupname(request)))
+    else:
+        pass
+
+def EditGroupUserremarks(request):
+    if request.method == "POST":
+        return HttpResponse(json.dumps(HomeController.EditGroupUserremarks(request)))
+    else:
+        pass
+
 def EditFriendGroup(request):
     if request.method == "POST":
         return HttpResponse(json.dumps(HomeController.EditFriendGroup(request)))
@@ -169,6 +184,13 @@ def getFriendGroup(request):
     if request.method == "GET":
         ID = request.COOKIES.get('LoginID')
         return HttpResponse(json.dumps(HomeController.getFriendGroup(ID)))
+    else:
+        pass
+
+def getGroupslist(request):
+    if request.method == "GET":
+        ID = request.COOKIES.get('LoginID')
+        return HttpResponse(json.dumps(HomeController.getGroupslist(ID)))
     else:
         pass
 
@@ -193,5 +215,47 @@ def DeleteFriendGroup(request):
 def EditFriendGroupname(request):
     if request.method == "POST":
         return HttpResponse(json.dumps(HomeController.EditFriendGroupname(request)))
+    else:
+        pass
+
+def EditHeaderstyle(request):
+    if request.method == "POST":
+        return HttpResponse(json.dumps(HomeController.EditHeaderstyle(request)))
+    else:
+        pass
+
+def Editgroupverification(request):
+    if request.method == "POST":
+        return HttpResponse(json.dumps(HomeController.Editgroupverification(request)))
+    else:
+        pass
+
+def Disbandgroup(request):
+    if request.method == "POST":
+        return HttpResponse(json.dumps(HomeController.Disbandgroup(request)))
+    else:
+        pass
+
+def Exitgroup(request):
+    if request.method == "POST":
+        return HttpResponse(json.dumps(HomeController.Exitgroup(request)))
+    else:
+        pass
+
+def SetupAdmin(request):
+    if request.method == "POST":
+        return HttpResponse(json.dumps(HomeController.SetupAdmin(request)))
+    else:
+        pass
+
+def RemoveMembers(request):
+    if request.method == "POST":
+        return HttpResponse(json.dumps(HomeController.RemoveMembers(request)))
+    else:
+        pass
+
+def EditProfile(request):
+    if request.method == "POST":
+        return HttpResponse(json.dumps(HomeController.EditProfile(request)))
     else:
         pass
