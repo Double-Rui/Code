@@ -15,6 +15,7 @@ django.setup()
 def message(sender, message_type, message,sendto,sendtime):
     data = json.dumps({
         'sender': sender,
+        'sendername':getusername(sender),
         'message_type': message_type,
         'message': message,
         'sendto':sendto,
@@ -32,6 +33,7 @@ def groupmessage(sender, message_type, message,sendto,sendtime,name,headportrait
         'name':name,
         'message_type': message_type,
         'message': message,
+        'groupname':getgroupname(sendto),
         'sendto':sendto,
         'sendtime':sendtime
     })
@@ -69,6 +71,7 @@ def sqlquery(sqlstr):
     cursor = conn.cursor()
     try:
         # 执行SQL语句
+        # print(sqlstr)
         cursor.execute(sqlstr)
         # 提交事务
         conn.commit()
@@ -89,6 +92,38 @@ def getgroupmembers(groupid):
         cursor.execute(sqlstr)
         members =cursor.fetchall()
         return members
+    except Exception as e:
+        # 有异常，回滚事务
+        # print("getgroupmembers回滚")
+        conn.rollback()
+    cursor.close()
+    conn.close()
+
+def getusername(userid):
+    conn = MySQLdb.connect(host='localhost',user='root',password='123456',database='gochat',cursorclass=MySQLdb.cursors.DictCursor)
+    cursor = conn.cursor()
+    sqlstr="SELECT `user`.UserName FROM `user` WHERE `user`.LoginID = '"+userid+"'"
+    try:
+        # 执行SQL语句
+        cursor.execute(sqlstr)
+        username =cursor.fetchall()
+        return username[0]['UserName']
+    except Exception as e:
+        # 有异常，回滚事务
+        # print("getgroupmembers回滚")
+        conn.rollback()
+    cursor.close()
+    conn.close()
+
+def getgroupname(groupid):
+    conn = MySQLdb.connect(host='localhost',user='root',password='123456',database='gochat',cursorclass=MySQLdb.cursors.DictCursor)
+    cursor = conn.cursor()
+    sqlstr="SELECT home_group.GroupName FROM home_group WHERE home_group.GroupID = '"+groupid+"'"
+    try:
+        # 执行SQL语句
+        cursor.execute(sqlstr)
+        username =cursor.fetchall()
+        return username[0]['GroupName']
     except Exception as e:
         # 有异常，回滚事务
         # print("getgroupmembers回滚")
@@ -118,7 +153,7 @@ def getgroupadmins(groupid):
     sqlstr="SELECT UserID FROM home_groupmembers WHERE GroupID = '"+str(groupid)+"' AND Role in ('Groupleader','Administrators')"
     try:
         # 执行SQL语句
-        print(sqlstr)
+        # print(sqlstr)
         cursor.execute(sqlstr)
         # if (cursor.rowcount > 0):
         #     print('获取群管理成功')
@@ -140,7 +175,7 @@ def getSenderInfo(userid):
     sqlstr="SELECT UserName,HeadPortrait FROM user WHERE LoginID = '"+str(userid)+"'"
     try:
         # 执行SQL语句
-        print(sqlstr)
+        # print(sqlstr)
         cursor.execute(sqlstr)
         Info =cursor.fetchall()
         return Info[0]
@@ -177,7 +212,7 @@ def CanCreategroup(userid):
     sqlstr = "SELECT * FROM `home_group` WHERE GroupleaderID='"+str(userid)+"' and TO_DAYS(Createtime) = TO_DAYS('"+time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())+"')"
     try:
         # 执行SQL语句
-        print(sqlstr)
+        # print(sqlstr)
         cursor.execute(sqlstr)
         if (cursor.rowcount > 0):
             return True #当天创建过群聊
@@ -207,6 +242,7 @@ async def websocket_application(scope,receive,send):
             SqlStr = "UPDATE user SET LoginStatus = 1 WHERE LoginID = '" + auth + "'"
             sqlquery(SqlStr)
             CONNECTIONS[auth] =send
+            print(CONNECTIONS)
 
         # 收到中断Websocket连接的消息
         elif event['type']=='websocket.disconnect':
@@ -229,9 +265,9 @@ async def websocket_application(scope,receive,send):
                 if to_user in CONNECTIONS:
                     msg = message(auth, message_type, content,to_user,time.strftime('%H:%M:%S', time.localtime()))
                     await CONNECTIONS[to_user](msg)
-                else:
-                    SqlStr = "update home_messageslist set UnreadNum=UnreadNum+1 where UserID='" + to_user + "' and ObjectID='" + auth + "' and MessagesType='friend'"
-                    sqlquery(SqlStr)
+                # else:
+                #     SqlStr = "update home_messageslist set UnreadNum=UnreadNum+1 where UserID='" + to_user + "' and ObjectID='" + auth + "' and MessagesType='friend'"
+                #     sqlquery(SqlStr)
             elif (message_type == 'Groupmessage'):
                 content = receive_msg.get('message', '')
                 to_user = receive_msg.get('to_user', '')

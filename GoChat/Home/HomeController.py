@@ -47,7 +47,8 @@ def getFriendGroup(ID): #加载好友列表及好友列表
         result.append({
             "groupname": i.groupname,
             "serialnumber": i.serialnumber,
-            "children": children
+            "children": children,
+            "number":len(children)
         })
     return result
 
@@ -187,20 +188,28 @@ def getFriendInfo(request): #获得好友信息
             "Constellation":user.constellation,
             "Shengxiao":user.shengxiao,
             "background": "background-color:" + user.headercolor,
-            # "Info" : [{"labelname":'账号',"content" : str(isNull(user.loginid))},
-            #         {"labelname": '性别', "content" : str(getSex(isNull(user.sex)))},
-            #         {"labelname": '年龄', "content" : str(isNull(user.age))},
-            #         {"labelname": '手机号', "content" : str(isNull(user.phonenumber))},
-            #         {"labelname": '地址', "content" : str(isNull(user.address))},
-            #         {"labelname": '血型', "content" : str(isNull(user.bloodtype))},
-            #         {"labelname": '生日', "content" : str(isNull(user.datebirth[0:10]))},
-            #         {"labelname": '星座', "content" : str(isNull(user.constellation))},
-            #         {"labelname": '邮箱', "content" : str(isNull(user.mail))},
-            #         {"labelname": '生肖', "content" : str(isNull(user.shengxiao))},
-            #         {"labelname": '个性签名', "content" : str(isNull(user.sign))},
-            #         {"labelname": '职业', "content" : str(isNull(user.profession))},
-            #         {"labelname": '所处地区', "content" : str(isNull(user.region))}]
             })
+        else:
+            result=0
+        return result
+
+def getobjectInfo(request): #获得用户信息
+    if request.method == "POST":
+        objectid = request.POST.get("objectid")
+        result=""
+        user = User.objects.get(loginid=objectid)
+        if user:
+            result ={
+            "Username" : user.username,
+            "Userid":user.loginid,
+            "Headportrait" : user.headportrait,
+            "Sex":user.sex,
+            "Age":user.age,
+            "sign":user.sign,
+            "Birthday":user.datebirth[5:10],
+            "Shengxiao":user.shengxiao,
+            "background": "background-color:" + user.headercolor,
+            }
         else:
             result=0
         return result
@@ -405,7 +414,7 @@ def EditUserInfo(request): #编辑个人信息
     UserInfo = json.loads(UserInfo)
     UserInfo=UserInfo.get('UserInfo')
     user = User.objects.get(loginid=UserID)
-    user.age = UserInfo.get('UserAge') if UserInfo.get('UserAge')==None else 0
+    user.age = UserInfo.get('UserAge') if UserInfo.get('UserAge')!=None else 0
     user.sex = isNull(UserInfo.get('UserSex'))
     user.phonenumber = isNull(UserInfo.get('UserPhone'))
     user.address = isNull(UserInfo.get('UserAddress'))
@@ -526,7 +535,8 @@ def getAddFriend_applylist(request):
 
 def getAddGroup_applylist(request):
     UserID = request.COOKIES.get('LoginID')
-    Groups = Groupmembers.objects.filter(userid=UserID,role__in=('Groupleader','Administrators')).exclude(rep_results=2).values('groupid')
+    # Groups = Groupmembers.objects.filter(userid=UserID,role__in=('Groupleader','Administrators')).exclude(rep_results=2).values('groupid')
+    Groups = Groupmembers.objects.filter(userid=UserID,role__in=('Groupleader','Administrators')).values('groupid')
     group=[]
     for i in Groups:
         group.append(i['groupid'])
@@ -678,7 +688,7 @@ def NewSession(request):
             "headportrait": user.headportrait,
             "messagestype": 'friend',
             "PostMessages": Messages[0]['PostMessages'] if len(Messages)>0 else '',
-            "time": Messages[0]['SendTime'][10:16] if len(Messages)>0 else ''
+            "time": Messages[0]['SendTime'][10:16] if len(Messages)>0 else time.strftime('%H:%M', time.localtime())
         }
     elif(messagestype=='group'):
         object=Groupmembers.objects.filter(userid=UserID,groupid=objectid)
@@ -691,7 +701,7 @@ def NewSession(request):
             "headportrait": group.groupavatars,
             "messagestype": 'group',
             "PostMessages": Messages[0]['PostMessages'] if len(Messages)>0 else '' ,
-            "time": Messages[0]['SendTime'][10:16] if len(Messages)>0 else ''
+            "time": Messages[0]['SendTime'][10:16] if len(Messages)>0 else time.strftime('%H:%M', time.localtime())
         }
     if len(object)>0:
         Session=Messageslist.objects.filter(userid=UserID,objectid=objectid,messagestype=messagestype)
@@ -700,7 +710,8 @@ def NewSession(request):
                 userid=UserID,
                 objectid=objectid,
                 messagestype=messagestype,
-                createtime=datetime.datetime.now()
+                createtime=time.strftime('%Y/%m/%d %H:%M:%S', time.localtime()),
+                time=time.strftime('%Y/%m/%d %H:%M:%S', time.localtime())
             )
             return {'status': 1, 'result': result}
         else:
@@ -989,3 +1000,32 @@ def EditProfile(request): #编辑群资料
                 return {'status': 0, 'result': '编辑失败'}
         else:
             return {'status':0,'result':'非法操作'}
+
+def SearchFriend(request):
+    UserID = request.COOKIES.get('LoginID')
+    content=request.POST.get('content')
+    conn = MySQLdb.connect(host='localhost', user='root', password='123456', database='gochat',cursorclass=MySQLdb.cursors.DictCursor)
+    cursor = conn.cursor()
+    sqlstr = "SELECT `user`.LoginID userid, home_friends.`Name`, `user`.UserName, `user`.HeadPortrait, `user`.Sign " \
+             "FROM `user` INNER JOIN home_friends ON  `user`.LoginID = home_friends.FriendID " \
+             "WHERE home_friends.UserID = "+UserID+" and (`user`.UserName LIKE '%"+content+"%' or `user`.LoginID LIKE '%"+content+"%' or home_friends.`Name` LIKE '%"+content+"%' )"
+    try:
+        # 执行SQL语句
+        cursor.execute(sqlstr)
+        user = cursor.fetchall()
+    except Exception as e:
+        conn.rollback()
+    cursor.close()
+    conn.close()
+    print(user)
+    # friends= Friends.objects.filter(userid=UserID)
+    # friendlist=[]
+    # for i in friends:
+    #     friendlist.append(i.friendid)
+    # user = User.objects.filter(Q(loginid__in=friendlist),Q(loginid__contains=content) | Q(username__contains=content)).values('loginid', 'username', 'headportrait', 'sign')
+    # # if (content.isdigit()):
+    # #     user = User.objects.filter(Q(loginid__in=friendlist),Q(loginid__contains=content) | Q(username__contains=content)).values('loginid', 'username', 'headportrait', 'sign')
+    # # else:
+    # #     user = User.objects.filter(username__contains=str).values('loginid', 'username', 'headportrait','sign')
+    # if user.exists():
+    return {'status': 1, 'result': user}

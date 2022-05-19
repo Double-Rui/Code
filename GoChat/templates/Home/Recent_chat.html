@@ -92,13 +92,15 @@
 				  <div class="grid-content bg-purple" style="width: 100%;height: 100%;">
 					  <ul style="list-style: none;user-select: none;">
 						<li @click="SwitchKey('message')">
-							<el-badge  style="width:45px;z-index: 1;" :value="109" :max="99">
+							<!-- <el-badge is-dot style="width:45px;z-index: 1;" :value="109" :max="99"> -->
+							<el-badge is-dot style="width:45px;z-index: 1;">
 							<a href="#"><el-tooltip class="item" effect="dark" content="消息" placement="left">
 								<img v-show="module!='message'" class="fun_icon" src="{% static "icon/信息.png" %}" width="40px"/></el-tooltip>
 								<img v-show="module=='message'" class="fun_icon" src="{% static "icon/信息选中.png" %}" width="40px"/></el-tooltip>
 							</a></el-badge></li>
 						<li @click="SwitchKey('ApplicationList'),getAddFriend_applylist(),getAddGroup_applylist()">
-							<el-badge  style="width:45px;z-index: 1;" :value="109" :max="99">
+							<!-- <el-badge  style="width:45px;z-index: 1;" :value="109" :max="99"> -->
+							<el-badge is-dot style="width:45px;z-index: 1;">
 							<a href="#"><el-tooltip class="item" effect="dark" content="申请列表" placement="left">
 									<img v-show="module!='ApplicationList'" class="fun_icon" src="{% static "icon/添加申请列表.png" %}" width="40px"/></el-tooltip>
 									<img v-show="module=='ApplicationList'" class="fun_icon" src="{% static "icon/添加申请列表选中.png" %}" width="40px"/></el-tooltip>
@@ -127,18 +129,39 @@
 						<div class="Chat_panel" style="width: 100%;height: 95%; float: left;user-select: none;">
 						        <div class="Chat_list" style="height: 100%;">
 						            <div class="search">
-										<el-input v-model="search" placeholder="请输入搜索内容"></el-input>
-						                <div class="SearchResult" style="position:relative;width:100%;background-color:white;top:24px;"></div>
+										<el-input v-model="search.content" @focus="searchswitch='on'" @input="SearchFriend" placeholder="请输入搜索内容"><el-button type="danger" slot="append" @click="searchswitch='off'" icon="el-icon-close"></el-button></el-input>
+<!-- 						                <div class="SearchResult" style="position:relative;width:100%;background-color:white;top:24px;"></div> -->
 						            </div>
-									  <el-tabs v-model="activeName" stretch="stretch"  @tab-click="handleClick">
-										  <!-- 消息列表 -->
+									<div v-show="searchswitch=='on'" style="width: 100%;height: 99%;overflow-y: auto;">
+										<ul class="friend_list">
+											<template v-for="item in search.SearchResult">
+											<li class="friend_li" :Userid="item.userid"
+											@dblclick="toChat2(item.userid,'friend','no')">
+												<div class="friend" >
+												    <div id="FriendHeadPortrait">
+														<el-avatar :size="50" :src="HeadPortrait_url+item.HeadPortrait"></el-avatar>
+													</div>
+												    <div style="float:left">
+												        <p class="friends_form" >
+															<b>{[item.Name==""?item.UserName:item.Name]}</b>
+															{[item.Name==""?"":"("+item.UserName+")"]}
+															</p>
+														<p class="friends_sign" >{[item.Sign]}</p>
+												    </div>
+												    </div>
+											</li>
+											</template>
+										</ul>
+									</div>
+									  <el-tabs v-show="searchswitch=='off'" v-model="activeName" stretch="stretch"  @tab-click="handleClick">
+										<!-- 消息列表 -->
 									    <el-tab-pane  label="消息" name="first">
 											<div class="message_list">
-												<template v-for="item in Recentmessage">
+												<template v-for="(item,index) in Recentmessage">
 													<div  class="messages" :objectid="item.id" 
 														:messagestype="item.messagestype" 
-														@dblclick="toChat2(item.id,item.messagestype)" 
-														@contextmenu.prevent="clickmessagemenu(item.id,item.messagestype)">
+														@dblclick="toChat2(item.id,item.messagestype,index)" 
+														@contextmenu.prevent="clickmessagemenu(item.id,item.messagestype,index)">
 															<div id="FriendHeadPortrait">
 																<el-avatar :size="50" :src="HeadPortrait_url+item.headportrait">
 															</div>
@@ -161,7 +184,7 @@
 												  <div class="friend_list" style="overflow-y: auto;height: 93%;">
 													<template v-for="item in FriendList">
 														<el-collapse v-model="friendlistNO" @change="handleChange" style="border: 0;" >
-														  <el-collapse-item :title="item.groupname" :name="item.serialnumber">
+														  <el-collapse-item :title="item.groupname+' '+item.number" :name="item.serialnumber">
 														    <ul class="friend_list">
 																<template v-for="item2 in item.children">
 																<li class="friend_li" :Userid="item2.id"
@@ -325,7 +348,7 @@
 											  </span>
 											</el-dialog>
 											
-											<div v-for="item in Friend_applylist" style="height: 100px;width: 99%;border: 1px solid rgb(220, 223, 230);border-radius: 5px;margin: 8px 0;position: relative;">
+											<div v-for="item in Friend_applylist" @click="getobjectInfo(item.objectid)" style="height: 100px;width: 99%;border: 1px solid rgb(220, 223, 230);border-radius: 5px;margin: 8px 0;position: relative;">
 												<div class="touxiang" style="width: 17%;float: left;display: inline-block;padding: 3px 10px;height: 94%;">
 													<el-avatar :size="95" :src="HeadPortrait_url+item.headportrait"></el-avatar>
 												</div>
@@ -365,7 +388,7 @@
 											</div>
 										</div>
 										<div v-show="applyoption=='2'" style="width: 100%;">
-											<div v-for="item in Group_applylist" style="height: 100px;width: 99%;border: 1px solid rgb(220, 223, 230);border-radius: 5px;margin: 8px 0;position: relative;">
+											<div v-for="item in Group_applylist" @click="getobjectInfo(item.objectid)" style="height: 100px;width: 99%;border: 1px solid rgb(220, 223, 230);border-radius: 5px;margin: 8px 0;position: relative;">
 												<div class="touxiang" style="width: 17%;float: left;display: inline-block;padding: 3px 10px;height: 94%;">
 													<el-avatar :size="95" :src="HeadPortrait_url+item.headportrait"></el-avatar>
 												</div>
@@ -413,8 +436,30 @@
 							</el-col>
 							<el-col :span="12" style="height: 100%;">
 								<div style="width:100%;height:100%;border-radius: 9px;">
-							    测试
-								
+									<el-row>
+										<el-col :span="7">
+											<div style="height: 100%;width: 100%;"></div>
+										</el-col>
+										<el-col :span="10" style="margin-top: 15%;">
+											<el-card v-if="applyInfo" :body-style="{ padding: '0px' }">
+											<img :src="HeadPortrait_url+applyUserInfo.Headportrait" class="image">
+											<div style="padding:10px 24px;;">
+												<span>{[applyUserInfo.Username]}</span><span>({[applyUserInfo.Userid]})</span>
+												<div class="bottom clearfix">
+													<ul style="list-style: none;">
+														<li style="height: 17px;"><span>性别：</span><span>{[applyUserInfo.Sex==1?'男':applyUserInfo.sex==2?'女':'其他']}</span></li>
+														<li style="height: 17px;"><span>年龄：</span><span>{[applyUserInfo.Age]}</span></li>
+														<li style="height: 17px;"><span>生日：</span><span>{[applyUserInfo.Birthday]}</span></li>
+														<li style="height: 17px;"><span>生肖：</span><span>{[applyUserInfo.Shengxiao]}</span></li>
+													</ul>
+													<el-button size="mini" type="danger" style="float: right;" @click="applyInfo=false">关闭</el-button>
+												</div>
+											</div>
+											</el-card>
+										</el-col>
+										<el-col :span="7">
+										</el-col>
+									</el-row>
 								</div>
 							</el-col>
 						</el-col>
@@ -440,8 +485,6 @@
 										<el-input placeholder="请输入关键词" prefix-icon="el-icon-search" v-model="Findstr">
 											<el-button slot="append" icon="el-icon-search" @click="Findfriends"></el-button>
 										</el-input>
-							            <!-- <input id="Find_Friends_search" placeholder="请输入要搜索的关键词" type="search" />
-							            <!-- <img class="butofFindFriends" src="{% static "icon/search.svg" %}" style="" value=1 /> -->
 							        </div>
 							    </div>
 								<!-- 搜索结果 -->
@@ -643,6 +686,7 @@
 					Oldpassword:'',
 					Newpassword:'',},
 			module:'message',
+			searchswitch:"off",
 			SignText: '{{user.sign}}',
 			Recentmessage:{{Recentmessage|safe}},
 			activeName: 'first',
@@ -650,7 +694,10 @@
 			grouplistNO:'',
 			
 			tabPosition: 'left',
-			search:'',
+			search:{
+				content:'',
+				SearchResult:'',
+			},
 			ChatModulePanel:'empty',
 			
 			FriendID:"",
@@ -658,6 +705,8 @@
 			GroupInfo:"",
 			Friend_applylist:"",
 			Group_applylist:"",
+			applyUserInfo:"",
+			applyInfo:false,
 			
 			ChatInfo:"",
 			circleUrl:"",
@@ -735,7 +784,6 @@
 			headerstyle:{
 				background:'{{user.headercolor}}',
 			},
-			circleUrl: "https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png",
 			editableTabsValue: '1',
 			editableTabs: [{
 			  title: '欢迎页',
@@ -910,6 +958,22 @@
 					})
 				}
 			},
+			SearchFriend(){
+				var self=this
+				if(this.search.content==''){
+					this.searchswitch='off'
+				}else{
+					axios.post('/SearchFriend','content='+this.search.content)
+					.then(function(response){
+						if(response.data.status==1){
+							self.search.SearchResult=response.data.result
+						}else if(response.data.status==0){
+						}
+					},function(err){
+						console.log(err)
+					})
+				}
+			},
 			SwitchKey(module){
 				this.module=module
 			},
@@ -978,6 +1042,17 @@
 					})
 				}
 			},
+			getobjectInfo(objectid){
+				var self=this
+				this.applyInfo=true
+				axios.post('/getobjectInfo','objectid='+objectid)
+				.then(function(response){
+					var data=response.data
+					self.applyUserInfo=data
+				},function(err){
+					console.log(err)
+				})
+			},
 			RefreshRecentmessage(){
 				var self=this
 				axios.get('/RefreshRecentmessage')
@@ -990,7 +1065,6 @@
 			},
 			getFriendInfo2(friendid){
 				var self=this
-				console.log(friendid)
 				axios.post('/getFriendInfo','friendid='+friendid)
 				.then(function(response){
 					var data=response.data
@@ -1090,7 +1164,8 @@
 					var div = $('.el-tab-pane[tabid$="friend-chat-'+objectid+'"]')
 					if(div.length > 0){
 						var tab = div.attr('aria-labelledby')
-						$('#'+tab).trigger("click")
+						self.editableTabsValue=tab.slice(4)
+						// $('#'+tab).trigger("click")
 						// console.log("好友聊天框存在")
 					}else{
 						axios.post('/ToChat','objectid='+objectid+'&messagestype='+messagestype)
@@ -1100,7 +1175,6 @@
 							self.NewSession('friend',objectid)
 							self.$nextTick(()=>{
 								var div = $(".Message_record0[userid$='"+objectid+"']");
-								// console.log(div);
 								div.scrollTop(div[0].scrollHeight)
 							})
 						},function(err){
@@ -1112,8 +1186,8 @@
 					var div =$('.el-tab-pane[tabid$="group-chat-'+objectid+'"]')
 					if(div.length > 0){
 						var tab=div.attr('aria-labelledby')
-						$('#'+tab).trigger("click")
-						// console.log("好友聊天框存在")
+						self.editableTabsValue=tab.slice(4)
+						// $('#'+tab).trigger("click")
 					}else{
 						axios.post('/ToChat','objectid='+objectid+'&messagestype='+messagestype)
 						.then(function(response){
@@ -1122,7 +1196,6 @@
 							self.NewSession('group',objectid)
 							self.$nextTick(()=>{
 								var div = $(".Message_record0[groupid$='"+objectid+"']");
-								// console.log(div);
 								div.scrollTop(div[0].scrollHeight)
 							})
 						},function(err){
@@ -1131,14 +1204,16 @@
 					}
 				}
 			},
-			toChat2(objectid,messagestype){
+			toChat2(objectid,messagestype,index){
 				var self=this
+				if(!isNaN(index)){
+					self.Recentmessage[index].unreadnum=0
+				}
 				if(messagestype=='friend'){
 					var div = $('.el-tab-pane[tabid$="friend-chat-'+objectid+'"]')
 					if(div.length > 0){
 						var tab = div.attr('aria-labelledby')
 						self.editableTabsValue=tab.slice(4)
-						// $('#'+tab).trigger("click")
 						// console.log("好友聊天框存在")
 					}else{
 						axios.post('/ToChat','objectid='+objectid+'&messagestype='+messagestype)
@@ -1309,7 +1384,6 @@
 			Processing_requests(Response,formAddfriend,type){
 				var self=this
 				axios.post('/Processing_requests',{response:Response,formAddfriend:formAddfriend,type:type})
-				// axios.post('/Processing_requests','response='+Response+'&formAddfriend='+formAddfriend)
 				.then(function(response){
 					// console.log(response)
 					if(response.data.status==1){
@@ -1343,14 +1417,15 @@
 					// console.log(err)
 				})
 			},
-			DeleteSession(messagestype,objectid){
+			DeleteSession(messagestype,objectid,index){
 				var self = this
-				var div =$('.messages[objectid="'+objectid+'"][messagestype="'+messagestype+'"]')
+				// var div =$('.messages[objectid="'+objectid+'"][messagestype="'+messagestype+'"]')
 				axios.post('/DeleteSession','messagestype='+messagestype+'&objectid='+objectid)
 				.then(function(response){
 					// console.log(response)
 					if(response.data.status==1){
-						div.remove()
+						self.Recentmessage.splice(index, 1)
+						// div.remove()
 						// self.$message.success(response.data.result)
 					}else{
 						self.$message.error(response.data.result)
@@ -1425,7 +1500,7 @@
 			      items: [
 			        { label: "发消息",icon: "el-icon-chat-dot-square",
 						onClick: () => {
-							this.toChat2(objectid,'friend')
+							this.toChat2(objectid,'friend','no')
 						}
 			        },
 			        { label: "查看资料", icon: "el-icon-user",
@@ -1470,11 +1545,11 @@
 							this.getGroupInfo2(objectid)
 						}
 					},
-			        { label: "退出群聊", icon: "el-icon-delete",
-						onClick: () => {
-			
-						}
-					},
+			  //       { label: "退出群聊", icon: "el-icon-delete",
+					// 	onClick: () => {
+							
+					// 	}
+					// },
 			        { label: "刷新群列表" ,icon: "el-icon-refresh",
 						onClick: () => {
 							this.Refresh_groupslist()
@@ -1488,7 +1563,7 @@
 			    });
 			    return false;
 			},
-			clickmessagemenu(objectid,messagestype) {
+			clickmessagemenu(objectid,messagestype,index) {
 				var self=this
 			    this.$contextmenu({
 			      items: [
@@ -1504,12 +1579,11 @@
 							}else if(messagestype=='group'){
 								this.getGroupInfo2(objectid)
 							}
-							
 						}
 					},
 			        { label: "从会话列表删除", icon: "el-icon-delete",
 						onClick: () => {
-							self.DeleteSession(messagestype,objectid)
+							self.DeleteSession(messagestype,objectid,index)
 						}
 					},
 					{ label: "刷新会话", icon: "el-icon-refresh",
@@ -1538,26 +1612,14 @@
 					if (meg.message_type == 'SystemNotice') {
 						this.$message(meg.message);
 					}
-					// else if (meg.message_type == 'friendsList') {
-					//     // 加载好友列表
-					//     loadFriendsList(meg.message);
-					// }
-					// else if (meg.message_type == 'addFriend') {
-					//     // 新增好友
-					//     addFriend(meg.message);
-					// }
-					// else if (meg.message_type == 'removeFriend') {
-					//     // 移除好友
-					//     removeFriend(meg.message);
-					// }
 				}
 				else {
 					if(meg.message_type == 'Friendmessage'){
 						self.RefreshRecentmessage()
 						const h = this.$createElement;
 						this.$notify({
-						  title: meg.sender,
-						  message: h('i', { style: 'color: teal'}, meg.message)
+						  title: meg.sendername,
+						  message: h('i', { style: 'color: #33a3dc'}, meg.message)
 						});
 						self.receiveFriendMessage('other',meg.sender, meg.sender, meg.message,meg.sendtime);
 					}
@@ -1568,8 +1630,8 @@
 						}else{
 							const h = this.$createElement;
 							this.$notify({
-							  title: meg.sender,
-							  message: h('i', { style: 'color: teal'}, meg.message)
+							  title: meg.groupname,
+							  message: h('i', { style: 'color: #33a3dc'}, meg.message)
 							});
 							self.receiveGroupMessage('other',meg.sendto,meg.sender,  meg.message,meg.sendtime,meg.headportrait,meg.name);
 						}
@@ -2195,7 +2257,7 @@
 					SlidertoEnd(objectid){
 						//发送之后滑到底部
 						this.$nextTick(()=>{
-						var div = $(".Message_record0[userid$='"+objectid+"']");
+							var div = $(".Message_record0[userid$='"+objectid+"']");
 							// console.log(div);
 							div.scrollTop(div[0].scrollHeight)
 						})
@@ -2294,6 +2356,7 @@
 											'maxlength="500" show-word-limit :rows="5" style="border: 0px;" resize="none">'+
 										'</el-input>'+
 										'<div style="height: auto;text-align: right;padding: 0 20px;">'+
+											'<span style="font-size:12px;color: #adb5bd;">Ctrl+Enter换行</span>'+
 											'<el-button type="primary" size="mini" @click="send(data.ChatInfo.id)">发送</el-button>'+
 										'</div>'+
 									'</div>'+
@@ -2365,10 +2428,12 @@
 							// this.sendMessage('self',objectid, objectid, this.message);
 							this.message=""
 							this.RefreshRecentmessage()
-							this.$nextTick(()=>{
-								var div = $(".Message_record0[groupid$='"+objectid+"']");
-								div.scrollTop(div[0].scrollHeight)
-							})
+							// this.$nextTick(()=>{
+								setTimeout(function() {var div = $(".Message_record0[groupid$='"+objectid+"']");
+								div.scrollTop(div[0].scrollHeight)},500)
+								// var div = $(".Message_record0[groupid$='"+objectid+"']");
+								// div.scrollTop(div[0].scrollHeight)
+							// })
 							return true;
 						}
 					},
@@ -2488,6 +2553,7 @@
 									 'type="textarea" placeholder="" v-model="message" maxlength="500" show-word-limit :rows="5" style="border: 0px;" resize="none">'+
 									'</el-input>'+
 									'<div style="height: auto;text-align: right;padding: 0 20px;">'+
+										'<span style="font-size:12px;color: #adb5bd;">Ctrl+Enter换行</span>'+
 										'<el-button type="primary" size="mini" @click="send(data.ChatInfo.groupid)">发送</el-button>'+
 									'</div>'+
 								'</div>'+
@@ -2505,8 +2571,8 @@
 										'<div style="height: 6%;padding: 8px 15px;border-bottom: 1px #ebebeb solid;">'+
 											'<span>群成员</span>'+
 										'</div>'+
-										'<div style="height: 88%;overflow-y: scroll;">'+
-											'<ul>'+
+										'<div style="height: 86%;overflow-y: scroll;">'+
+											'<ul class="Groupmembers">'+
 												'<li v-for="item in data.ChatInfo.members" style="padding: 3px 20px;">'+
 													'<el-avatar :size="25" :src="HeadPortrait_url+item.headportrait" style="vertical-align: text-bottom;"></el-avatar>'+
 													'<span style="vertical-align: text-top;font-size: 13px;padding: 0 7px;">{[item.username]}</span>'+

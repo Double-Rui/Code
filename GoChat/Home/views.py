@@ -7,6 +7,7 @@ from django.shortcuts import render
 from users.models import User
 from . import HomeController
 from .cache_manager import get_Messages_record
+from .models import Messageslist
 
 
 def Recent_chat(request):
@@ -62,6 +63,12 @@ def ToChat(request):
         Objectid = request.POST.get("objectid")
         UserID = request.COOKIES.get('LoginID')
         Messagestype = request.POST.get("messagestype")
+        try:
+            messageslist=Messageslist.objects.get(userid=UserID,objectid=Objectid,messagestype=Messagestype)
+            messageslist.unreadnum=0
+            messageslist.save()
+        except Messageslist.DoesNotExist:
+            pass
         return HttpResponse(json.dumps({"Messages_record":get_Messages_record(UserID,Objectid,Messagestype),
                              "ChatInfo":HomeController.getChatInfo(request)}))
     else:
@@ -257,5 +264,17 @@ def RemoveMembers(request):
 def EditProfile(request):
     if request.method == "POST":
         return HttpResponse(json.dumps(HomeController.EditProfile(request)))
+    else:
+        pass
+
+def getobjectInfo(request):
+    if request.method == "POST":
+        return HttpResponse(json.dumps(HomeController.getobjectInfo(request)))
+    else:
+        pass
+
+def SearchFriend(request):
+    if request.method == "POST":
+        return HttpResponse(json.dumps(HomeController.SearchFriend(request)))
     else:
         pass
